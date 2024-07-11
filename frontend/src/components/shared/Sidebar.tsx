@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
               className="flex items-center text-gray-700 hover:text-blue-500"
             >
               <Folder className="w-5 h-5 mr-2" />
-              All Files
+              All folders
             </a>
           </li>
         </ul>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Menu, User, ChevronDown } from "lucide-react";
+import Link from "next/link"; // Import Link from next/link
 import { useSidebar } from "@/context/SidebarContext";
 
 const Navbar: React.FC = () => {
@@ -10,14 +11,19 @@ const Navbar: React.FC = () => {
   return (
     <header className="bg-white shadow-sm">
       <div className="flex items-center justify-between px-6 py-3">
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
           <button
             onClick={() => setIsSidebarOpen((prev) => !prev)}
-            className="md:hidden mr-4 focus:outline-none"
+            className="md:hidden focus:outline-none"
           >
             <Menu className="w-6 h-6 text-gray-500" />
           </button>
-          <h2 className="text-xl font-semibold">All files</h2>
+          <Link href="/" className="text-xl font-semibold">
+            All folders
+          </Link>
+          <Link href="/extract" className="text-xl font-semibold">
+            Extract
+          </Link>
         </div>
         <div className="relative">
           <button
