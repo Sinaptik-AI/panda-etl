@@ -1,6 +1,10 @@
 "use client";
-import { useState, FormEvent, ChangeEvent } from "react";
-import { ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
+import { useState, FormEvent } from "react";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -59,7 +63,7 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
     if (key === "key") {
       value = value.replace(/\s+/g, "_").replace(/_+/g, "_").toLowerCase();
     }
-    newFields[index][key] = value;
+    newFields[index][key] = value as any;
     setFields(newFields);
   };
 
@@ -87,20 +91,21 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Fields</h2>
-        <button
+        <Button
           type="button"
           onClick={addField}
-          className="p-2 bg-blue-500 text-white rounded flex items-center"
+          variant="primary"
+          className="flex items-center"
         >
           <Plus size={20} className="mr-1" />
           Add Field
-        </button>
+        </Button>
       </div>
       <div className="space-y-4">
         {fields.map((field, index) => (
           <div key={index} className="bg-gray-50 rounded shadow-lg">
             <div
-              className="flex justify-between items-center p-2 cursor-pointer"
+              className="flex justify-between items-center px-5 py-3 cursor-pointer"
               onClick={() => toggleField(index)}
             >
               <span>{field.key || `Field ${index + 1}`}</span>
@@ -112,76 +117,62 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
             </div>
             {expandedFields[index] && (
               <div className="p-4">
-                <div className="mb-2">
-                  <input
-                    type="text"
-                    placeholder="Field key"
-                    value={field.key}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      updateField(index, "key", e.target.value)
-                    }
-                    className="mb-1 p-2 w-full text-gray-900 bg-light-900"
-                    required
-                  />
-                  {field.key && !validateKey(field.key) && (
-                    <p className="text-red-500 text-sm">
-                      Key can only contain letters, numbers, and underscores.
-                    </p>
-                  )}
-                </div>
-                <textarea
-                  placeholder="Field description"
+                <Input
+                  id={`field-key-${index}`}
+                  label="Field Key"
+                  value={field.key}
+                  onChange={(e) => updateField(index, "key", e.target.value)}
+                  required
+                />
+                {field.key && !validateKey(field.key) && (
+                  <p className="text-red-500 text-sm">
+                    Key can only contain letters, numbers, and underscores.
+                  </p>
+                )}
+                <Textarea
+                  id={`field-description-${index}`}
+                  label="Field Description"
                   value={field.description}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                  onChange={(e) =>
                     updateField(index, "description", e.target.value)
                   }
-                  className="mb-2 p-2 w-full h-24 text-gray-900 bg-light-900"
+                  rows={3}
                 />
-                <select
+                <Select
+                  id={`field-type-${index}`}
+                  label="Field Type"
                   value={field.type}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                    updateField(index, "type", e.target.value)
+                  onChange={(e) =>
+                    updateField(index, "type", e.target.value as FieldType)
                   }
-                  className="mb-2 p-2 w-full text-gray-900 bg-light-900"
-                >
-                  {FIELD_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
+                  options={FIELD_TYPES.map((type) => ({
+                    value: type,
+                    label: type,
+                  }))}
+                />
                 <div className="text-right">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeField(index)}
-                    className="p-2 bg-red-500 text-white rounded mt-2"
+                    variant="danger"
+                    className="mt-2"
                   >
                     Remove
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
-      <button
+      <Button
         type="submit"
-        className={`p-2 text-white rounded flex items-center justify-center w-full ${
-          fields.length === 0 || isLoading
-            ? "bg-gray-500 cursor-not-allowed"
-            : "bg-green-500"
-        }`}
-        disabled={fields.length === 0 || isLoading}
+        isLoading={isLoading}
+        disabled={fields.length === 0}
+        className="w-full"
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          "Extract Data"
-        )}
-      </button>
+        Extract Data
+      </Button>
     </form>
   );
 }

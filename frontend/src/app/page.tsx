@@ -1,39 +1,46 @@
 "use client";
 import React, { useState } from "react";
 import Head from "next/head";
-import Folder from "../components/Folder";
+import Folder from "@/components/FolderIconCard";
+import { useRouter } from "next/navigation";
+import Breadcrumb from "@/components/ui/Breadcrumb";
+import Title from "@/components/ui/Title";
 
-interface FolderData {
+interface ProjectData {
   name: string;
   id: string;
 }
 
-export default function Drive() {
-  const [folders, setFolders] = useState<FolderData[]>([
-    { name: "Folder 1", id: "1" },
-    { name: "Folder 2", id: "2" },
-    { name: "Folder 3", id: "3" },
+export default function Projects() {
+  const router = useRouter();
+  const [projects, _] = useState<ProjectData[]>([
+    { name: "Project 1", id: "1" },
+    { name: "Project 2", id: "2" },
+    { name: "Project 3", id: "3" },
   ]);
 
-  const handleFolderClick = (id: string) => {
-    console.log(`Folder clicked: ${id}`);
-    // Here you can implement the logic to navigate into the folder, e.g., fetch and display the files within the folder
+  const handleProjectClick = (id: string) => {
+    router.push(`/projects/${id}`);
   };
+
+  const breadcrumbItems = [{ label: "Projects", href: "/" }];
 
   return (
     <>
       <Head>
-        <title>BambooETL - Folders</title>
+        <title>BambooETL - Projects</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <h1 className="text-3xl font-bold mb-6">My folders</h1>
+      <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
+
+      <Title>My projects</Title>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-        {folders.map((folder) => (
+        {projects.map((project) => (
           <Folder
-            key={folder.id}
-            name={folder.name}
-            onClick={() => handleFolderClick(folder.id)}
+            key={project.id}
+            name={project.name}
+            onClick={() => handleProjectClick(project.id)}
           />
         ))}
       </div>

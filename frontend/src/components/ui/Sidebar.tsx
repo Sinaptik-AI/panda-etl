@@ -1,17 +1,11 @@
 "use client";
 import React from "react";
-import { X, Bookmark, Folder, MessageCircle, Settings } from "lucide-react";
+import Link from "next/link";
+import { X, Workflow, Folder, MessageCircle, Settings } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 
 const Sidebar: React.FC = () => {
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const bookmarkedFolders = [
-    "Work",
-    "Personal",
-    "Projects",
-    "Invoices",
-    "Receipts",
-  ];
 
   return (
     <aside
@@ -29,54 +23,57 @@ const Sidebar: React.FC = () => {
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
-        <ul>
-          {bookmarkedFolders.map((folder, index) => (
-            <li key={index} className="mb-2">
-              <a
-                href="#"
-                className="flex items-center text-gray-700 hover:text-blue-500"
-              >
-                <Bookmark className="w-5 h-5 mr-2" />
-                {folder}
-              </a>
-            </li>
-          ))}
+        <ul className="mt-9 text-xl font-bold">
           <li className="mb-2">
-            <a
-              href="#"
+            <Link
+              href="/"
               className="flex items-center text-gray-700 hover:text-blue-500"
             >
               <Folder className="w-5 h-5 mr-2" />
-              All folders
-            </a>
+              All projects
+            </Link>
+          </li>
+          <li className="mb-2">
+            <Link
+              href="/processes"
+              className="flex items-center text-gray-700 hover:text-blue-500"
+            >
+              <Workflow className="w-5 h-5 mr-2" />
+              Processes
+            </Link>
           </li>
         </ul>
       </div>
       <div className="absolute bottom-0 left-0 w-full p-4 border-t">
         <ul>
           <li className="mb-2">
-            <a
-              href="#"
-              className="flex items-center text-gray-700 hover:text-blue-500"
-            >
+            <a href="mailto:help@sinaptik.ai" className="flex items-center ">
               <MessageCircle className="w-5 h-5 mr-2" />
               Contact us
             </a>
           </li>
-          <li className="mb-2">
-            <a
-              href="#"
+          <li className="mb-10">
+            <Link
+              href="/settings"
               className="flex items-center text-gray-700 hover:text-blue-500"
             >
               <Settings className="w-5 h-5 mr-2" />
               Settings
-            </a>
+            </Link>
           </li>
           <li className="flex justify-between text-sm text-gray-500">
-            <a href="#" className="hover:text-blue-500">
+            <a
+              href="https://sinaptik.notion.site/Terms-of-Service-6531411a9dfe4f1b9cb6045e93e9723c?pvs=4"
+              className="hover:text-blue-500"
+              target="_blank"
+            >
               Terms
             </a>
-            <a href="#" className="hover:text-blue-500">
+            <a
+              href="https://sinaptik.notion.site/Datenschutzrichtlinie-012906dd21f14443971247291fdbc474?pvs=4"
+              className="hover:text-blue-500"
+              target="_blank"
+            >
               Privacy Policy
             </a>
           </li>

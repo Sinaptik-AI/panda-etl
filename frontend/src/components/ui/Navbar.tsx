@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { Menu, User, ChevronDown } from "lucide-react";
-import Link from "next/link"; // Import Link from next/link
+import { Menu, User, ChevronDown, Settings } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
+import Link from "next/link";
 
 const Navbar: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -18,12 +18,6 @@ const Navbar: React.FC = () => {
           >
             <Menu className="w-6 h-6 text-gray-500" />
           </button>
-          <Link href="/" className="text-xl font-semibold">
-            All folders
-          </Link>
-          <Link href="/extract" className="text-xl font-semibold">
-            Extract
-          </Link>
         </div>
         <div className="relative">
           <button
@@ -35,12 +29,13 @@ const Navbar: React.FC = () => {
           </button>
           {isUserMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-              <a
-                href="#"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <Link
+                href="/user/settings"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
+                <Settings className="w-5 h-5 mr-2" />
                 Manage settings
-              </a>
+              </Link>
             </div>
           )}
         </div>
