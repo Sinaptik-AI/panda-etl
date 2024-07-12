@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
+import Label from "@/components/ui/Label";
+import DateLabel from "@/components/ui/Date";
 
 interface Process {
   id: string;
@@ -43,14 +45,37 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     setProcesses(mockProcesses);
   }, [projectId]);
 
+  const statusLabel = (process: Process) => {
+    switch (process.status) {
+      case "completed":
+        return <Label status="success" />;
+      case "failed":
+        return <Label status="error" />;
+      case "running":
+        return <Label status="warning" />;
+      default:
+        return "-";
+    }
+  };
+
   const columns = [
     { header: "ID", accessor: "id" },
     { header: "Name", accessor: "name" },
-    { header: "Status", accessor: "status" },
-    { header: "Start Time", accessor: "startTime" },
+    {
+      header: "Status",
+      accessor: "status",
+      label: statusLabel,
+    },
+    {
+      header: "Start Time",
+      accessor: "startTime",
+      label: (process: Process) => <DateLabel dateString={process.startTime} />,
+    },
     {
       header: "End Time",
       accessor: (process: Process) => process.endTime || "-",
+      label: (process: Process) =>
+        process.endTime ? <DateLabel dateString={process.endTime} /> : "-",
     },
   ];
 
