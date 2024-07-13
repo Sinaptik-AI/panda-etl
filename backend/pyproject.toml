@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "bambooetl-backend"
+version = "0.1.0"
+description = ""
+authors = ["Gabriele Venturi <lele.venturi@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+flask = "^3.0.3"
+python-dotenv = "^1.0.1"
+flask-cors = "^4.0.1"
+openai = "^1.35.13"
+unstructured = {extras = ["pdf"], version = "^0.14.10"}
+werkzeug = "^3.0.3"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.0.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
