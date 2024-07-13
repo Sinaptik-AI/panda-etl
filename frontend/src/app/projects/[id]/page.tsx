@@ -8,6 +8,7 @@ import { PlusIcon } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
+import Drawer from "@/components/ui/Drawer";
 
 interface ProjectData {
   name: string;
@@ -19,6 +20,7 @@ export default function Project() {
   const router = useRouter();
   const id = params.id as string;
   const [activeTab, setActiveTab] = useState<string>("assets");
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
 
   const [files, _] = useState<ProjectData[]>([
     { name: "File 1.pdf", id: "1" },
@@ -47,6 +49,7 @@ export default function Project() {
 
   const handleFileClick = (id: string) => {
     console.log(`File ${id} clicked`);
+    setCurrentFile(id);
   };
 
   const handleAddProcess = () => {
@@ -91,6 +94,16 @@ export default function Project() {
         </div>
       )}
       {activeTab === "processes" && <ProcessesList projectId={project.id} />}
+
+      <Drawer
+        isOpen={currentFile !== null}
+        onClose={() => setCurrentFile(null)}
+        title={"Preview"}
+      >
+        <div>
+          <p>Preview goes here</p>
+        </div>
+      </Drawer>
     </>
   );
 }
