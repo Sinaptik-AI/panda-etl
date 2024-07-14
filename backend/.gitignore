@@ -3,3 +3,6 @@ tmp/
 
 # Pycache
 __pycache__/
+
+# Instance folder
+instance/
