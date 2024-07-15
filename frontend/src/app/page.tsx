@@ -7,15 +7,8 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import Title from "@/components/ui/Title";
 import { Button } from "@/components/ui/Button";
 import { PlusIcon } from "lucide-react";
-import axios from "axios";
-
-interface ProjectData {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-}
+import { ProjectData } from "@/interfaces/projects";
+import { GetProjects } from "@/services/projects";
 
 export default function Projects() {
   const router = useRouter();
@@ -32,7 +25,7 @@ export default function Projects() {
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 
   useEffect(() => {
-    axios.get<{ data: ProjectData[] }>("/api/projects").then((response) => {
+    GetProjects().then((response) => {
       const { data: projects } = response.data;
       if (projects.length === 0) {
         newProject();

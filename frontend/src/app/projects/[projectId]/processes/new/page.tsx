@@ -1,8 +1,8 @@
 "use client";
 import Head from "next/head";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { Loader2, PlusIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Title from "@/components/ui/Title";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -16,14 +16,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import axios from "axios";
-
-interface ProjectData {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-}
+import { ProjectData } from "@/interfaces/projects";
+import { GetProject } from "@/services/projects";
 
 const processOptions = [
   { id: "extract", label: "Extract", icon: FileText, disabled: false },
@@ -48,13 +42,11 @@ export default function NewProcess() {
   const [project, setProject] = useState<ProjectData | null>(null);
 
   useEffect(() => {
-    axios
-      .get<{ data: ProjectData }>(`/api/projects/${projectId}`)
-      .then((response) => {
-        const { data: project } = response.data;
-        setProject(project);
-        setIsLoading(false);
-      });
+    GetProject(projectId).then((response) => {
+      const { data: project } = response.data;
+      setProject(project);
+      setIsLoading(false);
+    });
   }, []);
 
   const breadcrumbItems = [

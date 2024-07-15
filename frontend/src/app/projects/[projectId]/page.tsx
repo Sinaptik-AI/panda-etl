@@ -11,11 +11,8 @@ import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
-
-interface ProjectData {
-  id: string;
-  name: string;
-}
+import { GetProject } from "@/services/projects";
+import { ProjectData } from "@/interfaces/projects";
 
 interface AssetData {
   id: string;
@@ -33,7 +30,7 @@ export default function Project() {
   const [project, setProject] = useState<ProjectData | null>(null);
 
   useEffect(() => {
-    axios.get<{ data: ProjectData }>(`/api/projects/${id}`).then((response) => {
+    GetProject(id).then((response) => {
       const { data: project } = response.data;
       setProject(project);
       setIsLoading(false);

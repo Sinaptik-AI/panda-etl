@@ -1,0 +1,40 @@
+import axios, { AxiosResponse } from "axios";
+import { BASE_API_URL } from "@/constants";
+
+export const axiosInstance = axios.create({
+  baseURL: BASE_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export async function GetRequest<T>(
+  url: string
+): Promise<AxiosResponse<T, any>> {
+  try {
+    const response = await axiosInstance.get<T>(url);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function PostRequest<T>(
+  url: string,
+  requestData: object,
+  headers = {}
+): Promise<AxiosResponse<T, any>> {
+  try {
+    const defaultHeaders = {
+      "Content-Type": "application/json",
+    };
+    const updatedHeader = { ...defaultHeaders, ...headers };
+
+    const response = await axiosInstance.post<T>(url, requestData, {
+      headers: updatedHeader,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
