@@ -3,11 +3,21 @@ import React from "react";
 interface CardProps {
   children: React.ReactNode;
   className?: string;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = "" }) => {
+export const Card: React.FC<CardProps> = ({
+  children,
+  className = "",
+  onClick,
+}) => {
   return (
-    <div className={`bg-white shadow rounded-lg ${className}`}>{children}</div>
+    <div
+      className={`bg-white shadow rounded-lg ${className}`}
+      onClick={onClick}
+    >
+      {children}
+    </div>
   );
 };
 

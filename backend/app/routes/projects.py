@@ -53,6 +53,24 @@ def get_projects():
         ]
     })
 
+@projects.route('/<int:id>', methods=['GET'])
+def get_project(id):
+    project = Project.query.get(id)
+    
+    if not project:
+        return jsonify({"status": "error", "message": "Project not found"}), 404
+    
+    return jsonify({
+        "status": "success",
+        "data": {
+            "id": project.id,
+            "name": project.name,
+            "description": project.description,
+            "created_at": project.created_at.isoformat(),
+            "updated_at": project.updated_at.isoformat()
+        }
+    })
+
 @projects.route('/<int:id>/assets', methods=['GET'])
 def get_assets(id):
     assets = Asset.query.filter_by(project_id=id).all()
