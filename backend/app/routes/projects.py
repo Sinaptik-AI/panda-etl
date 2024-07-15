@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models import Project
+from app.models import Project, Asset
 from app import db
 
 projects = Blueprint('projects', __name__)
@@ -50,5 +50,20 @@ def get_projects():
                 "created_at": project.created_at.isoformat(),
                 "updated_at": project.updated_at.isoformat()
             } for project in projects
+        ]
+    })
+
+@projects.route('/<int:id>/assets', methods=['GET'])
+def get_assets(id):
+    assets = Asset.query.filter_by(project_id=id).all()
+    return jsonify({
+        "status": "success",
+        "data": [
+            {
+                "id": asset.id,
+                "filename": asset.filename,
+                "created_at": asset.created_at.isoformat(),
+                "updated_at": asset.updated_at.isoformat()
+            } for asset in assets
         ]
     })

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -10,10 +10,16 @@ import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
+import axios from "axios";
 
 interface ProjectData {
-  name: string;
   id: string;
+  name: string;
+}
+
+interface AssetData {
+  id: string;
+  name: string;
 }
 
 export default function Project() {
@@ -23,15 +29,7 @@ export default function Project() {
   const [activeTab, setActiveTab] = useState<string>("assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
 
-  const [files, _] = useState<ProjectData[]>([
-    { name: "File 1.pdf", id: "1" },
-    { name: "File 2.pdf", id: "2" },
-    { name: "File 3.pdf", id: "3" },
-    { name: "File 4.pdf", id: "4" },
-    { name: "File 5.pdf", id: "5" },
-    { name: "File 6.pdf", id: "6" },
-    { name: "File 7.pdf", id: "7" },
-  ]);
+  const [assets, setAssets] = useState<AssetData[] | null>(null);
 
   const projectTabs = [
     { id: "assets", label: "Assets" },
@@ -57,6 +55,15 @@ export default function Project() {
     router.push("/extract");
   };
 
+  useEffect(() => {
+    axios
+      .get<{ data: ProjectData[] }>(`/api/projects/${id}/assets`)
+      .then((response) => {
+        const { data: assets } = response.data;
+        setAssets(assets);
+      });
+  }, []);
+
   return (
     <>
       <Head>
@@ -81,13 +88,20 @@ export default function Project() {
 
       {activeTab === "assets" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {files.map((file) => (
-            <File
-              key={file.id}
-              name={file.name}
-              onClick={() => handleFileClick(file.id)}
-            />
-          ))}
+          {assets &&
+            assets.map((asset) => (
+              <File
+                key={asset.id}
+                name={asset.name}
+                onClick={() => handleFileClick(asset.id)}
+              />
+            ))}
+
+          {assets && assets.length === 0 && (
+            <div className="text-center text-gray-500 col-span-full">
+              No assets found
+            </div>
+          )}
         </div>
       )}
       {activeTab === "processes" && <ProcessesList projectId={project.id} />}
