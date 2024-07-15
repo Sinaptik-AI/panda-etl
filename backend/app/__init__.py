@@ -22,27 +22,3 @@ def create_app():
         db.create_all()
 
     return app
-
-
-# from flask import Flask
-# from flask_cors import CORS
-# db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
-
-# # Endpoints
-# from api.extract import extract
-
-# app = Flask(__name__)
-# app.config['UPLOAD_FOLDER'] = 'tmp'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# CORS(app, resources={r"/*": {"origins": "*"}})
-
-# db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
-
-# app.register_blueprint(extract, url_prefix='/extract')
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
