@@ -22,3 +22,14 @@ export const GetProjects = async () => {
     throw error;
   }
 };
+
+export const GetProjectAssets = async (projectId: string) => {
+  try {
+    const response = await GetRequest<{ data: ProjectData[] }>(
+      `${projectsApiUrl}/${projectId}/assets`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

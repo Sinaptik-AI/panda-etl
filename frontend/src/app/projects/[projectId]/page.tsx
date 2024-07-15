@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import axios from "axios";
 import { GetProject } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
+import { useQuery } from "@tanstack/react-query";
 
 interface AssetData {
   id: string;
@@ -25,17 +26,24 @@ export default function Project() {
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>("assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
-  const [assets, setAssets] = useState<AssetData[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [project, setProject] = useState<ProjectData | null>(null);
-
-  useEffect(() => {
-    GetProject(id).then((response) => {
+  const { data: project, isLoading } = useQuery({
+    queryKey: ["project", id],
+    queryFn: async () => {
+      const response = await GetProject(id);
       const { data: project } = response.data;
-      setProject(project);
-      setIsLoading(false);
-    });
-  }, []);
+      return project as ProjectData;
+    },
+  });
+  const { data: projectAssets } = useQuery({
+    queryKey: ["projectAssets", id],
+    queryFn: async () => {
+      const response = await axios.get<{ data: AssetData[] }>(
+        `/api/projects/${id}/assets`
+      );
+      const { data: assets } = response.data;
+      return assets;
+    },
+  });
 
   const projectTabs = [
     { id: "assets", label: "Assets" },
@@ -55,15 +63,6 @@ export default function Project() {
   const newProcess = () => {
     router.push(`/projects/${id}/processes/new`);
   };
-
-  useEffect(() => {
-    axios
-      .get<{ data: ProjectData[] }>(`/api/projects/${id}/assets`)
-      .then((response) => {
-        const { data: assets } = response.data;
-        setAssets(assets);
-      });
-  }, []);
 
   return (
     <>
@@ -93,8 +92,8 @@ export default function Project() {
 
           {activeTab === "assets" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-              {assets &&
-                assets.map((asset) => (
+              {projectAssets &&
+                projectAssets.map((asset) => (
                   <File
                     key={asset.id}
                     name={asset.name}
@@ -102,7 +101,7 @@ export default function Project() {
                   />
                 ))}
 
-              {assets && assets.length === 0 && (
+              {projectAssets && projectAssets.length === 0 && (
                 <div className="text-center text-gray-500 col-span-full">
                   No assets found
                 </div>

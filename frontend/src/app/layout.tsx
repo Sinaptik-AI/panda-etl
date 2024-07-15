@@ -4,6 +4,7 @@ import React from "react";
 import { SidebarProvider } from "@/context/SidebarContext";
 import Sidebar from "@/components/ui/Sidebar";
 import Navbar from "@/components/ui/Navbar";
+import { ReactQueryClientProvider } from "@/components/ReactQueryClientProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,20 +21,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <SidebarProvider>
-          <div className="flex h-screen bg-gray-100 text-black">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden md:ml-64">
-              <Navbar />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 px-10 py-6">
-                {children}
-              </main>
+    <ReactQueryClientProvider>
+      <html lang="en">
+        <body className={inter.className}>
+          <SidebarProvider>
+            <div className="flex h-screen bg-gray-100 text-black">
+              <Sidebar />
+              <div className="flex-1 flex flex-col overflow-hidden md:ml-64">
+                <Navbar />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 px-10 py-6">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </SidebarProvider>
-      </body>
-    </html>
+          </SidebarProvider>
+        </body>
+      </html>
+    </ReactQueryClientProvider>
   );
 }

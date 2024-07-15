@@ -1,18 +1,30 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Head from "next/head";
 import Folder from "@/components/FolderIconCard";
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Title from "@/components/ui/Title";
 import { Button } from "@/components/ui/Button";
-import { PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProjects } from "@/services/projects";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Projects() {
   const router = useRouter();
-  const [projects, setProjects] = useState<ProjectData[] | null>(null);
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const response = await GetProjects();
+      const { data: projects } = response.data;
+      if (projects.length === 0) {
+        newProject();
+      }
+      return projects as ProjectData[];
+    },
+  });
 
   const handleProjectClick = (id: string) => {
     router.push(`/projects/${id}`);
@@ -23,17 +35,6 @@ export default function Projects() {
   };
 
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
-
-  useEffect(() => {
-    GetProjects().then((response) => {
-      const { data: projects } = response.data;
-      if (projects.length === 0) {
-        newProject();
-      }
-
-      setProjects(projects);
-    });
-  }, []);
 
   return (
     <>
@@ -50,16 +51,19 @@ export default function Projects() {
           New project
         </Button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-        {projects &&
-          projects.map((project) => (
-            <Folder
-              key={project.id}
-              name={project.name}
-              onClick={() => handleProjectClick(project.id)}
-            />
-          ))}
-      </div>
+      {isLoading && <Loader2 className="w-8 h-8 animate-spin" />}
+      {projects && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {projects &&
+            projects.map((project) => (
+              <Folder
+                key={project.id}
+                name={project.name}
+                onClick={() => handleProjectClick(project.id)}
+              />
+            ))}
+        </div>
+      )}
     </>
   );
 }

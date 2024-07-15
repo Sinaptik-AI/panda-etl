@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { Loader2 } from "lucide-react";
 import Title from "@/components/ui/Title";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
@@ -15,9 +15,9 @@ import {
   Key,
   ArrowRight,
 } from "lucide-react";
-import axios from "axios";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProject } from "@/services/projects";
+import { useQuery } from "@tanstack/react-query";
 
 const processOptions = [
   { id: "extract", label: "Extract", icon: FileText, disabled: false },
@@ -38,16 +38,14 @@ export default function NewProcess() {
   const [selectedProcess, setSelectedProcess] = useState("extract");
   const [selectedOutput, setSelectedOutput] = useState("csv");
   const projectId = params.projectId as string;
-  const [isLoading, setIsLoading] = useState(true);
-  const [project, setProject] = useState<ProjectData | null>(null);
-
-  useEffect(() => {
-    GetProject(projectId).then((response) => {
+  const { data: project, isLoading } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: async () => {
+      const response = await GetProject(projectId);
       const { data: project } = response.data;
-      setProject(project);
-      setIsLoading(false);
-    });
-  }, []);
+      return project as ProjectData;
+    },
+  });
 
   const breadcrumbItems = [
     { label: "Projects", href: "/" },
