@@ -9,6 +9,7 @@ import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
+import { Button } from "@/components/ui/Button";
 
 interface ProjectData {
   name: string;
@@ -65,13 +66,9 @@ export default function Project() {
 
       <div className="flex justify-between items-start mb-8">
         <Breadcrumb items={breadcrumbItems} />
-        <button
-          onClick={handleAddProcess}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-        >
-          <PlusIcon className="w-6 h-6 mr-2" />
+        <Button onClick={handleAddProcess} icon={PlusIcon}>
           New process
-        </button>
+        </Button>
       </div>
 
       <Title>{project.name}</Title>
