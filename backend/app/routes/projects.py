@@ -35,3 +35,20 @@ def create_project():
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
+    
+@projects.route('', methods=['GET'])
+def get_projects():
+    projects = Project.query.all()
+    
+    return jsonify({
+        "status": "success",
+        "data": [
+            {
+                "id": project.id,
+                "name": project.name,
+                "description": project.description,
+                "created_at": project.created_at.isoformat(),
+                "updated_at": project.updated_at.isoformat()
+            } for project in projects
+        ]
+    })

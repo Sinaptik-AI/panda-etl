@@ -7,19 +7,19 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import Title from "@/components/ui/Title";
 import { Button } from "@/components/ui/Button";
 import { PlusIcon } from "lucide-react";
+import axios from "axios";
 
 interface ProjectData {
-  name: string;
   id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function Projects() {
   const router = useRouter();
-  const [projects, _] = useState<ProjectData[]>([
-    { name: "Project 1", id: "1" },
-    { name: "Project 2", id: "2" },
-    { name: "Project 3", id: "3" },
-  ]);
+  const [projects, setProjects] = useState<ProjectData[] | null>(null);
 
   const handleProjectClick = (id: string) => {
     router.push(`/projects/${id}`);
@@ -32,9 +32,14 @@ export default function Projects() {
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 
   useEffect(() => {
-    if (projects.length === 0) {
-      newProject();
-    }
+    axios.get<{ data: ProjectData[] }>("/api/projects").then((response) => {
+      const { data: projects } = response.data;
+      if (projects.length === 0) {
+        newProject();
+      }
+
+      setProjects(projects);
+    });
   }, []);
 
   return (
@@ -53,13 +58,14 @@ export default function Projects() {
         </Button>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-        {projects.map((project) => (
-          <Folder
-            key={project.id}
-            name={project.name}
-            onClick={() => handleProjectClick(project.id)}
-          />
-        ))}
+        {projects &&
+          projects.map((project) => (
+            <Folder
+              key={project.id}
+              name={project.name}
+              onClick={() => handleProjectClick(project.id)}
+            />
+          ))}
       </div>
     </>
   );
