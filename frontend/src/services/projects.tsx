@@ -1,5 +1,6 @@
 import { GetRequest } from "@/lib/requests";
 import { ProjectData } from "@/interfaces/projects";
+import { AssetData } from "@/interfaces/assets";
 
 const projectsApiUrl = "/projects";
 
@@ -25,7 +26,7 @@ export const GetProjects = async () => {
 
 export const GetProjectAssets = async (projectId: string) => {
   try {
-    const response = await GetRequest<{ data: ProjectData[] }>(
+    const response = await GetRequest<{ data: AssetData[] }>(
       `${projectsApiUrl}/${projectId}/assets`
     );
     return response;

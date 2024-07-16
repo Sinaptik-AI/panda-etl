@@ -2,14 +2,17 @@
 import { useState, useEffect } from "react";
 
 interface PDFViewerProps {
-  file: File | null;
+  file?: File | null;
+  url?: string;
 }
 
-export default function PDFViewer({ file }: PDFViewerProps) {
+export default function PDFViewer({ file, url }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (file) {
+    if (url) {
+      setPdfUrl(url);
+    } else if (file) {
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
       return () => URL.revokeObjectURL(url);

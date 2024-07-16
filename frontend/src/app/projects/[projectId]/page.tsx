@@ -14,11 +14,7 @@ import axios from "axios";
 import { GetProject } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
-
-interface AssetData {
-  id: string;
-  name: string;
-}
+import { AssetData } from "@/interfaces/assets";
 
 export default function Project() {
   const params = useParams();
@@ -96,7 +92,7 @@ export default function Project() {
                 projectAssets.map((asset) => (
                   <File
                     key={asset.id}
-                    name={asset.name}
+                    name={asset.filename}
                     onClick={() => handleFileClick(asset.id)}
                   />
                 ))}
