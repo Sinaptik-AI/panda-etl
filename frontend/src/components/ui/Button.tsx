@@ -4,18 +4,20 @@ import { Loader2 } from "lucide-react";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   variant?: "primary" | "secondary" | "danger";
+  icon?: React.ForwardRefExoticComponent<any>;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   children,
   isLoading = false,
   variant = "primary",
+  icon,
   className = "",
   disabled,
   ...props
 }) => {
   const baseStyles =
-    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center";
 
   const variantStyles = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
@@ -36,11 +38,14 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <>
-          <Loader2 className="inline-block w-4 h-4 mr-2 animate-spin" />
+          <Loader2 className="inline-block w-4 h-4 mr-2" />
           Loading...
         </>
       ) : (
-        children
+        <>
+          {icon && React.createElement(icon, { className: "w-6 h-6 mr-2" })}
+          {children}
+        </>
       )}
     </button>
   );

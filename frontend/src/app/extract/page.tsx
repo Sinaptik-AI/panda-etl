@@ -5,16 +5,8 @@ import axios from "axios";
 import PDFViewer from "@/components/PDFViewer";
 import ExtractionForm from "@/components/ExtractionForm";
 import FilePicker from "@/components/FilePicker";
-
-interface ExtractionField {
-  key: string;
-  type: "text" | "date" | "number" | "list";
-  description: string;
-}
-
-interface ExtractionResult {
-  [key: string]: string | string[];
-}
+import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
+import { Extract } from "@/services/extract";
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -26,7 +18,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePdfUpload = (file: File) => {
+  const handlePdfUpload = (file: File | null) => {
     setPdfFile(file);
     setExtractionResult(null);
     setError(null);
@@ -48,23 +40,11 @@ export default function Home() {
     formData.append("fields", JSON.stringify(fields));
 
     try {
-      const response = await axios.post<ExtractionResult>(
-        "/api/extract",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await Extract(formData);
       setExtractionResult(response.data);
     } catch (error) {
       console.error("Error during extraction:", error);
-      setError(
-        axios.isAxiosError(error) && error.response?.data?.error
-          ? error.response.data.error
-          : "Failed to extract data. Please try again."
-      );
+      setError((error as Error).message);
       setExtractionResult(null);
     } finally {
       setIsLoading(false);

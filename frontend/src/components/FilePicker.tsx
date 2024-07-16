@@ -11,7 +11,7 @@ import { Upload, File, X } from "lucide-react";
 
 interface FilePickerProps {
   onChange: (file: File | null) => void;
-  accept: string;
+  accept: string | string[];
 }
 
 const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
@@ -127,7 +127,7 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept={accept}
+          accept={Array.isArray(accept) ? accept.join(",") : accept}
           onChange={handleInputChange}
           className="hidden"
           id="file-upload"
