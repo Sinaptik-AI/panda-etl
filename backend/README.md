@@ -1,58 +1,32 @@
-# Flask App README
+## BambooETL
 
-This repository contains a Flask web application.
+## Run
 
-## Prerequisites
+### Prerequisites
 
-- Python 3.9+
-- Poetry (for managing dependencies)
+- Create an env file use .env.example [Optional]
 
-## Installation
+### Install dependency
 
-1. Open the `/backend` directory in a terminal:
+```shell
+> poetry shell
+> poetry install
+```
 
-   ```
-   cd backend
-   ```
+### Apply database migration
 
-2. Install dependencies using Poetry:
-   ```
-   poetry install
-   ```
+```shell
+> make migrate
+```
 
-## Running the App
+### Create new database migration after schema changes
 
-To run the Flask app locally:
+```shell
+> make generate-migration
+```
 
-1. Activate the virtual environment (if not already activated):
+### Start Server
 
-   ```
-   poetry shell
-   ```
-
-2. Run the Flask app:
-   ```
-   poetry run flask run --port 5328
-   ```
-
-The app should now be running locally on port 5328.
-
-## Accessing the App
-
-Open a web browser and go to `http://localhost:5328` to view the app.
-
-## Structure
-
-- `app.py`: Main Flask application file
-
-## Dependencies
-
-All Python dependencies are listed in `pyproject.toml`. Poetry manages these dependencies.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-Feel free to customize this README further based on additional features or specifics of your Flask application.
+```shell
+> make run
+```

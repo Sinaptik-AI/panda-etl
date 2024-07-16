@@ -1,21 +1,19 @@
 [tool.poetry]
-name = "bambooetl-backend"
+name = "backend"
 version = "0.1.0"
 description = ""
-authors = ["Gabriele Venturi <lele.venturi@gmail.com>"]
+authors = ["ArslanSaleem <khan.arslan38@gmail.com>"]
 readme = "README.md"
-license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
-flask = "^3.0.3"
+python = ">=3.11,<3.13"
+fastapi = {extras = ["all"], version = "^0.111.1"}
 python-dotenv = "^1.0.1"
-flask-cors = "^4.0.1"
-openai = "^1.35.13"
-unstructured = {extras = ["pdf"], version = "^0.14.10"}
-werkzeug = "^3.0.3"
-flask-sqlalchemy = "^3.1.1"
-flask-migrate = "^4.0.7"
+alembic = "^1.13.2"
+pydantic-settings = "^2.3.4"
+unstructured = "^0.14.10"
+openai = "^1.35.14"
+starlette = "^0.37.2"
 
 
 [build-system]

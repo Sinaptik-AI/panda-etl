@@ -25,8 +25,9 @@ export async function PostRequest<T>(
   headers = {}
 ): Promise<AxiosResponse<T, any>> {
   try {
+    const isFormData = requestData instanceof FormData;
     const defaultHeaders = {
-      "Content-Type": "application/json",
+      'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
     };
     const updatedHeader = { ...defaultHeaders, ...headers };
 

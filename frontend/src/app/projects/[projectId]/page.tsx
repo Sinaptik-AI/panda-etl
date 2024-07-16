@@ -10,11 +10,10 @@ import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
-import axios from "axios";
-import { GetProject } from "@/services/projects";
+import { AddProjectAsset, GetProject, GetProjectAssets } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
-import { AssetData } from "@/interfaces/assets";
+import FileUploadCard from "@/components/FileUploadCard";
 
 export default function Project() {
   const params = useParams();
@@ -22,6 +21,7 @@ export default function Project() {
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>("assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
+  const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -30,12 +30,10 @@ export default function Project() {
       return project as ProjectData;
     },
   });
-  const { data: projectAssets } = useQuery({
+  const { data: projectAssets, refetch: refetchProjectAssets } = useQuery({
     queryKey: ["projectAssets", id],
     queryFn: async () => {
-      const response = await axios.get<{ data: AssetData[] }>(
-        `/api/projects/${id}/assets`
-      );
+      const response = await GetProjectAssets(id)
       const { data: assets } = response.data;
       return assets;
     },
@@ -59,6 +57,23 @@ export default function Project() {
   const newProcess = () => {
     router.push(`/projects/${id}/processes/new`);
   };
+
+  const handleFileUpload = async(file: File | null) => {
+
+    if (file) {
+      try {
+        setUploadingFile(true)
+        const response = await AddProjectAsset(id, file);
+        setUploadingFile(false)
+        if (!response.data) {
+          throw new Error("Failed to create project");
+        }
+        await refetchProjectAssets();
+      } catch (error) {
+        console.error("Error creating project:", error);
+      }
+    }
+  }
 
   return (
     <>
@@ -97,11 +112,15 @@ export default function Project() {
                   />
                 ))}
 
+               
+
               {projectAssets && projectAssets.length === 0 && (
                 <div className="text-center text-gray-500 col-span-full">
                   No assets found
                 </div>
               )}
+
+              <FileUploadCard onFileSelect={handleFileUpload} isLoading={uploadingFile}/>
             </div>
           )}
           {activeTab === "processes" && (

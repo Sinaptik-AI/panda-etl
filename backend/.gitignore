@@ -1,8 +1,6 @@
-# Tmp folder
-tmp/
-
-# Pycache
+.env
 __pycache__/
-
-# Instance folder
-instance/
+.venv
+/instance/*
+!/instance/
+uploads/

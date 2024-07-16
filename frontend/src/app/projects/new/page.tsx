@@ -30,7 +30,7 @@ export default function NewProject() {
     setIsLoading(true);
 
     try {
-      const response = await CreateProject({ title, description });
+      const response = await CreateProject({ name: title, description: description });
 
       if (!response.data) {
         throw new Error("Failed to create project");
