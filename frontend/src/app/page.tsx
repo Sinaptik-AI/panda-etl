@@ -19,9 +19,6 @@ export default function Projects() {
     queryFn: async () => {
       const response = await GetProjects();
       const { data: projects } = response.data;
-      if (projects.length === 0) {
-        newProject();
-      }
       return projects as ProjectData[];
     },
   });
@@ -33,6 +30,10 @@ export default function Projects() {
   const newProject = () => {
     router.push("/projects/new");
   };
+
+  if (!isLoading && projects?.length === 0) {
+    newProject();
+  }
 
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 

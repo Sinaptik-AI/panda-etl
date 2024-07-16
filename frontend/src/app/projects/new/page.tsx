@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import Title from "@/components/ui/Title";
+import { CreateProject } from "@/services/projects";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NewProject() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -27,23 +30,19 @@ export default function NewProject() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title, description }),
-      });
+      const response = await CreateProject({ title, description });
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error("Failed to create project");
       }
 
-      const { data } = await response.json();
+      const { data } = response.data;
+
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+
       router.push(`/projects/${data.id}`);
     } catch (error) {
       console.error("Error creating project:", error);
-      // Here you might want to set an error state and display it to the user
     } finally {
       setIsLoading(false);
     }
