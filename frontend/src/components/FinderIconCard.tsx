@@ -1,4 +1,5 @@
 import React from "react";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface FinderIconCardProps {
   name: string;
@@ -12,13 +13,17 @@ const FinderIconCard: React.FC<FinderIconCardProps> = ({
   icon,
 }) => {
   return (
-    <div
-      onClick={onClick}
-      className="cursor-pointer w-48 h-48 flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100"
-    >
-      {icon}
-      <h3 className="font-bold mt-2 text-center text-sm">{name}</h3>
-    </div>
+    <Tooltip content={name}>
+      <div
+        onClick={onClick}
+        className="cursor-pointer w-48 h-48 flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100"
+      >
+        {icon}
+        <h3 className="font-bold mt-2 text-center text-sm truncate w-full px-2">
+          {name}
+        </h3>
+      </div>
+    </Tooltip>
   );
 };
 

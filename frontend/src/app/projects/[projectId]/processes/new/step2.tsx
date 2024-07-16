@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectAssets } from "@/services/projects";
@@ -15,6 +15,7 @@ interface Step2Props {
 }
 
 export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
     []
   );
@@ -35,7 +36,13 @@ export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
     setExtractionResult(data);
   };
 
-  const pdfFileUrl = `${BASE_STORAGE_URL}/${assets?.[0].filename}`;
+  useEffect(() => {
+    if (assets?.length && project) {
+      setPdfFileUrl(
+        `${BASE_STORAGE_URL}/${project.id}/${assets?.[0].filename}`
+      );
+    }
+  }, [assets, project]);
 
   return (
     <>
@@ -63,7 +70,7 @@ export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
           )}
 
           <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
-          <PDFViewer url={pdfFileUrl} />
+          {pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
         </div>
       </div>
     </>
