@@ -46,8 +46,8 @@ export default function Projects() {
 
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
 
-      <div className="flex justify-between items-start mb-8">
-        <Title>My projects</Title>
+      <div className="flex justify-between items-center mb-8">
+        <Title margin={false}>My projects</Title>
         <Button onClick={newProject} icon={PlusIcon}>
           New project
         </Button>

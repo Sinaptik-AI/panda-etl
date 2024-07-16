@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectAssets } from "@/services/projects";
 import { AssetData } from "@/interfaces/assets";
 import ExtractionForm from "@/components/ExtractionForm";
-import { ExtractionField } from "@/interfaces/extract";
+import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
 import PDFViewer from "@/components/PDFViewer";
 import { BASE_STORAGE_URL } from "@/constants";
+import { Extract } from "@/services/extract";
 
 interface Step2Props {
   project: ProjectData;
@@ -14,6 +15,11 @@ interface Step2Props {
 }
 
 export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
+  const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
+    []
+  );
+  const [extractionResult, setExtractionResult] =
+    useState<ExtractionResult | null>(null);
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
@@ -23,8 +29,10 @@ export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
     },
   });
 
-  const handleSubmit = (data: ExtractionField[]) => {
-    console.log(data);
+  const handleSubmit = async (fields: ExtractionField[]) => {
+    setExtractionFields(fields);
+    const { data } = await Extract(project.id, fields);
+    setExtractionResult(data);
   };
 
   const pdfFileUrl = `${BASE_STORAGE_URL}/${assets?.[0].filename}`;
@@ -33,8 +41,28 @@ export const Step2: React.FC<Step2Props> = ({ project, setStep }) => {
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ExtractionForm onSubmit={handleSubmit} />
-        <div>
-          <h2 className="text-2xl font-bold mb-4">PDF Preview</h2>
+        <div className="mt-1">
+          {extractionResult && (
+            <>
+              <h2 className="text-2xl font-bold mb-5">Extraction preview</h2>
+              <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="grid grid-cols-1 gap-4">
+                  {extractionFields.map((field, index) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded shadow">
+                      <h3 className="font-bold mb-2">{field.key}</h3>
+                      <p>
+                        {Array.isArray(extractionResult[field.key])
+                          ? (extractionResult[field.key] as string[]).join(", ")
+                          : extractionResult[field.key] || "N/A"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
           <PDFViewer url={pdfFileUrl} />
         </div>
       </div>

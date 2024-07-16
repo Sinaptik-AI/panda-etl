@@ -10,7 +10,11 @@ import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
-import { AddProjectAsset, GetProject, GetProjectAssets } from "@/services/projects";
+import {
+  AddProjectAsset,
+  GetProject,
+  GetProjectAssets,
+} from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
 import FileUploadCard from "@/components/FileUploadCard";
@@ -33,7 +37,7 @@ export default function Project() {
   const { data: projectAssets, refetch: refetchProjectAssets } = useQuery({
     queryKey: ["projectAssets", id],
     queryFn: async () => {
-      const response = await GetProjectAssets(id)
+      const response = await GetProjectAssets(id);
       const { data: assets } = response.data;
       return assets;
     },
@@ -58,13 +62,12 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
-  const handleFileUpload = async(file: File | null) => {
-
+  const handleFileUpload = async (file: File | null) => {
     if (file) {
       try {
-        setUploadingFile(true)
+        setUploadingFile(true);
         const response = await AddProjectAsset(id, file);
-        setUploadingFile(false)
+        setUploadingFile(false);
         if (!response.data) {
           throw new Error("Failed to create project");
         }
@@ -73,7 +76,7 @@ export default function Project() {
         console.error("Error creating project:", error);
       }
     }
-  }
+  };
 
   return (
     <>
@@ -82,14 +85,14 @@ export default function Project() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="flex justify-between items-start mb-8">
-        <Breadcrumb items={breadcrumbItems} />
+      <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
+
+      <div className="flex justify-between items-center mb-8">
+        <Title margin={false}>{project?.name}</Title>
         <Button onClick={newProcess} icon={PlusIcon}>
           New process
         </Button>
       </div>
-
-      <Title>{project?.name}</Title>
 
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -112,15 +115,16 @@ export default function Project() {
                   />
                 ))}
 
-               
-
               {projectAssets && projectAssets.length === 0 && (
                 <div className="text-center text-gray-500 col-span-full">
                   No assets found
                 </div>
               )}
 
-              <FileUploadCard onFileSelect={handleFileUpload} isLoading={uploadingFile}/>
+              <FileUploadCard
+                onFileSelect={handleFileUpload}
+                isLoading={uploadingFile}
+              />
             </div>
           )}
           {activeTab === "processes" && (
