@@ -1,6 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, ScanEye } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
@@ -21,9 +21,15 @@ interface ExtractionFormProps {
 }
 
 export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
-  const [fields, setFields] = useState<Field[]>([]);
+  const [fields, setFields] = useState<Field[]>([
+    {
+      key: "",
+      description: "",
+      type: "text",
+    },
+  ]);
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
-    {}
+    { 0: true }
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -93,11 +99,11 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
         <h2 className="text-2xl font-bold">Fields</h2>
         <Button
           type="button"
+          icon={Plus}
           onClick={addField}
           variant="primary"
           className="flex items-center"
         >
-          <Plus size={20} className="mr-1" />
           Add Field
         </Button>
       </div>
@@ -165,14 +171,17 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
           </div>
         ))}
       </div>
-      <Button
-        type="submit"
-        isLoading={isLoading}
-        disabled={fields.length === 0}
-        className="w-full"
-      >
-        Extract Data
-      </Button>
+      <div className="text-right">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          disabled={fields.length === 0}
+          icon={ScanEye}
+          variant="secondary"
+        >
+          Preview
+        </Button>
+      </div>
     </form>
   );
 }

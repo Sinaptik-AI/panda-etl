@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { BASE_API_URL } from "@/constants";
 
 export const axiosInstance = axios.create({
@@ -9,10 +9,11 @@ export const axiosInstance = axios.create({
 });
 
 export async function GetRequest<T>(
-  url: string
-): Promise<AxiosResponse<T, any>> {
+  url: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<T>> {
   try {
-    const response = await axiosInstance.get<T>(url);
+    const response = await axiosInstance.get<T>(url, options);
     return response;
   } catch (error) {
     throw error;

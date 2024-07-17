@@ -11,7 +11,7 @@ fastapi = {extras = ["all"], version = "^0.111.1"}
 python-dotenv = "^1.0.1"
 alembic = "^1.13.2"
 pydantic-settings = "^2.3.4"
-unstructured = "^0.14.10"
+unstructured = {extras = ["pdf"], version = "^0.14.10"}
 openai = "^1.35.14"
 starlette = "^0.37.2"
 

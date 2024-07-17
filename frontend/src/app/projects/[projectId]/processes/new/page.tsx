@@ -10,6 +10,8 @@ import { ProjectData } from "@/interfaces/projects";
 import { GetProject } from "@/services/projects";
 import { Step1 } from "./step1";
 import { Step2 } from "./step2";
+import { Step3 } from "./step3";
+import { GetAPIKey } from "@/services/user";
 
 export default function NewProcess() {
   const params = useParams();
@@ -27,6 +29,15 @@ export default function NewProcess() {
     },
   });
 
+  const { data: apiKey } = useQuery({
+    queryKey: [],
+    queryFn: async () => {
+      const response = await GetAPIKey();
+      const { data: key } = response.data;
+      return key;
+    },
+  });
+  
   const breadcrumbItems = [
     { label: "Projects", href: "/" },
     { label: project?.name || "", href: `/projects/${project?.id}` },
@@ -34,7 +45,11 @@ export default function NewProcess() {
   ];
 
   const nextStep = () => {
-    setStep(step + 1);
+    if (step === 1 && apiKey) {
+      setStep(step + 2)
+    } else {
+      setStep(step + 1);
+    }
   };
 
   return (
@@ -61,9 +76,9 @@ export default function NewProcess() {
           setSelectedOutput={setSelectedOutput}
           handleProceed={nextStep}
         />
-      ) : (
-        project && <Step2 setStep={setStep} project={project} />
-      )}
+      ) : step === 2? (
+      <Step2 nextStep={nextStep} />
+      ): project && <Step3 setStep={setStep} project={project} />}
     </>
   );
 }

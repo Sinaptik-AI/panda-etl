@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from datetime import datetime
 from ..database import Base
-
+from sqlalchemy.orm import relationship
 
 class Project(Base):
     __tablename__ = "projects"
@@ -12,6 +12,8 @@ class Project(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    processes = relationship("Process", back_populates="project")
 
     def __repr__(self):
         return f"<Project {self.name}>"

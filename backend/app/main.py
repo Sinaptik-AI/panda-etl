@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
+from .config import settings
 
 # Initialize the FastAPI app
 app = FastAPI()
@@ -18,5 +20,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
+
+app.mount("/assets", StaticFiles(directory=settings.upload_dir), name="assets")
 
 app.include_router(v1_router, prefix="/v1")

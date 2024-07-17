@@ -1,0 +1,23 @@
+import React from "react";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css"; // Import Tippy's default styles
+
+interface TooltipWrapperProps {
+  content: string;
+  children: React.ReactNode;
+  delay?: number;
+}
+
+const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
+  content,
+  children,
+  delay = 0,
+}) => {
+  return (
+    <Tippy content={content} delay={[delay, 0]} arrow={true} placement="top">
+      <div className="inline-block">{children}</div>
+    </Tippy>
+  );
+};
+
+export default TooltipWrapper;

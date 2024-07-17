@@ -1,17 +1,14 @@
 import axios from "axios";
 import { PostRequest } from "@/lib/requests";
-import { ExtractionResult } from "@/interfaces/extract";
+import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
 
 const extractApiUrl = "/extract";
 
-export const Extract = async (formData: FormData) => {
+export const Extract = async (projectId: string, fields: ExtractionField[]) => {
   try {
     const response = await PostRequest<ExtractionResult>(
-      extractApiUrl,
-      formData,
-      {
-        "Content-Type": "multipart/form-data",
-      }
+      `${extractApiUrl}/${projectId}`,
+      { fields }
     );
     return response;
   } catch (error) {
