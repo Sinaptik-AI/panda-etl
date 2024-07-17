@@ -9,12 +9,12 @@ import React, {
 } from "react";
 import { Upload, File, X } from "lucide-react";
 
-interface FilePickerProps {
-  onChange: (file: File | null) => void;
+interface DragAndDropProps {
+  onFileSelect: (file: File | null) => void;
   accept: string | string[];
 }
 
-const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
+const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -23,9 +23,9 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
   const onFileChange = useCallback(
     (selectedFile: File | null) => {
       setFile(selectedFile);
-      onChange(selectedFile);
+      onFileSelect(selectedFile);
     },
-    [onChange]
+    [onFileSelect]
   );
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -69,9 +69,9 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
     (e: MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       setFile(null);
-      onChange(null);
+      onFileSelect(null);
     },
-    [onChange]
+    [onFileSelect]
   );
 
   const handleClick = useCallback(() => {
@@ -89,7 +89,6 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
 
   return (
     <div className="w-full">
-      <label className="block mb-2 font-bold text-gray-700">Upload PDF</label>
       <div
         ref={dropZoneRef}
         className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer ${
@@ -120,7 +119,7 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
           <div className="space-y-2">
             <Upload className="w-12 h-12 mx-auto text-gray-400" />
             <p className="text-gray-300">
-              Drag and drop your PDF here, or click to select
+              Drag and drop your files here, or click to select
             </p>
           </div>
         )}
@@ -138,4 +137,4 @@ const FilePicker: React.FC<FilePickerProps> = ({ onChange, accept }) => {
   );
 };
 
-export default FilePicker;
+export default DragAndDrop;
