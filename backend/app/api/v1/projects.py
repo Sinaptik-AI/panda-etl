@@ -150,3 +150,29 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
+
+
+@project_router.get("/{id}/processes")
+def get_processes(id: int, db: Session = Depends(get_db)):
+    project = project_repository.get_project(db=db, project_id=id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    processes = project_repository.get_processes(db=db, project_id=id)
+    return {
+        "status": "success",
+        "message": "Processes successfully returned",
+        "data": [
+            {
+                "id": process.id,
+                "type": process.type,
+                "status": process.status,
+                "project_id": f"{process.project_id}",
+                "started_at": process.started_at.isoformat(),
+                "completed_at": process.completed_at.isoformat(),
+                "created_at": process.created_at.isoformat(),
+                "updated_at": process.updated_at.isoformat(),
+            }
+            for process in processes
+        ],
+    }

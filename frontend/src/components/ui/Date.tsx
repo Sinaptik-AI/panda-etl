@@ -1,5 +1,5 @@
 import React from "react";
-import { format } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 
 interface DateLabelProps {
   dateString: string;
@@ -8,14 +8,22 @@ interface DateLabelProps {
 
 const DateLabel: React.FC<DateLabelProps> = ({
   dateString,
-  formatString = "yyyy-MM-dd",
+  formatString = "yyyy-MM-dd HH:mm",
 }) => {
-  const date = new Date(dateString);
+  let formattedDate = "Invalid Date";
+
+  try {
+    const date = parseISO(dateString);
+    if (isValid(date)) {
+      formattedDate = format(date, formatString);
+    }
+  } catch (error) {
+    console.error("Error parsing date:", error);
+  }
+
   return (
     <div className="flex items-center space-x-1 rounded-full shadow-sm">
-      <span className="text-gray-800 font-medium">
-        {format(date, formatString)}
-      </span>
+      <span className="text-gray-800 font-medium">{formattedDate}</span>
     </div>
   );
 };

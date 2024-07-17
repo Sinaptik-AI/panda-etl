@@ -27,3 +27,7 @@ def get_assets(db: Session, project_id: int):
 
 def get_asset(db: Session, asset_id: int):
     return db.query(Asset).filter(Asset.id == asset_id).first()
+
+
+def get_processes(db: Session, project_id: int):
+    return db.query(models.Process).filter(models.Process.project_id == project_id).all()

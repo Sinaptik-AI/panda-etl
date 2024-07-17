@@ -1,66 +1,62 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Table } from "@/components/ui/Table";
+import React from "react";
+import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
-
-interface Process {
-  id: string;
-  name: string;
-  status: "completed" | "failed" | "running";
-  startTime: string;
-  endTime?: string;
-}
+import { useQuery } from "@tanstack/react-query";
+import { GetProjectProcesses } from "@/services/projects";
+import { GetProcesses } from "@/services/processes";
+import { ProcessData } from "@/interfaces/processes";
+import Link from "next/link";
 
 interface ProcessesProps {
   projectId?: string;
 }
 
 const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
-  const [processes, setProcesses] = useState<Process[]>([]);
+  const { data: processes } = useQuery({
+    queryKey: ["processes", projectId || ""],
+    queryFn: async () => {
+      const response = await (projectId
+        ? GetProjectProcesses(projectId)
+        : GetProcesses());
+      const { data: processes } = response.data;
+      return processes;
+    },
+  });
 
-  useEffect(() => {
-    const mockProcesses: Process[] = [
-      {
-        id: "1",
-        name: "Data Import",
-        status: "completed",
-        startTime: "2023-07-01 10:00:00",
-        endTime: "2023-07-01 10:05:00",
-      },
-      {
-        id: "2",
-        name: "Data Transformation",
-        status: "running",
-        startTime: "2023-07-01 10:06:00",
-      },
-      {
-        id: "3",
-        name: "Data Export",
-        status: "failed",
-        startTime: "2023-07-01 09:00:00",
-        endTime: "2023-07-01 09:02:00",
-      },
-    ];
-    setProcesses(mockProcesses);
-  }, [projectId]);
-
-  const statusLabel = (process: Process) => {
+  const statusLabel = (process: ProcessData) => {
     switch (process.status) {
-      case "completed":
+      case 1:
         return <Label status="success" />;
-      case "failed":
+      case -1:
         return <Label status="error" />;
-      case "running":
+      case 0:
         return <Label status="warning" />;
       default:
         return "-";
     }
   };
 
-  const columns = [
+  const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
-    { header: "Name", accessor: "name" },
+    { header: "Type", accessor: "type" },
+    ...(projectId
+      ? []
+      : ([
+          {
+            header: "Project",
+            accessor: "project",
+            label: (process: ProcessData) => (
+              <Link
+                href={`/projects/${process.project_id}`}
+                className="text-blue-600"
+              >
+                {process.project}
+              </Link>
+            ),
+          },
+        ] as Column<ProcessData>[])),
     {
       header: "Status",
       accessor: "status",
@@ -68,18 +64,24 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     },
     {
       header: "Start Time",
-      accessor: "startTime",
-      label: (process: Process) => <DateLabel dateString={process.startTime} />,
+      accessor: "started_at",
+      label: (process: ProcessData) => (
+        <DateLabel dateString={process.started_at} />
+      ),
     },
     {
-      header: "End Time",
-      accessor: (process: Process) => process.endTime || "-",
-      label: (process: Process) =>
-        process.endTime ? <DateLabel dateString={process.endTime} /> : "-",
+      header: "Completed at",
+      accessor: (process: ProcessData) => process.completed_at || "-",
+      label: (process: ProcessData) =>
+        process.completed_at ? (
+          <DateLabel dateString={process.completed_at} />
+        ) : (
+          "-"
+        ),
     },
   ];
 
-  return <Table data={processes} columns={columns} />;
+  return processes && <Table data={processes} columns={columns} />;
 };
 
 export default ProcessesList;
