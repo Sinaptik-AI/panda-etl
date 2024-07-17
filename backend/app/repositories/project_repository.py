@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.schemas.project import ProjectCreate
+from app.models.asset import Asset
 
 
 def create_project(db: Session, project: ProjectCreate):
@@ -22,3 +23,7 @@ def get_project(db: Session, project_id: int):
 
 def get_assets(db: Session, project_id: int):
     return db.query(models.Asset).filter(models.Asset.project_id == project_id).all()
+
+
+def get_asset(db: Session, asset_id: int):
+    return db.query(Asset).filter(Asset.id == asset_id).first()

@@ -1,6 +1,6 @@
 import os
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -124,3 +124,29 @@ async def upload_file(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to upload file")
+
+
+@project_router.get("/{id}/assets/{asset_id}")
+async def get_file(asset_id: int, db: Session = Depends(get_db)):
+    try:
+        asset = project_repository.get_asset(db, asset_id)
+
+        if asset is None:
+            raise HTTPException(
+                status_code=404, detail="File not found in the database"
+            )
+
+        filepath = asset.path
+
+        # Check if the file exists
+        if not os.path.isfile(filepath):
+            raise HTTPException(status_code=404, detail="File not found on server")
+
+        # Return the file
+        return FileResponse(
+            filepath, media_type="application/pdf", filename=asset.filename
+        )
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve file")

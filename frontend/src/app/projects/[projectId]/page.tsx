@@ -10,14 +10,11 @@ import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
-import {
-  AddProjectAsset,
-  GetProject,
-  GetProjectAssets,
-} from "@/services/projects";
+import { AddProjectAsset, GetProject, GetProjectAssets, FetchAssetFile } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery } from "@tanstack/react-query";
 import FileUploadCard from "@/components/FileUploadCard";
+import PDFViewer from "@/components/PDFViewer";
 
 export default function Project() {
   const params = useParams();
@@ -26,6 +23,7 @@ export default function Project() {
   const [activeTab, setActiveTab] = useState<string>("assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
+  const [pdfFile, setPdfFile] =  useState<Blob | null>(null);
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -53,9 +51,13 @@ export default function Project() {
     { label: project?.name || "", href: `/projects/${project?.id}` },
   ];
 
-  const handleFileClick = (id: string) => {
-    console.log(`File ${id} clicked`);
+  const handleFileClick = async (id: string) => {
     setCurrentFile(id);
+    if (project) {
+      const response = await FetchAssetFile(project.id, id)
+      setPdfFile(new Blob([response], { type: 'application/pdf' }))
+    }
+    
   };
 
   const newProcess = () => {
@@ -115,16 +117,7 @@ export default function Project() {
                   />
                 ))}
 
-              {projectAssets && projectAssets.length === 0 && (
-                <div className="text-center text-gray-500 col-span-full">
-                  No assets found
-                </div>
-              )}
-
-              <FileUploadCard
-                onFileSelect={handleFileUpload}
-                isLoading={uploadingFile}
-              />
+              <FileUploadCard onFileSelect={handleFileUpload} isLoading={uploadingFile}/>
             </div>
           )}
           {activeTab === "processes" && (
@@ -136,9 +129,7 @@ export default function Project() {
             onClose={() => setCurrentFile(null)}
             title={"Preview"}
           >
-            <div>
-              <p>Preview goes here</p>
-            </div>
+            <PDFViewer file={pdfFile}/>
           </Drawer>
         </>
       )}

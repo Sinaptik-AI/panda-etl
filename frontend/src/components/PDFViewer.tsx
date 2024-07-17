@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 interface PDFViewerProps {
-  file?: File | null;
+  file?: File | Blob | null;
   url?: string;
 }
 

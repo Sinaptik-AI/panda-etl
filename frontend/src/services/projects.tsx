@@ -1,6 +1,8 @@
 import { GetRequest, PostRequest } from "@/lib/requests";
 import { ProjectData } from "@/interfaces/projects";
 import { AssetData } from "@/interfaces/assets";
+import { BASE_API_URL } from "@/constants";
+import { AxiosResponse } from "axios";
 
 const projectsApiUrl = "/projects";
 
@@ -46,6 +48,26 @@ export const GetProjectAssets = async (projectId: string) => {
     );
     return response;
   } catch (error) {
+    throw error;
+  }
+};
+
+
+export const GetProjectAssetURL = (projectId: string, assetId: string | null) => {
+  return `${BASE_API_URL}/${projectsApiUrl}/${projectId}/assets/${assetId}`
+};
+
+export const FetchAssetFile = async (projectId: string, assetId: string): Promise<Blob> => {
+  try {
+    const response: AxiosResponse<Blob> = await GetRequest<Blob>(
+      `${projectsApiUrl}/${projectId}/assets/${assetId}`,
+      {
+        responseType: 'blob'
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching asset file:", error);
     throw error;
   }
 };

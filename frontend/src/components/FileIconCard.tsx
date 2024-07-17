@@ -7,6 +7,7 @@ interface FileIconProps {
   onClick: () => void;
 }
 
+
 const FileIconCard: React.FC<FileIconProps> = ({ name, onClick }) => {
   return (
     <Tooltip content={name}>
