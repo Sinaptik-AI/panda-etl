@@ -10,6 +10,7 @@ import { ProjectData } from "@/interfaces/projects";
 import { GetProject } from "@/services/projects";
 import { Step1 } from "./step1";
 import { Step2 } from "./step2";
+import { Step3 } from "./step3";
 
 export default function NewProcess() {
   const params = useParams();
@@ -61,9 +62,9 @@ export default function NewProcess() {
           setSelectedOutput={setSelectedOutput}
           handleProceed={nextStep}
         />
-      ) : (
-        project && <Step2 setStep={setStep} project={project} />
-      )}
+      ) : step === 2? (
+      <Step2 setStep={setStep} />
+      ): project && <Step3 setStep={setStep} project={project} />}
     </>
   );
 }
