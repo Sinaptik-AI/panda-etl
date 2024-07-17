@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { ProjectData } from "@/interfaces/projects";
-import { useQuery } from "@tanstack/react-query";
-import { GetProjectAssets } from "@/services/projects";
-import { AssetData } from "@/interfaces/assets";
-import ExtractionForm from "@/components/ExtractionForm";
-import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
-import PDFViewer from "@/components/PDFViewer";
-import { BASE_STORAGE_URL } from "@/constants";
-import { Extract } from "@/services/extract";
 import APIRequestForm from "@/components/APIRequestForm";
-import { APIKeyRequest } from "@/services/user";
+import { APIKeyRequest, SaveAPIKey } from "@/services/user";
+import APISaveForm from "@/components/APISaveForm";
 
 interface Step2Props {
-  setStep: React.Dispatch<React.SetStateAction<number>>;
+  nextStep: () => void;
 }
 
-export const Step2: React.FC<Step2Props> = ({ setStep }) => {
+export const Step2: React.FC<Step2Props> = ({ nextStep }) => {
 
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
@@ -28,22 +20,30 @@ export const Step2: React.FC<Step2Props> = ({ setStep }) => {
     setEmailSent(true)
 
   }
+  const saveAPIKey = async(apiKey: string) => {
+    const response = await SaveAPIKey({ api_key: apiKey});
 
-
+    if (!response.data) {
+      throw new Error("Failed to save api key");
+    }
+    nextStep()
+  }
+  
   return (
     <>
-      
         { !emailSent && <>
         Please configure your API key to proceed further
         <APIRequestForm onSubmit={sendEmail}/> 
         </>}
-
         {
           emailSent && <div>
-          API key sent to your email address please add in the settings to proceed further
+          Please check your email inbox for API Key copy and paste the api key below to proceed further
+          <div className="flex flex-col mt-8 w-96">
+            <APISaveForm onSubmit={saveAPIKey}/>
+          </div>
+          
             </div>
         }
-
     </>
   );
 };
