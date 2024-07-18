@@ -1,4 +1,5 @@
 import os
+from typing import List
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -84,46 +85,47 @@ def get_assets(id: int, db: Session = Depends(get_db)):
 
 
 @project_router.post("/{id}/assets")
-async def upload_file(
-    id: int, pdf: UploadFile = File(...), db: Session = Depends(get_db)
+async def upload_files(
+    id: int, files: List[UploadFile] = File(...), db: Session = Depends(get_db)
 ):
     try:
-        # Check if the uploaded file is a PDF
-        if pdf.content_type != "application/pdf":
-            raise HTTPException(
-                status_code=400, detail="The uploaded file is not a PDF"
-            )
-
         project = project_repository.get_project(db=db, project_id=id)
         if project is None:
             raise HTTPException(status_code=400, detail="Project not found")
 
-        # Generate a secure filename
-        filename = pdf.filename
-        filename = filename.replace(" ", "_")
-        filepath = os.path.join(settings.upload_dir, str(id), filename)
-
         # Ensure the upload directory exists
         os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
 
-        # Save the uploaded file
-        with open(filepath, "wb") as buffer:
-            buffer.write(await pdf.read())
+        for file in files:
+            # Check if the uploaded file is a PDF
+            if file.content_type != "application/pdf":
+                raise HTTPException(
+                    status_code=400, detail=f"The file {file.filename} is not a PDF"
+                )
 
-        # Save the file info in the database
-        new_asset = Asset(
-            filename=filename,
-            path=filepath,
-            project_id=1,
-        )
+            # Generate a secure filename
+            filename = file.filename.replace(" ", "_")
+            filepath = os.path.join(settings.upload_dir, str(id), filename)
 
-        db.add(new_asset)
+            # Save the uploaded file
+            with open(filepath, "wb") as buffer:
+                buffer.write(await file.read())
+
+            # Save the file info in the database
+            new_asset = Asset(
+                filename=filename,
+                path=filepath,
+                project_id=id,
+            )
+
+            db.add(new_asset)
+
         db.commit()
 
-        return JSONResponse(content="Successfully uploaded the file")
+        return JSONResponse(content="Successfully uploaded the files")
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail="Failed to upload file")
+        raise HTTPException(status_code=500, detail="Failed to upload files")
 
 
 @project_router.get("/{id}/assets/{asset_id}")

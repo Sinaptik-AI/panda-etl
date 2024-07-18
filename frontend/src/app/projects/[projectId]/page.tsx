@@ -70,7 +70,8 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
-  const handleFileUpload = async (file: File | null) => {
+  const handleFileUpload = async (file: FileList | null) => {
+    console.log(file)
     if (file) {
       try {
         setUploadingFile(true);

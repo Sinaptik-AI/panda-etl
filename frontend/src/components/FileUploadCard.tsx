@@ -1,12 +1,12 @@
 import React, { useRef } from "react";
-import { Loader2, Plus as PlusIcon} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-interface FileIconProps {
-  onFileSelect: (file: File | null) => void;
+interface FileUploadCardProps {
+  onFileSelect: (file: FileList | null) => void;
   isLoading: boolean
 }
 
-const FileUploadCard: React.FC<FileIconProps> = ({ onFileSelect, isLoading }) => {
+const FileUploadCard: React.FC<FileUploadCardProps> = ({ onFileSelect, isLoading }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -16,25 +16,28 @@ const FileUploadCard: React.FC<FileIconProps> = ({ onFileSelect, isLoading }) =>
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    onFileSelect(file);
+    const files = event.target.files;
+    onFileSelect(files);
   };
 
   return (
     <div className="w-48 h-48 flex items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100 relative">
-      
-      {isLoading? <Loader2 className="w-8 h-8 animate-spin" />:<button
-        onClick={handleButtonClick}
-        className="absolute rounded-full h-16 w-16 flex items-center justify-center text-2xl"
-      >
-        +
-      </button>
-      }
+      {isLoading ? (
+        <Loader2 className="w-8 h-8 animate-spin" />
+      ) : (
+        <button
+          onClick={handleButtonClick}
+          className="absolute rounded-full h-16 w-16 flex items-center justify-center text-2xl"
+        >
+          +
+        </button>
+      )}
       <input
         type="file"
         ref={fileInputRef}
         accept="application/pdf"
         onChange={handleFileChange}
+        multiple
         style={{ display: "none" }}
       />
     </div>
@@ -42,3 +45,4 @@ const FileUploadCard: React.FC<FileIconProps> = ({ onFileSelect, isLoading }) =>
 };
 
 export default FileUploadCard;
+
