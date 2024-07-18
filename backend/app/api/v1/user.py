@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from requests import Session
 
 from app.database import get_db
-from app.schemas.user import APIKeyRequest, UpdateAPIKeyRequest
+from app.schemas.user import APIKeyRequest, UpdateAPIKeyRequest, UserUpdateRequest
 from app.repositories import user_repository
 from app import requests
 
@@ -58,4 +58,26 @@ def get_user_api_key(db: Session = Depends(get_db)):
         "status": "success",
         "message": "Api Key updated successfully!",
         "data": api_key,
+    }
+
+
+@user_router.get("/getme", status_code=200)
+def get_user_api_key(db: Session = Depends(get_db)):
+    user_email = "john.doe@example.com"
+    user = user_repository.get_user(db, user_email)
+
+    return {
+        "status": "success",
+        "message": "User details returned successfully!",
+        "data": user,
+    }
+
+
+@user_router.put("/update-user-info")
+async def update_user(user_update: UserUpdateRequest, db: Session = Depends(get_db)):
+    user = user_repository.update_user(db, user_update)
+    return {
+        "status": "success",
+        "message": "User details successfully updated!",
+        "data": user,
     }

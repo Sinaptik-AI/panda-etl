@@ -1,29 +1,24 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import Title from "@/components/ui/Title";
+import { GetUserData, UpdateUserData } from "@/services/user";
 
-interface UserData {
+export interface UserData {
   first_name: string;
   last_name: string;
   email: string;
-  password: string;
-  bio: string;
-  theme: string;
 }
 
 export default function UserSettings() {
   const [userData, setUserData] = useState<UserData>({
-    first_name: "John",
-    last_name: "Doe",
-    email: "john.doe@example.com",
-    password: "",
-    bio: "",
-    theme: "light",
+    first_name: "",
+    last_name: "",
+    email: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,11 +37,26 @@ export default function UserSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    alert("Settings updated successfully!");
+    UpdateUserData(userData)
+      .then((response) => {
+        alert(response?.data?.message);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => setIsLoading(false));
   };
+
+  useEffect(() => {
+    GetUserData().then((response) => {
+      const user = response?.data?.data;
+      setUserData({
+        email: user?.email,
+        first_name: user?.first_name || "",
+        last_name: user?.last_name || "",
+      });
+    });
+  }, []);
 
   const breadcrumbItems = [{ label: "User Settings", href: "/user-settings" }];
 

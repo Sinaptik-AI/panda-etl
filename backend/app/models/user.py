@@ -9,6 +9,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(80), unique=True, nullable=False)
+    first_name = Column(String(80), nullable=True)
+    last_name = Column(String(80), nullable=True)
     email = Column(String(120), unique=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
