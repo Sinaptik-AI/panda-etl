@@ -71,7 +71,7 @@ export default function Project() {
   };
 
   const handleFileUpload = async (file: FileList | null) => {
-    console.log(file)
+    console.log(file);
     if (file) {
       try {
         setUploadingFile(true);
@@ -138,10 +138,12 @@ export default function Project() {
                 </div>
               )}
 
-              <DragOverlay
-                onFileDrop={handleFileUpload}
-                accept={[".pdf", "application/pdf"]}
-              />
+              {projectAssets.length > 0 && (
+                <DragOverlay
+                  onFileDrop={handleFileUpload}
+                  accept={[".pdf", "application/pdf"]}
+                />
+              )}
             </>
           )}
           {activeTab === "processes" && (
