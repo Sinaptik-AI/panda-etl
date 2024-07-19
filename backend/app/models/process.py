@@ -35,6 +35,9 @@ class Process(Base):
     message = Column(String(255), nullable=False)
 
     project = relationship("Project", back_populates="processes")
+    process_steps = relationship(
+        "ProcessStep", back_populates="process", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Process {self.id}>"
