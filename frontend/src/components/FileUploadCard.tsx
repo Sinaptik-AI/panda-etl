@@ -3,10 +3,13 @@ import { Loader2 } from "lucide-react";
 
 interface FileUploadCardProps {
   onFileSelect: (file: FileList | null) => void;
-  isLoading: boolean
+  isLoading: boolean;
 }
 
-const FileUploadCard: React.FC<FileUploadCardProps> = ({ onFileSelect, isLoading }) => {
+const FileUploadCard: React.FC<FileUploadCardProps> = ({
+  onFileSelect,
+  isLoading,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -21,7 +24,7 @@ const FileUploadCard: React.FC<FileUploadCardProps> = ({ onFileSelect, isLoading
   };
 
   return (
-    <div className="w-48 h-48 flex items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100 relative">
+    <div className="cursor-pointer w-full max-w-48 h-auto aspect-square flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100">
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
       ) : (
@@ -45,4 +48,3 @@ const FileUploadCard: React.FC<FileUploadCardProps> = ({ onFileSelect, isLoading
 };
 
 export default FileUploadCard;
-
