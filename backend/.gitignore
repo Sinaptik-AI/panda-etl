@@ -1,6 +1,6 @@
 .env
 __pycache__/
-.venv
+venv
 /instance/*
 !/instance/
 uploads/
