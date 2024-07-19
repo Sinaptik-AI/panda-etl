@@ -1,7 +1,7 @@
 import { GetRequest } from "@/lib/requests";
 import { ProcessData } from "@/interfaces/processes";
 
-const processApiUrl = "/processes";
+export const processApiUrl = "/processes";
 
 export const GetProcesses = async () => {
   try {
