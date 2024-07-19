@@ -138,7 +138,7 @@ export default function Project() {
                 </div>
               )}
 
-              {projectAssets.length > 0 && (
+              {projectAssets && projectAssets.length > 0 && (
                 <DragOverlay
                   onFileDrop={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
