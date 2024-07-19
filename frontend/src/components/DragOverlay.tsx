@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Upload } from "lucide-react";
 
 interface DragOverlayProps {
-  onFileDrop: (file: File | null) => void;
+  onFileDrop: (files: FileList | null) => void;
   accept: string | string[];
 }
 
@@ -35,17 +35,11 @@ const DragOverlay: React.FC<DragOverlayProps> = ({ onFileDrop, accept }) => {
       e.stopPropagation();
       setIsDragging(false);
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        const droppedFile = e.dataTransfer.files[0];
-        const acceptedTypes = Array.isArray(accept) ? accept : [accept];
-        if (acceptedTypes.some((type) => droppedFile.type.match(type))) {
-          onFileDrop(droppedFile);
-        } else {
-          console.warn("File type not accepted");
-          onFileDrop(null);
-        }
+        const droppedFiles = e.dataTransfer.files;
+        onFileDrop(droppedFiles);
       }
     },
-    [accept, onFileDrop]
+    [onFileDrop]
   );
 
   useEffect(() => {
@@ -67,6 +61,7 @@ const DragOverlay: React.FC<DragOverlayProps> = ({ onFileDrop, accept }) => {
   return (
     <div
       className="drag-overlay fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex items-center justify-center transition-all duration-300 ease-in-out"
+      onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -74,7 +69,7 @@ const DragOverlay: React.FC<DragOverlayProps> = ({ onFileDrop, accept }) => {
       <div className="bg-gray-800 p-8 rounded-lg text-center border-2 border-dashed border-blue-500">
         <Upload className="w-16 h-16 mx-auto text-blue-500 mb-4" />
         <p className="text-xl font-semibold mb-2 text-gray-200">
-          Drop your file here
+          Drop your files here
         </p>
         <p className="text-gray-400">Release to upload</p>
       </div>
