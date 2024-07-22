@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Loader2 } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import Title from "@/components/ui/Title";
+import { useGetAPIKey, useUpdateAPIKey } from "@/hooks/useUser";
 
 interface SettingsGroup {
   id: string;
@@ -16,16 +17,29 @@ interface SettingsGroup {
 
 const ApiKeysSettings: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>("xxx-xxx-xxx-xxx");
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: apiKeyResponse } = useGetAPIKey();
+  const { mutateAsync: updateAPIKey, isPending } = useUpdateAPIKey();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    alert("Settings updated successfully!");
+    updateAPIKey(
+      { api_key: apiKey },
+      {
+        onSuccess(response: any) {
+          alert(response?.data?.message);
+        },
+        onError(error) {
+          console.log(error);
+        },
+      }
+    );
   };
+
+  useEffect(() => {
+    if (apiKeyResponse) {
+      setApiKey(apiKeyResponse?.data?.data.key);
+    }
+  }, [apiKeyResponse]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -37,10 +51,10 @@ const ApiKeysSettings: React.FC = () => {
       />
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isPending}
         className="mt-6 w-full flex items-center justify-center"
       >
-        {isLoading ? (
+        {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Updating...

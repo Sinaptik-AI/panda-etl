@@ -52,7 +52,7 @@ def get_user_api_key(db: Session = Depends(get_db)):
     if not users:
         raise HTTPException(status_code=404, detail="No User Exists!")
 
-    api_key = user_repository.get_user_api_key(db)
+    api_key = user_repository.get_user_api_key(db, users[0].id)
 
     return {
         "status": "success",

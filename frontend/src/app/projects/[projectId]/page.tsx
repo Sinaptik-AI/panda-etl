@@ -27,9 +27,9 @@ export default function Project() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = searchParams.get('tab');
+  const tab = searchParams.get("tab");
   const id = params.projectId as string;
-  const [activeTab, setActiveTab] = useState<string>(tab? tab: "assets");
+  const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
@@ -50,9 +50,7 @@ export default function Project() {
     },
   });
 
-  useEffect(() => {
-    
-  }, [])
+  useEffect(() => {}, []);
 
   const projectTabs = [
     { id: "assets", label: "Assets" },
@@ -128,7 +126,7 @@ export default function Project() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                   {projectAssets &&
-                    projectAssets.map((asset) => (
+                    projectAssets.map((asset: any) => (
                       <File
                         key={asset.id}
                         name={asset.filename}
