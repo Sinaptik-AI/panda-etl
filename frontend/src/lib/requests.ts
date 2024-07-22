@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 export async function GetRequest<T>(
   url: string,
   options?: AxiosRequestConfig
-): Promise<AxiosResponse<T>> {
+): Promise<AxiosResponse> {
   try {
     const response = await axiosInstance.get<T>(url, options);
     return response;
@@ -24,7 +24,7 @@ export async function PostRequest<T>(
   url: string,
   requestData: object,
   headers = {}
-): Promise<AxiosResponse<T, any>> {
+): Promise<AxiosResponse> {
   try {
     const isFormData = requestData instanceof FormData;
     const defaultHeaders = {
@@ -35,6 +35,15 @@ export async function PostRequest<T>(
     const response = await axiosInstance.post<T>(url, requestData, {
       headers: updatedHeader,
     });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function PutRequest(url: string, data: object): Promise<AxiosResponse<any, any>> {
+  try {
+    const response = await axiosInstance.put(url, data);
     return response;
   } catch (error) {
     throw error;
