@@ -1,7 +1,22 @@
-from sqlalchemy import Column, Integer, ForeignKey, JSON, DateTime
+from sqlalchemy import (
+    Column,
+    Integer,
+    ForeignKey,
+    JSON,
+    DateTime,
+    Enum as SQLAlchemyEnum,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database import Base
+from enum import Enum
+
+
+class ProcessStepStatus(Enum):
+    PENDING = 1
+    IN_PROGRESS = 2
+    COMPLETED = 3
+    FAILED = 4
 
 
 class ProcessStep(Base):
@@ -13,6 +28,7 @@ class ProcessStep(Base):
     output = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = Column(SQLAlchemyEnum(ProcessStepStatus), nullable=False)
 
     process = relationship("Process", back_populates="process_steps")
     asset = relationship("Asset", back_populates="process_steps")

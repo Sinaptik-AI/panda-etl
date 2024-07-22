@@ -1,6 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
-import { ChevronDown, ChevronUp, Plus, ScanEye } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, Plus, ScanEye } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
@@ -18,9 +18,10 @@ interface Field {
 
 interface ExtractionFormProps {
   onSubmit: (fields: Field[]) => Promise<void>;
+  onStartProcess: (fields: Field[]) => Promise<void>;
 }
 
-export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
+export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionFormProps) {
   const [fields, setFields] = useState<Field[]>([
     {
       key: "",
@@ -72,6 +73,16 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
     newFields[index][key] = value as any;
     setFields(newFields);
   };
+
+  const onStartBtnClick = async () => {
+    try {
+      await await onStartProcess(fields);
+    } catch (error) {
+      console.error("Error start process:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -171,7 +182,7 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
           </div>
         ))}
       </div>
-      <div className="text-right">
+      <div className="text-right space-x-4">
         <Button
           type="submit"
           isLoading={isLoading}
@@ -180,6 +191,14 @@ export default function ExtractionForm({ onSubmit }: ExtractionFormProps) {
           variant="secondary"
         >
           Preview
+        </Button>
+        <Button
+          type="button"
+          onClick={onStartBtnClick}
+          icon={Play}
+          variant="primary"
+        >
+          Start Process
         </Button>
       </div>
     </form>

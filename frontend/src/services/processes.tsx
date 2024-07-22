@@ -1,5 +1,5 @@
-import { GetRequest } from "@/lib/requests";
-import { ProcessData } from "@/interfaces/processes";
+import { GetRequest, PostRequest } from "@/lib/requests";
+import { ProcessData, ProcessExecutionData, ProcessRequest } from "@/interfaces/processes";
 
 export const processApiUrl = "/processes";
 
@@ -11,3 +11,16 @@ export const GetProcesses = async () => {
     throw error;
   }
 };
+
+
+export const StartProcess = async (data: ProcessRequest) => {
+  try {
+    const response = await PostRequest<{data: ProcessExecutionData}>(
+      `${processApiUrl}/start`,
+      data
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}

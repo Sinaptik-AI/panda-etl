@@ -20,3 +20,16 @@ def request_api_key(email: str):
         raise Exception("Invalid JSON response")
 
     return data.get("message", "No message in response")
+
+
+def extract_data(file_path):
+    with open(file_path, "rb") as file:
+        files = {"file": (file_path, file)}
+
+        response = requests.post("http://localhost:5328/v1/extract", files=files)
+
+        # Check the response status code
+        if response.status_code == 201:
+            return response.json()
+        else:
+            raise Exception("Unable to process file!")
