@@ -1,5 +1,6 @@
-import { GetRequest, PostRequest } from "@/lib/requests";
+import { GetRequest, PostRequest, PutRequest } from "@/lib/requests";
 import { APIKeyData } from "@/interfaces/user";
+import { UserData } from "@/app/user/settings/page";
 
 const userApiUrl = "/user";
 
@@ -32,6 +33,24 @@ export const GetAPIKey = async () => {
     const response = await GetRequest<{ data: APIKeyData }>(
       `${userApiUrl}/get-api-key`
     );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const UpdateUserData = async (data: UserData) => {
+  try {
+    const response = await PutRequest(`${userApiUrl}/update-user-info`, data);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const GetUserData = async () => {
+  try {
+    const response = await GetRequest(`${userApiUrl}/getme`);
     return response;
   } catch (error) {
     throw error;

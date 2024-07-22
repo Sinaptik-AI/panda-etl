@@ -8,6 +8,8 @@ import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
 import PDFViewer from "@/components/PDFViewer";
 import { BASE_STORAGE_URL } from "@/constants";
 import { Extract } from "@/services/extract";
+import { StartProcess } from "@/services/processes";
+import { useRouter } from "next/navigation";
 
 interface Step3Props {
   project: ProjectData;
@@ -15,6 +17,7 @@ interface Step3Props {
 }
 
 export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
+  const router = useRouter()
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
     []
@@ -36,6 +39,18 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
     setExtractionResult(data);
   };
 
+  const handleProcessStart = async (fields: ExtractionField[]) => {
+    const { data } = await StartProcess({
+      type: "extract",
+      details: {
+          fields: fields
+      },
+      project_id: project.id
+    })
+    console.log(data)
+    router.push(`/projects/${project.id}?tab=processes`)
+  }
+
   useEffect(() => {
     if (assets?.length && project) {
       setPdfFileUrl(
@@ -47,7 +62,7 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ExtractionForm onSubmit={handleSubmit} />
+        <ExtractionForm onSubmit={handleSubmit} onStartProcess={handleProcessStart}/>
         <div className="mt-1">
           {extractionResult && (
             <>

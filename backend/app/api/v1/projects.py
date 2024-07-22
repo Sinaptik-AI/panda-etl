@@ -170,10 +170,10 @@ def get_processes(id: int, db: Session = Depends(get_db)):
                 "type": process.type,
                 "status": process.status,
                 "project_id": f"{process.project_id}",
-                "started_at": process.started_at.isoformat(),
-                "completed_at": process.completed_at.isoformat(),
-                "created_at": process.created_at.isoformat(),
-                "updated_at": process.updated_at.isoformat(),
+                "started_at": process.started_at,
+                "completed_at": process.completed_at,
+                "created_at": process.created_at,
+                "updated_at": process.updated_at,
             }
             for process in processes
         ],

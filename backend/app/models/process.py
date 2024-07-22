@@ -18,6 +18,7 @@ class ProcessStatus(Enum):
     IN_PROGRESS = 2
     COMPLETED = 3
     FAILED = 4
+    STOPPED = 5
 
 
 class Process(Base):
