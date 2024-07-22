@@ -2,9 +2,10 @@ import React from "react";
 
 interface LabelStatus {
   status: "success" | "error" | "warning" | "info";
+  children?: React.ReactNode;
 }
 
-const Label: React.FC<LabelStatus> = ({ status }) => {
+const Label: React.FC<LabelStatus> = ({ status, children }) => {
   let bgColor = "";
   let textColor = "";
 
@@ -34,7 +35,7 @@ const Label: React.FC<LabelStatus> = ({ status }) => {
     <span
       className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${bgColor} ${textColor}`}
     >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {children ? children : status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 };
