@@ -70,7 +70,8 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
-  const handleFileUpload = async (file: File | null) => {
+  const handleFileUpload = async (file: FileList | null) => {
+    console.log(file);
     if (file) {
       try {
         setUploadingFile(true);
@@ -120,7 +121,7 @@ export default function Project() {
                   accept={[".pdf", "application/pdf"]}
                 />
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                   {projectAssets &&
                     projectAssets.map((asset) => (
                       <File
@@ -137,10 +138,12 @@ export default function Project() {
                 </div>
               )}
 
-              <DragOverlay
-                onFileDrop={handleFileUpload}
-                accept={[".pdf", "application/pdf"]}
-              />
+              {projectAssets && projectAssets.length > 0 && (
+                <DragOverlay
+                  onFileDrop={handleFileUpload}
+                  accept={[".pdf", "application/pdf"]}
+                />
+              )}
             </>
           )}
           {activeTab === "processes" && (

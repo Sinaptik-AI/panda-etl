@@ -5,9 +5,10 @@ import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectProcesses } from "@/services/projects";
-import { GetProcesses } from "@/services/processes";
-import { ProcessData } from "@/interfaces/processes";
+import { GetProcesses, processApiUrl } from "@/services/processes";
+import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
+import { BASE_API_URL } from "@/constants";
 
 interface ProcessesProps {
   projectId?: string;
@@ -27,14 +28,16 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
 
   const statusLabel = (process: ProcessData) => {
     switch (process.status) {
-      case 1:
-        return <Label status="success" />;
-      case -1:
-        return <Label status="error" />;
-      case 0:
-        return <Label status="warning" />;
+      case ProcessStatus.COMPLETED:
+        return <Label status="success">Completed</Label>;
+      case ProcessStatus.FAILED:
+        return <Label status="error">Failed</Label>;
+      case ProcessStatus.IN_PROGRESS:
+        return <Label status="warning">In Progress</Label>;
+      case ProcessStatus.PENDING:
+        return <Label status="info">Pending</Label>;
       default:
-        return "-";
+        return "-" + process.status;
     }
   };
 
@@ -78,6 +81,27 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         ) : (
           "-"
         ),
+    },
+    {
+      header: "Actions",
+      accessor: "id",
+      label: (process: ProcessData) => {
+        if (process.status !== ProcessStatus.COMPLETED) {
+          return "-";
+        }
+
+        const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
+
+        return (
+          <Link
+            href={downloadUrl}
+            className="text-blue-600 hover:underline"
+            target="_blank"
+          >
+            Download
+          </Link>
+        );
+      },
     },
   ];
 

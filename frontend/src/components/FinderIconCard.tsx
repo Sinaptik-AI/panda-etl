@@ -16,7 +16,7 @@ const FinderIconCard: React.FC<FinderIconCardProps> = ({
     <Tooltip content={name}>
       <div
         onClick={onClick}
-        className="cursor-pointer w-48 h-48 flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100"
+        className="cursor-pointer w-full max-w-48 h-auto aspect-square flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100"
       >
         {icon}
         <h3 className="font-bold mt-2 text-center text-sm truncate w-full px-2">
