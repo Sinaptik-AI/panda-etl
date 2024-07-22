@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import File from "@/components/FileIconCard";
-import { Loader2, PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon, GridIcon, ListIcon } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
@@ -22,10 +22,13 @@ import FileUploadCard from "@/components/FileUploadCard";
 import PDFViewer from "@/components/PDFViewer";
 import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
+import { Table, Column } from "@/components/ui/Table";
+import Toggle from "@/components/ui/Toggle";
 
 export default function Project() {
   const params = useParams();
   const router = useRouter();
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
   const id = params.projectId as string;
@@ -33,6 +36,7 @@ export default function Project() {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
+
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -41,6 +45,7 @@ export default function Project() {
       return project as ProjectData;
     },
   });
+
   const { data: projectAssets, refetch: refetchProjectAssets } = useQuery({
     queryKey: ["projectAssets", id],
     queryFn: async () => {
@@ -49,8 +54,6 @@ export default function Project() {
       return assets;
     },
   });
-
-  useEffect(() => {}, []);
 
   const projectTabs = [
     { id: "assets", label: "Assets" },
@@ -90,6 +93,24 @@ export default function Project() {
     }
   };
 
+  const viewOptions = [
+    { value: "grid", label: "Grid", icon: GridIcon },
+    { value: "table", label: "Table", icon: ListIcon },
+  ];
+
+  const columns: Column<(typeof projectAssets)[0]>[] = [
+    { header: "File Name", accessor: "filename" },
+    { header: "File Type", accessor: "filetype" },
+    { header: "Size", accessor: "size" },
+    { header: "Upload Date", accessor: "created_at" },
+    {
+      header: "Actions",
+      accessor: (asset) => (
+        <Button onClick={() => handleFileClick(asset.id)}>Preview</Button>
+      ),
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -101,9 +122,18 @@ export default function Project() {
 
       <div className="flex justify-between items-center mb-8">
         <Title margin={false}>{project?.name}</Title>
-        <Button onClick={newProcess} icon={PlusIcon}>
-          New process
-        </Button>
+        <div className="flex space-x-4">
+          {activeTab === "assets" && (
+            <Toggle
+              options={viewOptions}
+              value={viewMode}
+              onChange={(value) => setViewMode(value as "grid" | "table")}
+            />
+          )}
+          <Button onClick={newProcess} icon={PlusIcon}>
+            New process
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -123,7 +153,7 @@ export default function Project() {
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
                 />
-              ) : (
+              ) : viewMode === "grid" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                   {projectAssets &&
                     projectAssets.map((asset: any) => (
@@ -139,14 +169,18 @@ export default function Project() {
                     isLoading={uploadingFile}
                   />
                 </div>
+              ) : (
+                <Table data={projectAssets || []} columns={columns} />
               )}
 
-              {projectAssets && projectAssets.length > 0 && (
-                <DragOverlay
-                  onFileDrop={handleFileUpload}
-                  accept={[".pdf", "application/pdf"]}
-                />
-              )}
+              {activeTab === "assets" &&
+                projectAssets &&
+                projectAssets.length > 0 && (
+                  <DragOverlay
+                    onFileDrop={handleFileUpload}
+                    accept={[".pdf", "application/pdf"]}
+                  />
+                )}
             </>
           )}
           {activeTab === "processes" && (
