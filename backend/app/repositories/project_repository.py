@@ -30,4 +30,4 @@ def get_asset(db: Session, asset_id: int):
 
 
 def get_processes(db: Session, project_id: int):
-    return db.query(models.Process).filter(models.Process.project_id == project_id).all()
+    return db.query(models.Process).filter(models.Process.project_id == project_id).order_by(models.Process.id.desc()).all()
