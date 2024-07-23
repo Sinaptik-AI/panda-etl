@@ -59,27 +59,6 @@ const columns: Column<ProcessDetailsResponse>[] = [
         "-"
       ),
   },
-  {
-    header: "Actions",
-    accessor: (row: ProcessDetailsResponse) => row.process.id,
-    label: (process: ProcessDetailsResponse) => {
-      if (process.status !== ProcessStatus.COMPLETED) {
-        return "-";
-      }
-
-      const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.process.id}/download-csv`;
-
-      return (
-        <Link
-          href={downloadUrl}
-          className="text-blue-600 hover:underline"
-          target="_blank"
-        >
-          Download
-        </Link>
-      );
-    },
-  },
 ];
 
 export default function Project() {
