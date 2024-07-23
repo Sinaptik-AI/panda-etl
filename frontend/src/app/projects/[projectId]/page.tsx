@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -31,6 +31,7 @@ export default function Project() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
+  const isProcesses = searchParams.get("processes");
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
@@ -110,6 +111,12 @@ export default function Project() {
       ),
     },
   ];
+
+  useEffect(() => {
+    if (isProcesses) {
+      setActiveTab("processes");
+    }
+  }, []);
 
   return (
     <>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import DateLabel from "@/components/ui/Date";
 import { BASE_API_URL } from "@/constants";
 import { processApiUrl } from "@/services/processes";
+import { format } from "date-fns";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -92,6 +93,9 @@ export default function Project() {
   } = useGetProcessSteps(processId);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const project = processResponse?.data?.data?.[0]?.process?.project;
+  const process = processResponse?.data?.data?.[0]?.process;
+
   useEffect(() => {
     if (isError) {
       setErrorMessage("Something went wrong fetching process");
@@ -101,7 +105,17 @@ export default function Project() {
   const breadcrumbItems = [
     { label: "Projects", href: `/` },
     {
-      label: "Process",
+      label: `${project?.name}`,
+      href: `/projects/${projectId}`,
+    },
+    {
+      label: `Processes`,
+      href: `/projects/${projectId}?processes=true`,
+    },
+    {
+      label: `${process?.type} - ${
+        process?.started_at && format(process?.started_at, "yyyy-MM-dd HH:mm")
+      }`,
       href: `/projects/${projectId}/processes/${processId}`,
     },
   ];
