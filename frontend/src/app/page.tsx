@@ -12,19 +12,22 @@ import { GetProjects } from "@/services/projects";
 import { useQuery } from "@tanstack/react-query";
 import Toggle from "@/components/ui/Toggle";
 import { Table, Column } from "@/components/ui/Table";
+import Pagination from "@/components/ui/Pagination";
 
 export default function Projects() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ["projects"],
-    queryFn: async () => {
-      const response = await GetProjects();
-      const { data: projects } = response.data;
-      return projects as ProjectData[];
-    },
+  const { data: response, isLoading } = useQuery({
+    queryKey: ["projects", page, pageSize],
+    queryFn: () => GetProjects(page, pageSize),
   });
+
+  const projects: ProjectData[] = response?.data?.data || [];
+  const totalProjects = response?.data?.total_count || 0;
+  const totalPages = Math.ceil(totalProjects / pageSize);
 
   const handleProjectClick = (id: string) => {
     router.push(`/projects/${id}`);
@@ -57,15 +60,17 @@ export default function Projects() {
     },
   ];
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
   return (
     <>
       <Head>
         <title>BambooETL - Projects</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
-
       <div className="flex justify-between items-center mb-8">
         <Title margin={false}>My projects</Title>
         <div className="flex space-x-4">
@@ -79,24 +84,31 @@ export default function Projects() {
           </Button>
         </div>
       </div>
-
       {isLoading && <Loader2 className="w-8 h-8 animate-spin" />}
-
-      {projects &&
-        projects.length > 0 &&
-        (viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-            {projects.map((project) => (
-              <Folder
-                key={project.id}
-                name={project.name}
-                onClick={() => handleProjectClick(project.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Table data={projects} columns={columns} />
-        ))}
+      {projects.length > 0 && (
+        <>
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+              {projects.map((project) => (
+                <Folder
+                  key={project.id}
+                  name={project.name}
+                  onClick={() => handleProjectClick(project.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <Table data={projects} columns={columns} />
+          )}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
+      )}
     </>
   );
 }

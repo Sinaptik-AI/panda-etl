@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app import models
 from app.schemas.project import ProjectCreate
@@ -13,9 +14,10 @@ def create_project(db: Session, project: ProjectCreate):
     return db_project
 
 
-def get_projects(db: Session):
-    return db.query(models.Project).all()
-
+def get_projects(db: Session, page: int = 1, page_size: int = 20):
+    total_count = db.query(func.count(models.Project.id)).scalar()
+    projects = db.query(models.Project).offset((page - 1) * page_size).limit(page_size).all()
+    return projects, total_count
 
 def get_project(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()

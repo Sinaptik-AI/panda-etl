@@ -1,6 +1,6 @@
 import os
 from typing import List
-from fastapi import APIRouter, File, HTTPException, Depends, UploadFile
+from fastapi import APIRouter, File, HTTPException, Depends, UploadFile, Query
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 
@@ -28,8 +28,8 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 
 
 @project_router.get("/")
-def get_projects(db: Session = Depends(get_db)):
-    projects = project_repository.get_projects(db=db)
+def get_projects(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100), db: Session = Depends(get_db)):
+    projects, total_count = project_repository.get_projects(db=db, page=page, page_size=page_size)
 
     return {
         "status": "success",
@@ -44,6 +44,9 @@ def get_projects(db: Session = Depends(get_db)):
             }
             for project in projects
         ],
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
     }
 
 

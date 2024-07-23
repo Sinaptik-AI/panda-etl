@@ -18,9 +18,11 @@ export const GetProject = async (projectId: string) => {
   }
 };
 
-export const GetProjects = async () => {
+export const GetProjects = async (page: number, pageSize: number) => {
   try {
-    const response = await GetRequest<{ data: ProjectData[] }>(projectsApiUrl);
+    const response = await GetRequest<{ data: ProjectData[] }>(
+      `${projectsApiUrl}?page=${page}&page_size=${pageSize}`
+    );
     return response;
   } catch (error) {
     throw error;
