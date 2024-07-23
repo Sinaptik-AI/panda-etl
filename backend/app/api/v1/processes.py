@@ -15,6 +15,7 @@ from app.requests import extract_data
 from datetime import datetime
 
 from app.models.process_step import ProcessStepStatus
+from app.repositories import user_repository
 
 
 # Thread pool executor for background tasks
@@ -98,6 +99,7 @@ def process_task(process_id: int):
         if not process_steps:
             raise Exception("No process found!")
 
+        failed_docs = 0
         for process_step in process_steps:
 
             if process_step.status == ProcessStepStatus.COMPLETED:
@@ -107,14 +109,24 @@ def process_task(process_id: int):
             db.add(process_step)
             db.commit()
 
-            # TODO - Replace with original extract method
-            data = extract_data(process_step.asset.path)
-            process_step.output = data["data"]
-            process_step.status = ProcessStepStatus.COMPLETED
-            db.add(process_step)
-            db.commit()
+            api_key = user_repository.get_user_api_key(db)
+            try:
+                data = extract_data(
+                    api_key.key, process_step.asset.path, process.details
+                )
+                process_step.output = data
+                process_step.status = ProcessStepStatus.COMPLETED
+                db.add(process_step)
+                db.commit()
+            except Exception as e:
+                failed_docs += 1
+                process_step.status = ProcessStepStatus.FAILED
+                db.add(process_step)
+                db.commit()
 
-        process.status = ProcessStatus.COMPLETED
+        process.status = (
+            ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
+        )
         process.completed_at = datetime.now()
     except Exception as e:
         process.status = ProcessStatus.FAILED
@@ -174,5 +186,5 @@ def start_processes(process_id: int, db: Session = Depends(get_db)):
     return {
         "status": "success",
         "message": "Process steps successfully returned",
-        "data": process_steps
+        "data": process_steps,
     }

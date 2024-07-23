@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     sqlalchemy_database_url: str
     upload_dir: str = os.path.join(os.path.dirname(__file__), "..", "uploads")
     api_server_url: str = "https://api.domer.ai"
+    bambooetl_server_url: str
 
     class Config:
         env_file = ".env"

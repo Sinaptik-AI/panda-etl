@@ -36,7 +36,8 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
   const handleSubmit = async (fields: ExtractionField[]) => {
     setExtractionFields(fields);
     const { data } = await Extract(project.id, fields);
-    setExtractionResult(data);
+    setExtractionResult(data.data);
+
   };
 
   const handleProcessStart = async (fields: ExtractionField[]) => {
@@ -47,7 +48,6 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
       },
       project_id: project.id
     })
-    console.log(data)
     router.push(`/projects/${project.id}?tab=processes`)
   }
 
