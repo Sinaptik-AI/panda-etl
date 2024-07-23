@@ -29,7 +29,7 @@ import Pagination from "@/components/ui/Pagination";
 export default function Project() {
   const params = useParams();
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
   const isProcesses = searchParams.get("processes");
@@ -40,6 +40,23 @@ export default function Project() {
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
+
+  useEffect(() => {
+    const storedViewMode = localStorage.getItem("assetsViewMode") as
+      | "grid"
+      | "table"
+      | null;
+    if (storedViewMode) {
+      setViewMode(storedViewMode);
+    } else {
+      setViewMode("table");
+    }
+  }, []);
+
+  const updateViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("assetsViewMode", mode);
+  };
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -136,7 +153,7 @@ export default function Project() {
             <Toggle
               options={viewOptions}
               value={viewMode}
-              onChange={(value) => setViewMode(value as "grid" | "table")}
+              onChange={(value) => updateViewMode(value as "grid" | "table")}
             />
           )}
           <Button onClick={newProcess} icon={PlusIcon}>

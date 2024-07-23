@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Folder from "@/components/FolderIconCard";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,23 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
+
+  useEffect(() => {
+    const storedViewMode = localStorage.getItem("projectsViewMode") as
+      | "grid"
+      | "table"
+      | null;
+    if (storedViewMode) {
+      setViewMode(storedViewMode);
+    } else {
+      setViewMode("table");
+    }
+  }, []);
+
+  const updateViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("projectsViewMode", mode);
+  };
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["projects", page, pageSize],
@@ -71,7 +88,7 @@ export default function Projects() {
           <Toggle
             options={viewOptions}
             value={viewMode}
-            onChange={(value) => setViewMode(value as "grid" | "table")}
+            onChange={(value) => updateViewMode(value as "grid" | "table")}
           />
           <Button onClick={newProject} icon={PlusIcon}>
             New project
