@@ -162,3 +162,17 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     response.headers["Content-Type"] = "text/csv"
 
     return response
+
+
+@process_router.get("/{process_id}/get-steps")
+def start_processes(process_id: int, db: Session = Depends(get_db)):
+    process_steps = process_repository.get_process_steps(db, process_id)
+
+    if not process_steps:
+        raise Exception("No process found!")
+
+    return {
+        "status": "success",
+        "message": "Process steps successfully returned",
+        "data": process_steps
+    }

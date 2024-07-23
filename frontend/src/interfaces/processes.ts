@@ -23,7 +23,7 @@ export interface ProcessData {
 export interface ProcessRequest {
   type: string;
   details: {
-      fields: ExtractionField[];
+    fields: ExtractionField[];
   };
   project_id: string;
 }
@@ -35,4 +35,34 @@ export interface ProcessExecutionData {
   project: string;
   project_id: string;
   started_at: string;
+}
+
+export interface ProcessDetailsResponse {
+  process_id: number;
+  asset_id: number;
+  created_at: string;
+  status: number;
+  id: number;
+  output: {
+    data: string;
+  };
+  updated_at: string;
+  process: {
+    status: number;
+    project_id: number;
+    completed_at: string;
+    updated_at: string;
+    message: string;
+    type: string;
+    id: number;
+    started_at: string;
+    created_at: string;
+    details: {
+      fields: Array<{
+        key: string;
+        description: string;
+        type: string;
+      }>;
+    };
+  };
 }

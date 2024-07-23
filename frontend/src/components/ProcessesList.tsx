@@ -9,12 +9,14 @@ import { GetProcesses, processApiUrl } from "@/services/processes";
 import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
+import { useRouter } from "next/navigation";
 
 interface ProcessesProps {
   projectId?: string;
 }
 
 const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
+  const router = useRouter();
   const { data: processes } = useQuery({
     queryKey: ["processes", projectId || ""],
     queryFn: async () => {
@@ -105,7 +107,17 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     },
   ];
 
-  return processes && <Table data={processes} columns={columns} />;
+  return (
+    processes && (
+      <Table
+        data={processes}
+        columns={columns}
+        onRowClick={(row) => {
+          router.push(`/projects/${row.project_id}/processes/${row.id}`);
+        }}
+      />
+    )
+  );
 };
 
 export default ProcessesList;
