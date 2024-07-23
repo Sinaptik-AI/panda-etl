@@ -13,6 +13,7 @@ import DateLabel from "@/components/ui/Date";
 import { BASE_API_URL } from "@/constants";
 import { processApiUrl } from "@/services/processes";
 import { format } from "date-fns";
+import Title from "@/components/ui/Title";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -105,7 +106,7 @@ export default function Project() {
   const breadcrumbItems = [
     { label: "Projects", href: `/` },
     {
-      label: `${project?.name}`,
+      label: project?.name || "",
       href: `/projects/${projectId}`,
     },
     {
@@ -113,9 +114,11 @@ export default function Project() {
       href: `/projects/${projectId}?processes=true`,
     },
     {
-      label: `${process?.type} - ${
-        process?.started_at && format(process?.started_at, "yyyy-MM-dd HH:mm")
-      }`,
+      label:
+        process &&
+        `${process?.type} - ${
+          process?.started_at && format(process?.started_at, "yyyy-MM-dd HH:mm")
+        }`,
       href: `/projects/${projectId}/processes/${processId}`,
     },
   ];
@@ -128,6 +131,15 @@ export default function Project() {
       </Head>
 
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
+
+      {process && (
+        <div className="flex justify-between items-center mb-8">
+          <Title margin={false}>{`${process?.type} - ${
+            process?.started_at &&
+            format(process?.started_at, "yyyy-MM-dd HH:mm")
+          }`}</Title>
+        </div>
+      )}
 
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
