@@ -44,10 +44,14 @@ export const CreateProject = async (data: {
   }
 };
 
-export const GetProjectAssets = async (projectId: string) => {
+export const GetProjectAssets = async (
+  projectId: string,
+  page: number,
+  pageSize: number
+) => {
   try {
     const response = await GetRequest<{ data: AssetData[] }>(
-      `${projectsApiUrl}/${projectId}/assets`
+      `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`
     );
     return response;
   } catch (error) {

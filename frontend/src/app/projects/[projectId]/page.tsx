@@ -24,6 +24,7 @@ import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
 import Toggle from "@/components/ui/Toggle";
+import Pagination from "@/components/ui/Pagination";
 
 export default function Project() {
   const params = useParams();
@@ -37,6 +38,8 @@ export default function Project() {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -47,14 +50,15 @@ export default function Project() {
     },
   });
 
-  const { data: projectAssets, refetch: refetchProjectAssets } = useQuery({
-    queryKey: ["projectAssets", id],
-    queryFn: async () => {
-      const response = await GetProjectAssets(id);
-      const { data: assets } = response.data;
-      return assets;
-    },
-  });
+  const { data: projectAssetsResponse, refetch: refetchProjectAssets } =
+    useQuery({
+      queryKey: ["projectAssets", id, page, pageSize],
+      queryFn: () => GetProjectAssets(id, page, pageSize),
+    });
+
+  const assets = projectAssetsResponse?.data?.data || [];
+  const totalAssets = projectAssetsResponse?.data?.total_count || 0;
+  const totalPages = Math.ceil(totalAssets / pageSize);
 
   const projectTabs = [
     { id: "assets", label: "Assets" },
@@ -99,7 +103,7 @@ export default function Project() {
     { value: "table", label: "Table", icon: ListIcon },
   ];
 
-  const columns: Column<(typeof projectAssets)[0]>[] = [
+  const columns: Column<(typeof assets)[0]>[] = [
     { header: "File Name", accessor: "filename" },
     { header: "File Type", accessor: "filetype" },
     { header: "Size", accessor: "size" },
@@ -111,6 +115,10 @@ export default function Project() {
       ),
     },
   ];
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   useEffect(() => {
     if (isProcesses) {
@@ -155,15 +163,15 @@ export default function Project() {
 
           {activeTab === "assets" && (
             <>
-              {projectAssets && projectAssets.length === 0 ? (
+              {assets && assets?.length === 0 ? (
                 <DragAndDrop
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
                 />
               ) : viewMode === "grid" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                  {projectAssets &&
-                    projectAssets.map((asset: any) => (
+                  {assets &&
+                    assets.map((asset: any) => (
                       <File
                         key={asset.id}
                         name={asset.filename}
@@ -177,17 +185,23 @@ export default function Project() {
                   />
                 </div>
               ) : (
-                <Table data={projectAssets || []} columns={columns} />
+                <Table data={assets || []} columns={columns} />
               )}
 
-              {activeTab === "assets" &&
-                projectAssets &&
-                projectAssets.length > 0 && (
-                  <DragOverlay
-                    onFileDrop={handleFileUpload}
-                    accept={[".pdf", "application/pdf"]}
-                  />
-                )}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+
+              {activeTab === "assets" && assets && assets.length > 0 && (
+                <DragOverlay
+                  onFileDrop={handleFileUpload}
+                  accept={[".pdf", "application/pdf"]}
+                />
+              )}
             </>
           )}
           {activeTab === "processes" && (

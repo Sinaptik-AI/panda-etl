@@ -70,8 +70,13 @@ def get_project(id: int, db: Session = Depends(get_db)):
 
 
 @project_router.get("/{id}/assets")
-def get_assets(id: int, db: Session = Depends(get_db)):
-    assets = project_repository.get_assets(db=db, project_id=id)
+def get_assets(
+    id: int, 
+    page: int = Query(1, ge=1), 
+    page_size: int = Query(20, ge=1, le=100), 
+    db: Session = Depends(get_db)
+):
+    assets, total_count = project_repository.get_assets(db=db, project_id=id, page=page, page_size=page_size)
     return {
         "status": "success",
         "message": "Projects successfully returned",
@@ -84,6 +89,9 @@ def get_assets(id: int, db: Session = Depends(get_db)):
             }
             for asset in assets
         ],
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
     }
 
 

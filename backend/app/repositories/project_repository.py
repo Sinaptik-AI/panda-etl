@@ -23,9 +23,10 @@ def get_project(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
 
-def get_assets(db: Session, project_id: int):
-    return db.query(models.Asset).filter(models.Asset.project_id == project_id).all()
-
+def get_assets(db: Session, project_id: int, page: int = 1, page_size: int = 20):
+    total_count = db.query(func.count(models.Asset.id)).filter(models.Asset.project_id == project_id).scalar()
+    assets = db.query(models.Asset).filter(models.Asset.project_id == project_id).offset((page - 1) * page_size).limit(page_size).all()
+    return assets, total_count
 
 def get_asset(db: Session, asset_id: int):
     return db.query(Asset).filter(Asset.id == asset_id).first()

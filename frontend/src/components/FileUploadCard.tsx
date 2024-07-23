@@ -24,7 +24,7 @@ const FileUploadCard: React.FC<FileUploadCardProps> = ({
   };
 
   return (
-    <div className="cursor-pointer w-full max-w-48 h-auto aspect-square flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100">
+    <div className="relative cursor-pointer w-full max-w-48 h-auto aspect-square flex flex-col items-center justify-center bg-gray-50 border rounded shadow hover:bg-gray-100">
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
       ) : (
