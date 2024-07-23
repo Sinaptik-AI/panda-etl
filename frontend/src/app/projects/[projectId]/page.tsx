@@ -108,12 +108,6 @@ export default function Project() {
     { header: "File Type", accessor: "filetype" },
     { header: "Size", accessor: "size" },
     { header: "Upload Date", accessor: "created_at" },
-    {
-      header: "Actions",
-      accessor: (asset) => (
-        <Button onClick={() => handleFileClick(asset.id)}>Preview</Button>
-      ),
-    },
   ];
 
   const handlePageChange = (newPage: number) => {
@@ -185,7 +179,11 @@ export default function Project() {
                   />
                 </div>
               ) : (
-                <Table data={assets || []} columns={columns} />
+                <Table
+                  data={assets || []}
+                  columns={columns}
+                  onRowClick={(row) => handleFileClick(row.id)}
+                />
               )}
 
               {totalPages > 1 && (

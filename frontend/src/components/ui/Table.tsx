@@ -32,15 +32,24 @@ export function Table<T>({
       </thead>
       <tbody>
         {data.map((row: any, rowIndex) => (
-          <tr key={rowIndex}>
+          <tr
+            key={rowIndex}
+            className="hover:bg-gray-100 transition-colors duration-200"
+          >
             {columns.map((column, colIndex) => (
               <td
                 key={colIndex}
                 className={`py-2 px-4 border-b ${
                   onRowClick && "cursor-pointer"
                 }`}
-                onClick={() => {
-                  onRowClick ? onRowClick(row) : null;
+                onClick={(e) => {
+                  if (
+                    onRowClick &&
+                    !(e.target as HTMLElement).closest("a") &&
+                    !(e.target as HTMLElement).closest("button")
+                  ) {
+                    onRowClick(row);
+                  }
                 }}
               >
                 {column.label

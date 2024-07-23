@@ -52,12 +52,6 @@ export default function Projects() {
     { header: "Project Name", accessor: "name" },
     { header: "Created At", accessor: "created_at" },
     { header: "Updated At", accessor: "updated_at" },
-    {
-      header: "Actions",
-      accessor: (project) => (
-        <Button onClick={() => handleProjectClick(project.id)}>View</Button>
-      ),
-    },
   ];
 
   const handlePageChange = (newPage: number) => {
@@ -98,7 +92,11 @@ export default function Projects() {
               ))}
             </div>
           ) : (
-            <Table data={projects} columns={columns} />
+            <Table
+              data={projects}
+              columns={columns}
+              onRowClick={(project) => handleProjectClick(project.id)}
+            />
           )}
           {totalPages > 1 && (
             <Pagination
