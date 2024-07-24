@@ -16,21 +16,40 @@ def create_project(db: Session, project: ProjectCreate):
 
 def get_projects(db: Session, page: int = 1, page_size: int = 20):
     total_count = db.query(func.count(models.Project.id)).scalar()
-    projects = db.query(models.Project).offset((page - 1) * page_size).limit(page_size).all()
+    projects = (
+        db.query(models.Project).offset((page - 1) * page_size).limit(page_size).all()
+    )
     return projects, total_count
+
 
 def get_project(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
 
 def get_assets(db: Session, project_id: int, page: int = 1, page_size: int = 20):
-    total_count = db.query(func.count(models.Asset.id)).filter(models.Asset.project_id == project_id).scalar()
-    assets = db.query(models.Asset).filter(models.Asset.project_id == project_id).offset((page - 1) * page_size).limit(page_size).all()
+    total_count = (
+        db.query(func.count(models.Asset.id))
+        .filter(models.Asset.project_id == project_id)
+        .scalar()
+    )
+    assets = (
+        db.query(models.Asset)
+        .filter(models.Asset.project_id == project_id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
     return assets, total_count
+
 
 def get_asset(db: Session, asset_id: int):
     return db.query(Asset).filter(Asset.id == asset_id).first()
 
 
 def get_processes(db: Session, project_id: int):
-    return db.query(models.Process).filter(models.Process.project_id == project_id).order_by(models.Process.id.desc()).all()
+    return (
+        db.query(models.Process)
+        .filter(models.Process.project_id == project_id)
+        .order_by(models.Process.id.desc())
+        .all()
+    )

@@ -1,11 +1,16 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, defer
 
 from app import models
 from app.schemas.process import ProcessData
 
 
 def get_processes(db: Session):
-    return db.query(models.Process).options(joinedload(models.Process.project)).order_by(models.Process.id.desc()).all()
+    return (
+        db.query(models.Process)
+        .options(joinedload(models.Process.project), defer(models.Process.summary))
+        .order_by(models.Process.id.desc())
+        .all()
+    )
 
 
 def create_process(db: Session, process_data: ProcessData):
@@ -39,4 +44,15 @@ def get_process_steps(db: Session, process_id: int):
             joinedload(models.ProcessStep.process).joinedload(models.Process.project)
         )
         .all()
+    )
+
+
+def get_process_step(db: Session, step_id: int):
+    return (
+        db.query(models.ProcessStep)
+        .filter(models.ProcessStep.id == step_id)
+        .options(
+            joinedload(models.ProcessStep.process), joinedload(models.ProcessStep.asset)
+        )
+        .first()
     )

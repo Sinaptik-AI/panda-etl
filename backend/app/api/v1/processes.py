@@ -1,6 +1,8 @@
-import time
+import os
+import traceback
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 import csv
 from io import StringIO
@@ -9,14 +11,14 @@ from app.database import SessionLocal, get_db
 from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
-from app.models import Process, ProcessStatus, ProcessStep
+from app.models import ProcessStatus, ProcessStep
 from app.schemas.process import ProcessData
 from app.requests import extract_data
 from datetime import datetime
 
 from app.models.process_step import ProcessStepStatus
 from app.repositories import user_repository
-
+from app.config import settings
 
 # Thread pool executor for background tasks
 executor = ThreadPoolExecutor(max_workers=5)
@@ -112,9 +114,40 @@ def process_task(process_id: int):
 
             api_key = user_repository.get_user_api_key(db)
             try:
-                data = extract_data(
-                    api_key.key, process_step.asset.path, process.details
-                )
+                if process.type == "extractive_summary":
+
+                    from .extract import extract_summary, highlight_sentences_in_pdf
+
+                    summary, summary_sentences = extract_summary(
+                        process_step.asset.path, process.details
+                    )
+                    highlighted_file_dir = os.path.join(
+                        settings.process_dir, str(process_id), str(process_step.id)
+                    )
+
+                    os.makedirs(highlighted_file_dir, exist_ok=True)
+
+                    highlighted_file_path = os.path.join(
+                        highlighted_file_dir,
+                        f"highlighted_{process_step.asset.filename}",
+                    )
+
+                    highlight_sentences_in_pdf(
+                        process_step.asset.path,
+                        highlighted_file_path,
+                        summary_sentences,
+                    )
+
+                    data = {
+                        "highlighted_pdf": highlighted_file_path,
+                        "summary": summary,
+                    }
+
+                else:
+                    data = extract_data(
+                        api_key.key, process_step.asset.path, process.details
+                    )
+
                 process_step.output = data
                 process_step.status = ProcessStepStatus.COMPLETED
                 db.add(process_step)
@@ -189,3 +222,29 @@ def start_processes(process_id: int, db: Session = Depends(get_db)):
         "message": "Process steps successfully returned",
         "data": process_steps,
     }
+
+
+@process_router.get("/{process_id}/steps/{step_id}/download")
+async def get_file(step_id: int, db: Session = Depends(get_db)):
+    try:
+        process_step = process_repository.get_process_step(db, step_id)
+
+        if process_step is None or "highlighted_pdf" not in process_step.output:
+            raise HTTPException(status_code=404, detail="No process step detail found!")
+
+        filepath = process_step.output["highlighted_pdf"]
+
+        # Check if the file exists
+        if not os.path.isfile(filepath):
+            raise HTTPException(status_code=404, detail="File not found on server")
+
+        # Return the file
+        return FileResponse(
+            filepath,
+            media_type="application/pdf",
+            filename=f"highlighted_{process_step.asset.filename}",
+        )
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve file")
