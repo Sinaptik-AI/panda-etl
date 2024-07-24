@@ -38,6 +38,7 @@ def extract_data(api_token, file_path, fields):
             files=files,
             data=data,
             headers=headers,
+            timeout=300,
         )
         # Check the response status code
         if response.status_code == 201 or response.status_code == 200:

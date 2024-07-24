@@ -6,6 +6,7 @@ export const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 60000
 });
 
 export async function GetRequest<T>(
@@ -23,7 +24,8 @@ export async function GetRequest<T>(
 export async function PostRequest<T>(
   url: string,
   requestData: object,
-  headers = {}
+  headers = {},
+  timeout?: number
 ): Promise<AxiosResponse> {
   try {
     const isFormData = requestData instanceof FormData;
@@ -31,9 +33,9 @@ export async function PostRequest<T>(
       'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
     };
     const updatedHeader = { ...defaultHeaders, ...headers };
-
     const response = await axiosInstance.post<T>(url, requestData, {
       headers: updatedHeader,
+      timeout
     });
     return response;
   } catch (error) {

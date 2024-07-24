@@ -8,7 +8,9 @@ export const Extract = async (projectId: string, fields: ExtractionField[]) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}`,
-      { fields }
+      { fields }, 
+      {},
+      300000
     );
     return response;
   } catch (error) {
