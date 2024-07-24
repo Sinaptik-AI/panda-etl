@@ -19,12 +19,13 @@ export interface ProcessData {
   updated_at: string;
 }
 
-
 export interface ProcessRequest {
   type: string;
-  details: {
-    fields: ExtractionField[];
-  };
+  details:
+    | {
+        fields: ExtractionField[];
+      }
+    | Record<string, any>;
   project_id: string;
 }
 

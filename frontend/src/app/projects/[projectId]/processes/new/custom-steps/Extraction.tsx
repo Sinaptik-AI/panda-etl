@@ -11,13 +11,16 @@ import { Extract } from "@/services/extract";
 import { StartProcess } from "@/services/processes";
 import { useRouter } from "next/navigation";
 
-interface Step3Props {
+interface ExtractionStepProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
-  const router = useRouter()
+export const ExtractionStep: React.FC<ExtractionStepProps> = ({
+  project,
+  setStep,
+}) => {
+  const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
     []
@@ -27,7 +30,7 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
-      const response = await GetProjectAssets(project.id);
+      const response = await GetProjectAssets(project.id, 1, 1);
       const { data: asset } = response.data;
       return asset as AssetData[];
     },
@@ -37,19 +40,18 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
     setExtractionFields(fields);
     const { data } = await Extract(project.id, fields);
     setExtractionResult(data.data);
-
   };
 
   const handleProcessStart = async (fields: ExtractionField[]) => {
     const { data } = await StartProcess({
       type: "extract",
       details: {
-          fields: fields
+        fields: fields,
       },
-      project_id: project.id
-    })
-    router.push(`/projects/${project.id}?tab=processes`)
-  }
+      project_id: project.id,
+    });
+    router.push(`/projects/${project.id}?tab=processes`);
+  };
 
   useEffect(() => {
     if (assets?.length && project) {
@@ -62,7 +64,10 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ExtractionForm onSubmit={handleSubmit} onStartProcess={handleProcessStart}/>
+        <ExtractionForm
+          onSubmit={handleSubmit}
+          onStartProcess={handleProcessStart}
+        />
         <div className="mt-1">
           {extractionResult && (
             <>
