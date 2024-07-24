@@ -69,7 +69,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       label: statusLabel,
     },
     {
-      header: "Start Time",
+      header: "Started at",
       accessor: "started_at",
       label: (process: ProcessData) => (
         <DateLabel dateString={process.started_at} />
