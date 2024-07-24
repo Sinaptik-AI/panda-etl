@@ -11,7 +11,7 @@ import { GetProject } from "@/services/projects";
 import { Step1 } from "./step1";
 import { Step2 } from "./step2";
 import { GetAPIKey } from "@/services/user";
-import { ExtractionStep } from "./custom-steps/extraction";
+import { ExtractionStep } from "./custom-steps/Extraction";
 import { ExtractiveSummary } from "./custom-steps/ExtractiveSummary";
 
 export default function NewProcess() {

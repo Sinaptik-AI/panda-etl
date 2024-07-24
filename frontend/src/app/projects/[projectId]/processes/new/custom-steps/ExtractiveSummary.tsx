@@ -161,7 +161,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
       project_id: project.id,
     });
 
-    router.push(`/projects/${project.id}/processes/${processData.id}`);
+    router.push(`/projects/${project.id}?tab=processes`);
   };
 
   return (

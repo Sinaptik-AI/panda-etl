@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Tuple
 from fastapi import APIRouter, Depends, HTTPException
+import numpy as np
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -7,9 +8,13 @@ from app.database import get_db
 from app.repositories import project_repository
 from app.repositories import user_repository
 from app.requests import extract_data
+from app.logger import Logger
+import traceback
 
 
 extract_router = APIRouter()
+
+logger = Logger()
 
 
 class Field(BaseModel):
@@ -42,4 +47,5 @@ async def extract(
         }
 
     except Exception as e:
+        logger.error(traceback.print_exc())
         raise HTTPException(status_code=400, detail="Unable to process file!")

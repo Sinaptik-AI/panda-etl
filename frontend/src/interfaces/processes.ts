@@ -44,9 +44,7 @@ export interface ProcessDetailsResponse {
   created_at: string;
   status: number;
   id: number;
-  output: {
-    data: string;
-  };
+  output: any;
   updated_at: string;
   process: {
     status: number;

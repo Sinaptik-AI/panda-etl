@@ -14,6 +14,7 @@ import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { useProcessStep } from "@/hooks/useProcessStep";
 import Accordion from "@/components/ui/Accordion";
+import Link from "next/link";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -31,7 +32,7 @@ const statusLabel = (process: ProcessDetailsResponse) => {
 };
 
 const columns: Column<ProcessDetailsResponse>[] = [
-  { header: "ID", accessor: (row: ProcessDetailsResponse) => row.process.id },
+  { header: "ID", accessor: (row: ProcessDetailsResponse) => row.id },
   {
     header: "Type",
     accessor: (row: ProcessDetailsResponse) => row.process.type,
@@ -57,6 +58,20 @@ const columns: Column<ProcessDetailsResponse>[] = [
         <DateLabel dateString={process.process.completed_at} />
       ) : (
         "-"
+      ),
+  },
+  {
+    header: "Actions",
+    accessor: "id",
+    label: (step: ProcessDetailsResponse) =>
+      step.output.highlighted_pdf && (
+        <Link
+          href={`/api/v1/processes/${step.process_id}/steps/${step.id}/download`}
+          className="text-blue-600 hover:underline block"
+          target="_blank"
+        >
+          Download Hightlighted PDF
+        </Link>
       ),
   },
 ];
