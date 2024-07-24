@@ -55,10 +55,11 @@ def start_processes(process: ProcessData, db: Session = Depends(get_db)):
 
     assets = project_repository.get_assets(db, process.project_id)
 
-    if not assets:
+    if not assets[0]:
         raise HTTPException(status_code=404, detail="No Asset found!")
 
-    for asset in assets:
+    for asset in assets[0]:
+
         process_step = ProcessStep(
             process_id=process.id,
             asset_id=asset.id,
