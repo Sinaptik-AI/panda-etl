@@ -5,3 +5,4 @@ venv
 /instance/*
 !/instance/
 uploads/
+processed/
