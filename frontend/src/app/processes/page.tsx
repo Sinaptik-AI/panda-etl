@@ -7,7 +7,7 @@ export default function ProcessesPage() {
   return (
     <>
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
-      <h1 className="text-3xl font-bold my-6">All Processes</h1>
+      <h1 className="text-3xl font-bold my-6">All processes</h1>
       <ProcessesList />
     </>
   );

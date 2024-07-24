@@ -5,7 +5,7 @@ from app.schemas.process import ProcessData
 
 
 def get_processes(db: Session):
-    return db.query(models.Process).options(joinedload(models.Process.project)).all()
+    return db.query(models.Process).options(joinedload(models.Process.project)).order_by(models.Process.id.desc()).all()
 
 
 def create_process(db: Session, process_data: ProcessData):

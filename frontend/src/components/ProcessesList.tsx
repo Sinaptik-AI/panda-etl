@@ -36,7 +36,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       case ProcessStatus.FAILED:
         return <Label status="error">Failed</Label>;
       case ProcessStatus.IN_PROGRESS:
-        return <Label status="warning">In Progress</Label>;
+        return <Label status="warning">In progress</Label>;
       case ProcessStatus.PENDING:
         return <Label status="info">Pending</Label>;
       default:
