@@ -51,3 +51,12 @@ export async function PutRequest(url: string, data: object): Promise<AxiosRespon
     throw error;
   }
 }
+
+export async function DeleteRequest(url: string): Promise<AxiosResponse<any, any>> {
+  try {
+    const response = await axiosInstance.delete(url);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}

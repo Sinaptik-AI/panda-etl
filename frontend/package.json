@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.1.2",
+    "@radix-ui/react-context-menu": "^2.2.1",
     "@radix-ui/react-radio-group": "^1.2.0",
     "@tanstack/react-query": "^5.51.1",
     "@tippyjs/react": "^4.2.6",
@@ -20,6 +21,7 @@
     "openai": "^4.52.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-icons": "^5.2.1",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {

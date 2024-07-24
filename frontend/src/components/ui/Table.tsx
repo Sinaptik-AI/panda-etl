@@ -1,4 +1,10 @@
 import React from "react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/ContextMenu";
 
 export interface Column<T> {
   header: string;
@@ -11,6 +17,7 @@ interface TableProps<T> {
   columns: Column<T>[];
   className?: string;
   onRowClick?: (data: any) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function Table<T>({
@@ -18,6 +25,7 @@ export function Table<T>({
   columns,
   onRowClick,
   className = "",
+  onDelete,
 }: TableProps<T>) {
   return (
     <table className={`min-w-full bg-white ${className} shadow rounded`}>
@@ -31,36 +39,78 @@ export function Table<T>({
         </tr>
       </thead>
       <tbody>
-        {data.map((row: any, rowIndex) => (
-          <tr
-            key={rowIndex}
-            className="hover:bg-gray-100 transition-colors duration-200"
-          >
-            {columns.map((column, colIndex) => (
-              <td
-                key={colIndex}
-                className={`py-2 px-4 border-b ${
-                  onRowClick && "cursor-pointer"
-                }`}
-                onClick={(e) => {
-                  if (
-                    onRowClick &&
-                    !(e.target as HTMLElement).closest("a") &&
-                    !(e.target as HTMLElement).closest("button")
-                  ) {
-                    onRowClick(row);
-                  }
-                }}
-              >
-                {column.label
-                  ? column.label(row)
-                  : typeof column.accessor === "function"
-                  ? column.accessor(row)
-                  : (row[column.accessor] as React.ReactNode) ?? "-"}
-              </td>
-            ))}
-          </tr>
-        ))}
+        {data.map((row: any, rowIndex) =>
+          onDelete ? (
+            <ContextMenu key={rowIndex}>
+              <ContextMenuTrigger asChild>
+                <tr
+                  className="hover:bg-gray-100 transition-colors duration-200"
+                  onClick={(e) => {
+                    if (
+                      onRowClick &&
+                      !(e.target as HTMLElement).closest("a") &&
+                      !(e.target as HTMLElement).closest("button")
+                    ) {
+                      onRowClick(row);
+                    }
+                  }}
+                >
+                  {columns.map((column, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className={`py-2 px-4 border-b ${
+                        onRowClick && "cursor-pointer"
+                      }`}
+                    >
+                      {column.label
+                        ? column.label(row)
+                        : typeof column.accessor === "function"
+                        ? column.accessor(row)
+                        : (row[column.accessor] as React.ReactNode) ?? "-"}
+                    </td>
+                  ))}
+                </tr>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="bg-white">
+                <ContextMenuItem
+                  className="hover:bg-blue-600 hover:text-white text-black"
+                  onClick={() => onDelete(row.id)}
+                >
+                  Delete
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          ) : (
+            <tr
+              key={rowIndex}
+              className="hover:bg-gray-100 transition-colors duration-200"
+              onClick={(e) => {
+                if (
+                  onRowClick &&
+                  !(e.target as HTMLElement).closest("a") &&
+                  !(e.target as HTMLElement).closest("button")
+                ) {
+                  onRowClick(row);
+                }
+              }}
+            >
+              {columns.map((column, colIndex) => (
+                <td
+                  key={colIndex}
+                  className={`py-2 px-4 border-b ${
+                    onRowClick && "cursor-pointer"
+                  }`}
+                >
+                  {column.label
+                    ? column.label(row)
+                    : typeof column.accessor === "function"
+                    ? column.accessor(row)
+                    : (row[column.accessor] as React.ReactNode) ?? "-"}
+                </td>
+              ))}
+            </tr>
+          )
+        )}
       </tbody>
     </table>
   );

@@ -13,6 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import Toggle from "@/components/ui/Toggle";
 import { Table, Column } from "@/components/ui/Table";
 import Pagination from "@/components/ui/Pagination";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useDeleteProject } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
 
 export default function Projects() {
@@ -20,6 +22,10 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
+  const [deletedId, setDeletedId] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { mutateAsync: deleteProject, isPending: deleteLoading } =
+    useDeleteProject();
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("projectsViewMode") as
@@ -88,6 +94,20 @@ export default function Projects() {
     setPage(newPage);
   };
 
+  const handleDelete = () => {
+    deleteProject(
+      { id: deletedId },
+      {
+        onSuccess() {
+          setIsDeleteModalOpen(false);
+        },
+        onError(error) {
+          console.log(error);
+        },
+      }
+    );
+  };
+
   return (
     <>
       <Head>
@@ -118,6 +138,10 @@ export default function Projects() {
                   key={project.id}
                   name={project.name}
                   onClick={() => handleProjectClick(project.id)}
+                  onDelete={() => {
+                    setDeletedId(project.id);
+                    setIsDeleteModalOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -126,6 +150,10 @@ export default function Projects() {
               data={projects}
               columns={columns}
               onRowClick={(project) => handleProjectClick(project.id)}
+              onDelete={(id: string) => {
+                setDeletedId(id);
+                setIsDeleteModalOpen(true);
+              }}
             />
           )}
           {totalPages > 1 && (
@@ -136,6 +164,17 @@ export default function Projects() {
             />
           )}
         </>
+      )}
+
+      {isDeleteModalOpen && (
+        <ConfirmationDialog
+          text={`Are you sure you want to delete this Project?`}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+          }}
+          isLoading={deleteLoading}
+          onSubmit={handleDelete}
+        />
       )}
     </>
   );

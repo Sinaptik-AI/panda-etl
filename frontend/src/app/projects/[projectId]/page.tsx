@@ -25,6 +25,8 @@ import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
 import Toggle from "@/components/ui/Toggle";
 import Pagination from "@/components/ui/Pagination";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useDeleteAssets } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
 
 export default function Project() {
@@ -41,6 +43,9 @@ export default function Project() {
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
+  const [deletedId, setDeletedId] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("assetsViewMode") as
@@ -73,6 +78,9 @@ export default function Project() {
       queryKey: ["projectAssets", id, page, pageSize],
       queryFn: () => GetProjectAssets(id, page, pageSize),
     });
+
+  const { mutateAsync: deleteAsset, isPending: isDeleteAssetPending } =
+    useDeleteAssets();
 
   const assets = projectAssetsResponse?.data?.data || [];
   const totalAssets = projectAssetsResponse?.data?.total_count || 0;
@@ -144,6 +152,20 @@ export default function Project() {
     }
   }, []);
 
+  const handleDelete = () => {
+    deleteAsset(
+      { projectId: project?.id!, assetId: deletedId! },
+      {
+        onSuccess() {
+          setIsDeleteModalOpen(false);
+        },
+        onError(error) {
+          console.log(error);
+        },
+      }
+    );
+  };
+
   return (
     <>
       <Head>
@@ -194,6 +216,10 @@ export default function Project() {
                         key={asset.id}
                         name={asset.filename}
                         onClick={() => handleFileClick(asset.id)}
+                        onDelete={() => {
+                          setDeletedId(asset.id);
+                          setIsDeleteModalOpen(true);
+                        }}
                       />
                     ))}
 
@@ -207,6 +233,10 @@ export default function Project() {
                   data={assets || []}
                   columns={columns}
                   onRowClick={(row) => handleFileClick(row.id)}
+                  onDelete={(id: string) => {
+                    setDeletedId(id);
+                    setIsDeleteModalOpen(true);
+                  }}
                 />
               )}
 
@@ -238,6 +268,17 @@ export default function Project() {
             <PDFViewer file={pdfFile} />
           </Drawer>
         </>
+      )}
+
+      {isDeleteModalOpen && (
+        <ConfirmationDialog
+          text={`Are you sure you want to delete this Asset?`}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+          }}
+          isLoading={deleteLoading}
+          onSubmit={handleDelete}
+        />
       )}
     </>
   );

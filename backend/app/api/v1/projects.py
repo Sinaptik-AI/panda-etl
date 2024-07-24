@@ -9,6 +9,7 @@ from app.schemas.project import ProjectCreate
 from app.repositories import project_repository
 from app.config import settings
 from app.models.asset import Asset
+from datetime import datetime, timezone
 
 
 project_router = APIRouter()
@@ -189,3 +190,41 @@ def get_processes(id: int, db: Session = Depends(get_db)):
             for process in processes
         ],
     }
+
+
+@project_router.delete("/{project_id}/delete")
+async def delete_project(project_id: int, db: Session = Depends(get_db)):
+    project = project_repository.get_project(db, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project.deleted = True
+    project.deleted_at = datetime.now(tz=timezone.utc)
+    db.commit()
+    db.refresh(project)
+    
+    return project
+
+
+@project_router.delete("/{project_id}/assets/{asset_id}/delete")
+async def get_file(project_id: int, asset_id: int, db: Session = Depends(get_db)):
+    try:
+        project = project_repository.get_project(db, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        asset = project_repository.get_asset(db, asset_id)
+
+        if asset is None:
+            raise HTTPException(
+                status_code=404, detail="File not found in the database"
+            )
+        asset.deleted = True
+        asset.deleted_at = datetime.now(tz=timezone.utc)
+        db.commit()
+        db.refresh(asset)
+    
+        return asset
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve file")

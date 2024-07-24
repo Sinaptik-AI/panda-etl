@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from datetime import datetime
 from ..database import Base
 from sqlalchemy.orm import relationship
@@ -13,6 +13,8 @@ class Asset(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
 
     process_steps = relationship("ProcessStep", back_populates="asset")
 

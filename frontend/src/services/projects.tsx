@@ -1,4 +1,4 @@
-import { GetRequest, PostRequest } from "@/lib/requests";
+import { DeleteRequest, GetRequest, PostRequest } from "@/lib/requests";
 import { ProjectData } from "@/interfaces/projects";
 import { AssetData } from "@/interfaces/assets";
 import { ProcessData } from "@/interfaces/processes";
@@ -105,6 +105,28 @@ export const GetProjectProcesses = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProcessData[] }>(
       `${projectsApiUrl}/${projectId}/processes`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const DeleteProject = async (projectId: string) => {
+  try {
+    const response = await DeleteRequest(
+      `${projectsApiUrl}/${projectId}/delete`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const DeleteAssets = async (projectId: string, assetId: string) => {
+  try {
+    const response = await DeleteRequest(
+      `${projectsApiUrl}/${projectId}/assets/${assetId}/delete`
     );
     return response;
   } catch (error) {
