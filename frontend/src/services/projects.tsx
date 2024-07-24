@@ -114,9 +114,7 @@ export const GetProjectProcesses = async (projectId: string) => {
 
 export const DeleteProject = async (projectId: string) => {
   try {
-    const response = await DeleteRequest(
-      `${projectsApiUrl}/${projectId}/delete`
-    );
+    const response = await DeleteRequest(`${projectsApiUrl}/${projectId}`);
     return response;
   } catch (error) {
     throw error;
@@ -126,7 +124,7 @@ export const DeleteProject = async (projectId: string) => {
 export const DeleteAssets = async (projectId: string, assetId: string) => {
   try {
     const response = await DeleteRequest(
-      `${projectsApiUrl}/${projectId}/assets/${assetId}/delete`
+      `${projectsApiUrl}/${projectId}/assets/${assetId}`
     );
     return response;
   } catch (error) {

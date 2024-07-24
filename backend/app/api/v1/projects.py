@@ -192,7 +192,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
     }
 
 
-@project_router.delete("/{project_id}/delete")
+@project_router.delete("/{project_id}")
 async def delete_project(project_id: int, db: Session = Depends(get_db)):
     project = project_repository.get_project(db, project_id)
     if not project:
@@ -206,7 +206,7 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
     return project
 
 
-@project_router.delete("/{project_id}/assets/{asset_id}/delete")
+@project_router.delete("/{project_id}/assets/{asset_id}")
 async def get_file(project_id: int, asset_id: int, db: Session = Depends(get_db)):
     try:
         project = project_repository.get_project(db, project_id)
