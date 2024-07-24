@@ -15,6 +15,8 @@ import Drawer from "@/components/ui/Drawer";
 import { useProcessStep } from "@/hooks/useProcessStep";
 import Accordion from "@/components/ui/Accordion";
 import Link from "next/link";
+import { BASE_API_URL } from "@/constants";
+import { processApiUrl } from "@/services/processes";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -63,16 +65,21 @@ const columns: Column<ProcessDetailsResponse>[] = [
   {
     header: "Actions",
     accessor: "id",
-    label: (step: ProcessDetailsResponse) =>
-      step.output.highlighted_pdf && (
-        <Link
-          href={`/api/v1/processes/${step.process_id}/steps/${step.id}/download`}
-          className="text-blue-600 hover:underline block"
-          target="_blank"
-        >
-          Download Hightlighted PDF
-        </Link>
-      ),
+    label: (step: ProcessDetailsResponse) => {
+      const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${step.process_id}/steps/${step.id}/download`;
+
+      return (
+        step.output.highlighted_pdf && (
+          <Link
+            href={downloadUrl}
+            className="text-blue-600 hover:underline block"
+            target="_blank"
+          >
+            Download highlighted PDF
+          </Link>
+        )
+      );
+    },
   },
 ];
 

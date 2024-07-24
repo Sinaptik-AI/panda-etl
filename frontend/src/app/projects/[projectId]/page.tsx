@@ -87,7 +87,7 @@ export default function Project() {
   const totalPages = Math.ceil(totalAssets / pageSize);
 
   const projectTabs = [
-    { id: "assets", label: "Assets" },
+    { id: "assets", label: "Files" },
     { id: "processes", label: "Processes" },
   ];
 
