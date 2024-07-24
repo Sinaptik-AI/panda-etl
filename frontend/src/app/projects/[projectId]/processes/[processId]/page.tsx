@@ -42,7 +42,7 @@ const columns: Column<ProcessDetailsResponse>[] = [
     label: statusLabel,
   },
   {
-    header: "Start Time",
+    header: "Startet at",
     accessor: "created_at",
     label: (process: ProcessDetailsResponse) => (
       <DateLabel dateString={process.created_at} />

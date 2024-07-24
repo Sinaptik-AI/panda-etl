@@ -1,6 +1,6 @@
 export interface ExtractionField {
   key: string;
-  type: "text" | "date" | "number" | "list";
+  type: "text" | "date" | "number" | "list" | "boolean";
   description: string;
 }
 

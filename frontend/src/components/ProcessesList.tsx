@@ -10,6 +10,7 @@ import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
+import { Download } from "lucide-react";
 
 interface ProcessesProps {
   projectId?: string;
@@ -35,7 +36,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       case ProcessStatus.FAILED:
         return <Label status="error">Failed</Label>;
       case ProcessStatus.IN_PROGRESS:
-        return <Label status="warning">In Progress</Label>;
+        return <Label status="warning">In progress</Label>;
       case ProcessStatus.PENDING:
         return <Label status="info">Pending</Label>;
       default:
@@ -68,7 +69,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       label: statusLabel,
     },
     {
-      header: "Start Time",
+      header: "Started at",
       accessor: "started_at",
       label: (process: ProcessData) => (
         <DateLabel dateString={process.started_at} />
@@ -95,13 +96,22 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
 
         return (
-          <Link
-            href={downloadUrl}
-            className="text-blue-600 hover:underline"
-            target="_blank"
-          >
-            Download
-          </Link>
+          <>
+            <Link
+              href={downloadUrl}
+              className="text-blue-600 hover:underline block"
+              target="_blank"
+            >
+              Download CSV
+            </Link>
+            <Link
+              href={downloadUrl}
+              className="text-blue-600 hover:underline"
+              target="_blank"
+            >
+              Read summary
+            </Link>
+          </>
         );
       },
     },

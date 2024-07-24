@@ -25,6 +25,7 @@ import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
 import Toggle from "@/components/ui/Toggle";
 import Pagination from "@/components/ui/Pagination";
+import DateLabel from "@/components/ui/Date";
 
 export default function Project() {
   const params = useParams();
@@ -121,10 +122,16 @@ export default function Project() {
   ];
 
   const columns: Column<(typeof assets)[0]>[] = [
-    { header: "File Name", accessor: "filename" },
-    { header: "File Type", accessor: "filetype" },
+    { header: "File name", accessor: "filename" },
+    { header: "File type", accessor: "filetype" },
     { header: "Size", accessor: "size" },
-    { header: "Upload Date", accessor: "created_at" },
+    {
+      header: "Uploaded at",
+      accessor: "created_at",
+      label: (process: ProjectData) => (
+        <DateLabel dateString={process.created_at} />
+      ),
+    },
   ];
 
   const handlePageChange = (newPage: number) => {

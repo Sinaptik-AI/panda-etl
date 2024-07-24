@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import Toggle from "@/components/ui/Toggle";
 import { Table, Column } from "@/components/ui/Table";
 import Pagination from "@/components/ui/Pagination";
+import DateLabel from "@/components/ui/Date";
 
 export default function Projects() {
   const router = useRouter();
@@ -66,9 +67,21 @@ export default function Projects() {
   ];
 
   const columns: Column<ProjectData>[] = [
-    { header: "Project Name", accessor: "name" },
-    { header: "Created At", accessor: "created_at" },
-    { header: "Updated At", accessor: "updated_at" },
+    { header: "Project name", accessor: "name" },
+    {
+      header: "Created at",
+      accessor: "created_at",
+      label: (value: ProjectData) => (
+        <DateLabel dateString={value.created_at} />
+      ),
+    },
+    {
+      header: "Updated at",
+      accessor: "updated_at",
+      label: (value: ProjectData) => (
+        <DateLabel dateString={value.updated_at} />
+      ),
+    },
   ];
 
   const handlePageChange = (newPage: number) => {

@@ -5,6 +5,7 @@ import {
   FileInput,
   Key,
   ArrowRight,
+  FileSearch,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -50,6 +51,12 @@ export const Step1: React.FC<Step1Props> = ({
 
   const processOptions: ProcessOption[] = [
     { id: "extract", label: "Extract", icon: FileText, disabled: false },
+    {
+      id: "extractive-summary",
+      label: "Summary",
+      icon: FileSearch,
+      disabled: false,
+    },
     { id: "highlight", label: "Highlight", icon: Highlighter, disabled: true },
     { id: "fill-form", label: "Fill Form", icon: FileInput, disabled: true },
     { id: "key-sentences", label: "Key Sentences", icon: Key, disabled: true },

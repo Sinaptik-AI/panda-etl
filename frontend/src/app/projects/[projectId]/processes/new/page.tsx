@@ -10,8 +10,9 @@ import { ProjectData } from "@/interfaces/projects";
 import { GetProject } from "@/services/projects";
 import { Step1 } from "./step1";
 import { Step2 } from "./step2";
-import { Step3 } from "./step3";
 import { GetAPIKey } from "@/services/user";
+import { ExtractionStep } from "./custom-steps/extraction";
+import { ExtractiveSummary } from "./custom-steps/ExtractiveSummary";
 
 export default function NewProcess() {
   const params = useParams();
@@ -37,7 +38,7 @@ export default function NewProcess() {
       return key;
     },
   });
-  
+
   const breadcrumbItems = [
     { label: "Projects", href: "/" },
     { label: project?.name || "", href: `/projects/${project?.id}` },
@@ -46,7 +47,7 @@ export default function NewProcess() {
 
   const nextStep = () => {
     if (step === 1 && apiKey) {
-      setStep(step + 2)
+      setStep(step + 2);
     } else {
       setStep(step + 1);
     }
@@ -76,9 +77,16 @@ export default function NewProcess() {
           setSelectedOutput={setSelectedOutput}
           handleProceed={nextStep}
         />
-      ) : step === 2? (
-      <Step2 nextStep={nextStep} />
-      ): project && <Step3 setStep={setStep} project={project} />}
+      ) : step === 2 ? (
+        <Step2 nextStep={nextStep} />
+      ) : (
+        project &&
+        (selectedProcess === "extract" ? (
+          <ExtractionStep setStep={setStep} project={project} />
+        ) : selectedProcess === "extractive-summary" ? (
+          <ExtractiveSummary setStep={setStep} project={project} />
+        ) : null)
+      )}
     </>
   );
 }

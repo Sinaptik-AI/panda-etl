@@ -1,31 +1,27 @@
 import React from "react";
-import { format, parseISO, isValid } from "date-fns";
+import { parseISO, isValid, formatDistanceToNow } from "date-fns";
 
 interface DateLabelProps {
   dateString: string;
-  formatString?: string;
+  addSuffix?: boolean;
 }
 
 const DateLabel: React.FC<DateLabelProps> = ({
   dateString,
-  formatString = "yyyy-MM-dd HH:mm",
+  addSuffix = true,
 }) => {
   let formattedDate = "Invalid Date";
 
   try {
     const date = parseISO(dateString);
     if (isValid(date)) {
-      formattedDate = format(date, formatString);
+      formattedDate = formatDistanceToNow(date, { addSuffix });
     }
   } catch (error) {
     console.error("Error parsing date:", error);
   }
 
-  return (
-    <div className="flex items-center space-x-1 rounded-full shadow-sm">
-      <span className="text-gray-800 font-medium">{formattedDate}</span>
-    </div>
-  );
+  return <span className="text-gray-800 font-medium">{formattedDate}</span>;
 };
 
 export default DateLabel;

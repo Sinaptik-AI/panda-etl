@@ -38,10 +38,10 @@ def get_processes(db: Session = Depends(get_db)):
                 "status": process.status,
                 "project": process.project.name,
                 "project_id": f"{process.project_id}",
-                "started_at": process.started_at.isoformat(),
-                "completed_at": process.completed_at.isoformat(),
-                "created_at": process.created_at.isoformat(),
-                "updated_at": process.updated_at.isoformat(),
+                "started_at": process.started_at.isoformat() if process.started_at else None,
+                "completed_at": process.completed_at.isoformat() if process.completed_at else None,
+                "created_at": process.created_at.isoformat() if process.created_at else None,
+                "updated_at": process.updated_at.isoformat() if process.updated_at else None,
             }
             for process in processes
         ],
