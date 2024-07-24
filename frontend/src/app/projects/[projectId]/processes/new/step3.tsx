@@ -24,10 +24,11 @@ export const Step3: React.FC<Step3Props> = ({ project, setStep }) => {
   );
   const [extractionResult, setExtractionResult] =
     useState<ExtractionResult | null>(null);
+
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
-      const response = await GetProjectAssets(project.id);
+      const response = await GetProjectAssets(project.id, 1, 10);
       const { data: asset } = response.data;
       return asset as AssetData[];
     },

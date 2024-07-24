@@ -1,6 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
-import { ChevronDown, ChevronUp, Play, Plus, ScanEye } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Play, Plus, ScanEye } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
@@ -33,6 +33,7 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
     { 0: true }
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [startingProcess, setStartingProcess] = useState<boolean>(false);
 
   const addField = () => {
     const newField: Field = { key: "", description: "", type: "text" };
@@ -74,9 +75,15 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
     setFields(newFields);
   };
 
+  const is_fields_empty = () => {
+    return (fields.length == 1 && fields[0].key=="" && fields[0].description=="") || fields.length == 0
+  }
+
   const onStartBtnClick = async () => {
     try {
+      setStartingProcess(true)
       await await onStartProcess(fields);
+      setStartingProcess(false)
     } catch (error) {
       console.error("Error start process:", error);
     } finally {
@@ -186,7 +193,7 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
         <Button
           type="submit"
           isLoading={isLoading}
-          disabled={fields.length === 0}
+          disabled={is_fields_empty()}
           icon={ScanEye}
           variant="secondary"
         >
@@ -195,7 +202,8 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
         <Button
           type="button"
           onClick={onStartBtnClick}
-          icon={Play}
+          icon={startingProcess? Loader2: Play}
+          disabled={is_fields_empty()}
           variant="primary"
         >
           Start Process
