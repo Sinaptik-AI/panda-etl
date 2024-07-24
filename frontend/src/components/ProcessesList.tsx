@@ -10,6 +10,7 @@ import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
+import { Download } from "lucide-react";
 
 interface ProcessesProps {
   projectId?: string;
@@ -95,13 +96,22 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
 
         return (
-          <Link
-            href={downloadUrl}
-            className="text-blue-600 hover:underline"
-            target="_blank"
-          >
-            Download
-          </Link>
+          <>
+            <Link
+              href={downloadUrl}
+              className="text-blue-600 hover:underline block"
+              target="_blank"
+            >
+              Download CSV
+            </Link>
+            <Link
+              href={downloadUrl}
+              className="text-blue-600 hover:underline"
+              target="_blank"
+            >
+              Read summary
+            </Link>
+          </>
         );
       },
     },
