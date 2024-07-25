@@ -1,5 +1,4 @@
 import os
-import traceback
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
@@ -132,7 +131,9 @@ def process_task(process_id: int):
                     )
 
                     summary, summary_sentences = extract_summary(
-                        process_step.asset.path, process.details
+                        process_step.asset.path,
+                        process_step.asset.filename,
+                        process.details,
                     )
                     highlighted_file_dir = os.path.join(
                         settings.process_dir, str(process_id), str(process_step.id)
