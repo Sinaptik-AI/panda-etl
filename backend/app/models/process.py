@@ -34,7 +34,7 @@ class Process(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     details = Column(JSON, nullable=True)
     message = Column(String(255), nullable=False)
-    summary = Column(JSON, nullable=True)
+    output = Column(JSON, nullable=True)
 
     project = relationship("Project", back_populates="processes")
     process_steps = relationship(
