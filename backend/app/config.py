@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     process_dir: str = os.path.join(os.path.dirname(__file__), "..", "processed")
     api_server_url: str = "https://api.domer.ai"
     bambooetl_server_url: str
+    openai_api_key: str
+    ai_model: str = "gpt-4"
 
     class Config:
         env_file = ".env"

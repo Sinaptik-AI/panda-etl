@@ -40,10 +40,18 @@ def get_processes(db: Session = Depends(get_db)):
                 "status": process.status,
                 "project": process.project.name,
                 "project_id": f"{process.project_id}",
-                "started_at": process.started_at.isoformat() if process.started_at else None,
-                "completed_at": process.completed_at.isoformat() if process.completed_at else None,
-                "created_at": process.created_at.isoformat() if process.created_at else None,
-                "updated_at": process.updated_at.isoformat() if process.updated_at else None,
+                "started_at": (
+                    process.started_at.isoformat() if process.started_at else None
+                ),
+                "completed_at": (
+                    process.completed_at.isoformat() if process.completed_at else None
+                ),
+                "created_at": (
+                    process.created_at.isoformat() if process.created_at else None
+                ),
+                "updated_at": (
+                    process.updated_at.isoformat() if process.updated_at else None
+                ),
             }
             for process in processes
         ],
@@ -103,6 +111,7 @@ def process_task(process_id: int):
             raise Exception("No process found!")
 
         failed_docs = 0
+        summaries = []
         for process_step in process_steps:
 
             if process_step.status == ProcessStepStatus.COMPLETED:
@@ -116,7 +125,11 @@ def process_task(process_id: int):
             try:
                 if process.type == "extractive_summary":
 
-                    from .extract import extract_summary, highlight_sentences_in_pdf
+                    from .extract import (
+                        extract_summary,
+                        highlight_sentences_in_pdf,
+                        extract_summary_of_summaries,
+                    )
 
                     summary, summary_sentences = extract_summary(
                         process_step.asset.path, process.details
@@ -143,6 +156,9 @@ def process_task(process_id: int):
                         "summary": summary,
                     }
 
+                    if summary:
+                        summaries.append(summary)
+
                 else:
                     data = extract_data(
                         api_key.key, process_step.asset.path, process.details
@@ -157,6 +173,12 @@ def process_task(process_id: int):
                 process_step.status = ProcessStepStatus.FAILED
                 db.add(process_step)
                 db.commit()
+
+        if process.details["show_final_summary"]:
+            summary_of_summaries = extract_summary_of_summaries(
+                summaries, process.details["transformation_prompt"]
+            )
+            process.output = {"summary": summary_of_summaries}
 
         process.status = (
             ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
