@@ -18,11 +18,15 @@ from datetime import datetime
 from app.models.process_step import ProcessStepStatus
 from app.repositories import user_repository
 from app.config import settings
+from app.logger import Logger
+import traceback
 
 # Thread pool executor for background tasks
 executor = ThreadPoolExecutor(max_workers=5)
 
 process_router = APIRouter()
+
+logger = Logger()
 
 
 @process_router.get("/{process_id}")
@@ -105,6 +109,7 @@ def start_processes(process: ProcessData, db: Session = Depends(get_db)):
         db.add(process_step)
         db.commit()
 
+    logger.log(f"Add to process {process.id} to the queue")
     executor.submit(process_task, process.id)
 
     return {
@@ -140,6 +145,7 @@ def process_task(process_id: int):
         summaries = []
         for process_step in process_steps:
 
+            logger.log(f"Processing file: {process_step.asset.path}")
             if process_step.status == ProcessStepStatus.COMPLETED:
                 continue
 
@@ -197,22 +203,26 @@ def process_task(process_id: int):
                 db.add(process_step)
                 db.commit()
             except Exception as e:
+                logger.error(traceback.format_exc())
                 failed_docs += 1
                 process_step.status = ProcessStepStatus.FAILED
                 db.add(process_step)
                 db.commit()
 
         if process.details["show_final_summary"]:
+            logger.log(f"Extracting summary from summaries")
             summary_of_summaries = extract_summary_of_summaries(
                 summaries, process.details["transformation_prompt"]
             )
             process.output = {"summary": summary_of_summaries}
+            logger.log(f"Extracting summary from summaries completed")
 
         process.status = (
             ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
         )
         process.completed_at = datetime.now()
     except Exception as e:
+        logger.error(traceback.format_exc())
         process.status = ProcessStatus.FAILED
         process.message = e
 
