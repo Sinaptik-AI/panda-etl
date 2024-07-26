@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useGetProcessSteps } from "@/hooks/useProcesses";
 import { ProcessDetailsResponse, ProcessStatus } from "@/interfaces/processes";
 import { Column, Table } from "@/components/ui/Table";
@@ -17,6 +17,7 @@ import Accordion from "@/components/ui/Accordion";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { processApiUrl } from "@/services/processes";
+import Tooltip from "@/components/ui/Tooltip";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -69,13 +70,15 @@ const columns: Column<ProcessDetailsResponse>[] = [
       const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${step.process_id}/steps/${step.id}/download`;
 
       return (
-        step.output.highlighted_pdf && (
+        step.output?.highlighted_pdf && (
           <Link
             href={downloadUrl}
             className="text-blue-600 hover:underline block"
             target="_blank"
           >
-            Download highlighted PDF
+            <Tooltip content="Download highlighted PDF">
+              <Download className="w-4 h-4 mr-2 inline-block" />
+            </Tooltip>
           </Link>
         )
       );

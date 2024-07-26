@@ -5,7 +5,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import Sidebar from "@/components/ui/Sidebar";
 import Navbar from "@/components/ui/Navbar";
 import { ReactQueryClientProvider } from "@/components/ReactQueryClientProvider";
-import "./globals.css";
+import "@/app/style/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 

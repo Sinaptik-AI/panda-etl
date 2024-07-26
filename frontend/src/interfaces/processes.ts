@@ -13,6 +13,7 @@ export interface ProcessData {
   status: ProcessStatus;
   project?: string;
   project_id: number;
+  details: Record<string, any>;
   started_at: string;
   completed_at: string;
   created_at: string;

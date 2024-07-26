@@ -7,6 +7,17 @@ import {
 
 export const processApiUrl = "/processes";
 
+export const GetProcess = async (processId: string) => {
+  try {
+    const response = await GetRequest<{ data: ProcessData }>(
+      `${processApiUrl}/${processId}`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const GetProcesses = async () => {
   try {
     const response = await GetRequest<{ data: ProcessData[] }>(processApiUrl);

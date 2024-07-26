@@ -71,6 +71,7 @@ export default function Project() {
       const { data: project } = response.data;
       return project as ProjectData;
     },
+    refetchInterval: 2000,
   });
 
   const { data: projectAssetsResponse, refetch: refetchProjectAssets } =

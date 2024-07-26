@@ -52,7 +52,7 @@ export const Step1: React.FC<Step1Props> = ({
   const processOptions: ProcessOption[] = [
     { id: "extract", label: "Extract", icon: FileText, disabled: false },
     {
-      id: "extractive-summary",
+      id: "extractive_summary",
       label: "Summary",
       icon: FileSearch,
       disabled: false,

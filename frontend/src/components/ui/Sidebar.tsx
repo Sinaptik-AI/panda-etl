@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
-        <ul className="mt-9 text-xl font-bold">
+        <ul className="mt-9 font-bold">
           <li className="mb-2">
             <Link
               href="/"

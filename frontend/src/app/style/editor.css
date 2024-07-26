@@ -1,0 +1,17 @@
+/* Quill editor */
+.ql-editor {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.ql-toolbar .ql-picker-label {
+  font-size: 16px;
+}
+
+.ql-toolbar .ql-picker-options {
+  font-size: 16px;
+}
+
+.ql-toolbar button {
+  font-size: 16px;
+}

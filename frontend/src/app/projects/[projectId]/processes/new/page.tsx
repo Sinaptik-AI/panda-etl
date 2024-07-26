@@ -83,7 +83,7 @@ export default function NewProcess() {
         project &&
         (selectedProcess === "extract" ? (
           <ExtractionStep setStep={setStep} project={project} />
-        ) : selectedProcess === "extractive-summary" ? (
+        ) : selectedProcess === "extractive_summary" ? (
           <ExtractiveSummary setStep={setStep} project={project} />
         ) : null)
       )}

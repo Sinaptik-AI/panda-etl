@@ -25,6 +25,32 @@ executor = ThreadPoolExecutor(max_workers=5)
 process_router = APIRouter()
 
 
+@process_router.get("/{process_id}")
+def get_process(process_id: int, db: Session = Depends(get_db)):
+    process = process_repository.get_process(db=db, process_id=process_id)
+    
+    if not process:
+        raise HTTPException(status_code=404, detail="Process not found")
+    
+    return {
+        "status": "success",
+        "message": "Process successfully returned",
+        "data": {
+            "id": process.id,
+            "type": process.type,
+            "status": process.status,
+            "project": process.project.name,
+            "project_id": f"{process.project_id}",
+            "details": process.details,
+            "output": process.output,
+            "started_at": process.started_at.isoformat() if process.started_at else None,
+            "completed_at": process.completed_at.isoformat() if process.completed_at else None,
+            "created_at": process.created_at.isoformat() if process.created_at else None,
+            "updated_at": process.updated_at.isoformat() if process.updated_at else None,
+        }
+    }
+
+
 @process_router.get("/")
 def get_processes(db: Session = Depends(get_db)):
     processes = process_repository.get_processes(db=db)
@@ -39,6 +65,7 @@ def get_processes(db: Session = Depends(get_db)):
                 "status": process.status,
                 "project": process.project.name,
                 "project_id": f"{process.project_id}",
+                "details": process.details,
                 "started_at": (
                     process.started_at.isoformat() if process.started_at else None
                 ),

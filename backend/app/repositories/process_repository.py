@@ -7,7 +7,7 @@ from app.schemas.process import ProcessData
 def get_processes(db: Session):
     return (
         db.query(models.Process)
-        .options(joinedload(models.Process.project), defer(models.Process.summary))
+        .options(joinedload(models.Process.project), defer(models.Process.output))
         .order_by(models.Process.id.desc())
         .all()
     )

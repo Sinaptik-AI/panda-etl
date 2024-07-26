@@ -17,11 +17,13 @@
     "axios": "^1.7.2",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.408.0",
+    "marked": "^13.0.2",
     "next": "14.2.4",
     "openai": "^4.52.5",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.2.1",
+    "react-quill": "^2.0.0",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {

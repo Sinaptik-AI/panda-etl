@@ -182,6 +182,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
                 "type": process.type,
                 "status": process.status,
                 "project_id": f"{process.project_id}",
+                "details": process.details,
                 "started_at": process.started_at,
                 "completed_at": process.completed_at,
                 "created_at": process.created_at,

@@ -182,7 +182,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
         <div className="flex items-center space-x-2">
           <Checkbox
             name="highlight"
-            label="Highlight key senetences"
+            label="Highlight key sentences"
             checked={formData.data.highlight}
             onChange={handleCheckboxChange}
           />
