@@ -32,10 +32,10 @@ logger = Logger()
 @process_router.get("/{process_id}")
 def get_process(process_id: int, db: Session = Depends(get_db)):
     process = process_repository.get_process(db=db, process_id=process_id)
-    
+
     if not process:
         raise HTTPException(status_code=404, detail="Process not found")
-    
+
     return {
         "status": "success",
         "message": "Process successfully returned",
@@ -47,11 +47,19 @@ def get_process(process_id: int, db: Session = Depends(get_db)):
             "project_id": f"{process.project_id}",
             "details": process.details,
             "output": process.output,
-            "started_at": process.started_at.isoformat() if process.started_at else None,
-            "completed_at": process.completed_at.isoformat() if process.completed_at else None,
-            "created_at": process.created_at.isoformat() if process.created_at else None,
-            "updated_at": process.updated_at.isoformat() if process.updated_at else None,
-        }
+            "started_at": (
+                process.started_at.isoformat() if process.started_at else None
+            ),
+            "completed_at": (
+                process.completed_at.isoformat() if process.completed_at else None
+            ),
+            "created_at": (
+                process.created_at.isoformat() if process.created_at else None
+            ),
+            "updated_at": (
+                process.updated_at.isoformat() if process.updated_at else None
+            ),
+        },
     }
 
 
@@ -209,7 +217,10 @@ def process_task(process_id: int):
                 db.add(process_step)
                 db.commit()
 
-        if process.details["show_final_summary"]:
+        if (
+            "show_final_summary" in process.details
+            and process.details["show_final_summary"]
+        ):
             logger.log(f"Extracting summary from summaries")
             summary_of_summaries = extract_summary_of_summaries(
                 summaries, process.details["transformation_prompt"]
