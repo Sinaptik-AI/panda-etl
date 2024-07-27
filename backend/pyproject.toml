@@ -18,6 +18,7 @@ spacy = "^3.7.5"
 fitz = "^0.0.1.dev2"
 scikit-learn = "^1.5.1"
 pymupdf = "^1.24.8"
+dateparser = "^1.2.0"
 
 
 [build-system]

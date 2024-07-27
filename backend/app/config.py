@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     bambooetl_server_url: str
     log_file_path: str = os.path.join(os.path.dirname(__file__), "..", "bambooetl.log")
     openai_api_key: str
-    ai_model: str = "gpt-4"
+    ai_model: str = "gpt-4o-mini"
 
     class Config:
         env_file = ".env"

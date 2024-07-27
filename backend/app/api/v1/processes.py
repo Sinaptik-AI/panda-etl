@@ -1,5 +1,6 @@
 import os
 
+import dateparser
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -266,9 +267,43 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     headers = process_steps[0].output.keys()
     csv_writer.writerow(headers)
 
+    # fetch date columns
+    date_columns = []
+    number_columns = []
+    if process.type == "extract":
+        if "fields" in process.details:
+            for field in process.details["fields"]:
+                if field["type"] == "date":
+                    date_columns.append(field["key"])
+                elif field["type"] == "number":
+                    number_columns.append(field["key"])
+
     # Write data rows
     for step in process_steps:
-        csv_writer.writerow(step.output.values())
+
+        row = []
+        for key in step.output.keys():
+            value = step.output[key]
+            if key in date_columns:
+                try:
+                    parsed_date = dateparser.parse(value)
+                    if parsed_date:
+                        value = parsed_date.strftime("%d-%m-%Y")
+                except:
+                    logger.error(
+                        f"Unable to parse date {value} fallback to extracted text"
+                    )
+            elif key in number_columns:
+                try:
+                    value = int(value)
+                except:
+                    logger.error(
+                        f"Unable to parse date {value} fallback to extracted text"
+                    )
+
+            row.append(value)
+
+        csv_writer.writerow(row)
 
     csv_content = csv_buffer.getvalue()
 
