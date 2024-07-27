@@ -264,7 +264,8 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = process_steps[0].output.keys()
+    headers = process_steps[0].output[0].keys()
+    csv_writer = csv.writer(csv_buffer, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     csv_writer.writerow(headers)
 
     # fetch date columns
@@ -280,30 +281,28 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
 
     # Write data rows
     for step in process_steps:
-
-        row = []
-        for key in step.output.keys():
-            value = step.output[key]
-            if key in date_columns:
-                try:
-                    parsed_date = dateparser.parse(value)
-                    if parsed_date:
-                        value = parsed_date.strftime("%d-%m-%Y")
-                except:
-                    logger.error(
-                        f"Unable to parse date {value} fallback to extracted text"
-                    )
-            elif key in number_columns:
-                try:
-                    value = int(value)
-                except:
-                    logger.error(
-                        f"Unable to parse date {value} fallback to extracted text"
-                    )
-
-            row.append(value)
-
-        csv_writer.writerow(row)
+        for output in step.output:
+            row = []
+            for key in headers:
+                value = output.get(key, '')
+                if key in date_columns:
+                    try:
+                        parsed_date = dateparser.parse(value)
+                        if parsed_date:
+                            value = parsed_date.strftime("%d-%m-%Y")
+                    except:
+                        logger.error(
+                            f"Unable to parse date {value} fallback to extracted text"
+                        )
+                elif key in number_columns:
+                    try:
+                        value = int(value)
+                    except:
+                        logger.error(
+                            f"Unable to parse number {value} fallback to extracted text"
+                        )
+                row.append(value)
+            csv_writer.writerow(row)
 
     csv_content = csv_buffer.getvalue()
 

@@ -46,7 +46,7 @@ const columns: Column<ProcessDetailsResponse>[] = [
     label: statusLabel,
   },
   {
-    header: "Startet at",
+    header: "Started at",
     accessor: "created_at",
     label: (process: ProcessDetailsResponse) => (
       <DateLabel dateString={process.created_at} />
@@ -86,7 +86,7 @@ const columns: Column<ProcessDetailsResponse>[] = [
   },
 ];
 
-export default function Project() {
+export default function Process() {
   const params = useParams();
   const processId = params.processId as string;
   const projectId = params.projectId as string;
@@ -99,16 +99,14 @@ export default function Project() {
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedProcess, setSelectedProcess] =
     useState<ProcessDetailsResponse | null>(null);
-  const [selectedProcessStepId, setSelectedProcessStepId] = useState<
-    number | null
-  >(null);
+  const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
 
   const {
     data: processStepData,
     isLoading: isLoadingProcessStep,
     isError: isErrorProcessStep,
     error: processStepError,
-  } = useProcessStep(selectedProcessStepId || 0);
+  } = useProcessStep(selectedStepId || 0);
 
   const project = processResponse?.data?.data?.[0]?.process?.project;
   const process = processResponse?.data?.data?.[0]?.process;
@@ -168,7 +166,7 @@ export default function Project() {
             columns={columns}
             onRowClick={(row) => {
               setSelectedProcess(row);
-              setSelectedProcessStepId(row.process.id);
+              setSelectedStepId(row.id);
             }}
           />
         </>
@@ -178,7 +176,7 @@ export default function Project() {
         isOpen={selectedProcess !== null}
         onClose={() => {
           setSelectedProcess(null);
-          setSelectedProcessStepId(null);
+          setSelectedStepId(null);
         }}
         title={"Process Details"}
       >
@@ -196,11 +194,17 @@ export default function Project() {
                   </p>
                   <p>{processStepError?.message}</p>
                 </div>
-              ) : (
-                <div className="bg-white shadow-md rounded-lg p-6 overflow-auto max-h-96">
-                  {Object.entries(processStepData?.data.output || {}).map(
-                    ([key, value]) => (
-                      <div key={key} className="mb-6 last:mb-0">
+              ) : processStepData?.data.output ? (
+                (Array.isArray(processStepData.data.output)
+                  ? processStepData.data.output
+                  : [processStepData.data.output]
+                ).map((item, index) => (
+                  <div
+                    className="bg-white shadow-md rounded-lg p-6 mb-2"
+                    key={index}
+                  >
+                    {Object.entries(item).map(([key, value]) => (
+                      <div key={key} className="mb-4 last:mb-0">
                         <h4 className="text-lg font-semibold text-gray-700 mb-2">
                           {key}
                         </h4>
@@ -216,9 +220,11 @@ export default function Project() {
                           )}
                         </div>
                       </div>
-                    )
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600">No output data available.</p>
               )}
             </div>
 
