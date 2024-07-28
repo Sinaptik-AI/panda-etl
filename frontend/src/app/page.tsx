@@ -16,6 +16,12 @@ import Pagination from "@/components/ui/Pagination";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useDeleteProject } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/ContextMenu";
 
 export default function Projects() {
   const router = useRouter();
@@ -134,15 +140,27 @@ export default function Projects() {
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
               {projects.map((project) => (
-                <Folder
-                  key={project.id}
-                  name={project.name}
-                  onClick={() => handleProjectClick(project.id)}
-                  onDelete={() => {
-                    setDeletedId(project.id);
-                    setIsDeleteModalOpen(true);
-                  }}
-                />
+                <ContextMenu key={project.id}>
+                  <ContextMenuTrigger>
+                    <Folder
+                      key={project.id}
+                      name={project.name}
+                      onClick={() => handleProjectClick(project.id)}
+                    />
+                  </ContextMenuTrigger>
+
+                  <ContextMenuContent className="bg-white">
+                    <ContextMenuItem
+                      className="hover:bg-blue-600 hover:text-white text-black"
+                      onClick={() => {
+                        setDeletedId(project.id);
+                        setIsDeleteModalOpen(true);
+                      }}
+                    >
+                      Delete
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               ))}
             </div>
           ) : (

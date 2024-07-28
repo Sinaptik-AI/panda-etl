@@ -28,6 +28,12 @@ import Pagination from "@/components/ui/Pagination";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useDeleteAssets } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/ContextMenu";
 
 export default function Project() {
   const params = useParams();
@@ -213,15 +219,27 @@ export default function Project() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                   {assets &&
                     assets.map((asset: any) => (
-                      <File
-                        key={asset.id}
-                        name={asset.filename}
-                        onClick={() => handleFileClick(asset.id)}
-                        onDelete={() => {
-                          setDeletedId(asset.id);
-                          setIsDeleteModalOpen(true);
-                        }}
-                      />
+                      <ContextMenu key={asset.id}>
+                        <ContextMenuTrigger>
+                          <File
+                            key={asset.id}
+                            name={asset.filename}
+                            onClick={() => handleFileClick(asset.id)}
+                          />
+                        </ContextMenuTrigger>
+
+                        <ContextMenuContent className="bg-white">
+                          <ContextMenuItem
+                            className="hover:bg-blue-600 hover:text-white text-black"
+                            onClick={() => {
+                              setDeletedId(asset.id);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            Delete
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
                     ))}
 
                   <FileUploadCard

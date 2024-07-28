@@ -15,7 +15,7 @@ const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
 }) => {
   return (
     <Tippy content={content} delay={[delay, 0]} arrow={true} placement="top">
-      <div className="inline-block">{children}</div>
+      <div>{children}</div>
     </Tippy>
   );
 };
