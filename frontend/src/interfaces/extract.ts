@@ -1,7 +1,7 @@
 export interface ExtractionField {
   key: string;
-  type: "text" | "date" | "number" | "list" | "boolean";
   description: string;
+  type: "text" | "number" | "date" | "list";
 }
 
 export interface ExtractionResult {

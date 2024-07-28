@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
@@ -10,7 +10,7 @@ import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, Edit, Save } from "lucide-react";
+import { Download, FileText, Loader2, Edit, Save, Copy } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
@@ -144,14 +144,14 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
 
         return (
-          <>
+          <div className="flex items-center space-x-1">
             <Link
               href={downloadUrl}
               className="text-blue-600 hover:underline"
               target="_blank"
             >
               <Tooltip content="Download CSV">
-                <Download className="inline-block mr-1" size={16} />
+                <Download size={16} />
               </Tooltip>
             </Link>
             {process.type === "extractive_summary" &&
@@ -165,11 +165,33 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                   }}
                 >
                   <Tooltip content="View summary">
-                    <FileText className="inline-block mr-1" size={16} />
+                    <FileText size={16} />
                   </Tooltip>
                 </Link>
               )}
-          </>
+            {(process.type === "extractive_summary" ||
+              process.type === "extract") && (
+              <Link
+                href="#"
+                className="text-blue-600 hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const templateParams = new URLSearchParams({
+                    template: process.id,
+                    type: process.type,
+                    output: "csv",
+                  }).toString();
+                  router.push(
+                    `/projects/${process.project_id}/processes/new?${templateParams}`
+                  );
+                }}
+              >
+                <Tooltip content="Use as template">
+                  <Copy size={16} />
+                </Tooltip>
+              </Link>
+            )}
+          </div>
         );
       },
     },

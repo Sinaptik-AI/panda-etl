@@ -14,14 +14,25 @@ import { useRouter } from "next/navigation";
 interface ExtractionStepProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
+  templateData?: any;
 }
 
 export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   project,
   setStep,
+  templateData,
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
+  const [fields, setFields] = useState<ExtractionField[]>(
+    templateData ?? [
+      {
+        key: "",
+        description: "",
+        type: "text",
+      },
+    ]
+  );
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
     []
   );
@@ -36,6 +47,10 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
       return asset as AssetData[];
     },
   });
+
+  useEffect(() => {
+    console.log("fields", fields);
+  }, [fields]);
 
   const handleSubmit = async (fields: ExtractionField[]) => {
     setExtractionFields(fields);
@@ -68,6 +83,8 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
         <ExtractionForm
           onSubmit={handleSubmit}
           onStartProcess={handleProcessStart}
+          fields={fields}
+          setFields={setFields}
         />
         <div className="mt-1">
           {extractionResult && (

@@ -17,6 +17,7 @@ import { Play } from "lucide-react";
 interface ExtractiveSummaryProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
+  templateData?: any;
 }
 
 interface ExtractiveSummaryData {
@@ -40,6 +41,7 @@ const summaryLengthOptions = [
 export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   project,
   setStep,
+  templateData,
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
@@ -54,6 +56,23 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
       show_final_summary: false,
     },
   });
+
+  useEffect(() => {
+    if (templateData) {
+      setFormData((prev) => ({
+        ...prev,
+        data: {
+          ...prev.data,
+          summary_length: templateData.summary_length || 7.5,
+          highlight: templateData.highlight || false,
+          positive_topics: templateData.positive_topics || [],
+          negative_topics: templateData.negative_topics || [],
+          show_final_summary: templateData.show_final_summary || false,
+          transformation_prompt: templateData.transformation_prompt || "",
+        },
+      }));
+    }
+  }, [templateData]);
 
   const [positiveInput, setPositiveInput] = useState("");
   const [negativeInput, setNegativeInput] = useState("");

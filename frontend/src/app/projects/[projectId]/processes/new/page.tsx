@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -13,13 +13,40 @@ import { Step2 } from "./step2";
 import { GetAPIKey } from "@/services/user";
 import { ExtractionStep } from "./custom-steps/Extraction";
 import { ExtractiveSummary } from "./custom-steps/ExtractiveSummary";
+import { useSearchParams } from "next/navigation";
+import { GetProcess } from "@/services/processes";
 
 export default function NewProcess() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<number>(1);
   const [selectedProcess, setSelectedProcess] = useState<string>("extract");
   const [selectedOutput, setSelectedOutput] = useState<string>("csv");
   const projectId = params.projectId as string;
+
+  const templateId = searchParams.get("template");
+  const templateType = searchParams.get("type");
+  const templateOutput = searchParams.get("output");
+
+  const { data: templateProcess } = useQuery({
+    queryKey: ["template-process", templateId],
+    queryFn: async () => {
+      if (!templateId) return null;
+      const response = await GetProcess(templateId);
+      return response.data.data.details;
+    },
+    enabled: !!templateId,
+  });
+
+  useEffect(() => {
+    if (templateProcess) {
+      setSelectedProcess(templateType || templateProcess.type);
+      setSelectedOutput(
+        templateOutput || templateProcess.output_format || "csv"
+      );
+      setStep(3);
+    }
+  }, [templateProcess, templateType, templateOutput]);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],
@@ -82,9 +109,17 @@ export default function NewProcess() {
       ) : (
         project &&
         (selectedProcess === "extract" ? (
-          <ExtractionStep setStep={setStep} project={project} />
+          <ExtractionStep
+            setStep={setStep}
+            project={project}
+            templateData={templateProcess?.fields}
+          />
         ) : selectedProcess === "extractive_summary" ? (
-          <ExtractiveSummary setStep={setStep} project={project} />
+          <ExtractiveSummary
+            setStep={setStep}
+            project={project}
+            templateData={templateProcess}
+          />
         ) : null)
       )}
     </>

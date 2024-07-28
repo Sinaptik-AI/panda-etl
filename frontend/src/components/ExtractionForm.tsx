@@ -1,6 +1,13 @@
 "use client";
 import { useState, FormEvent } from "react";
-import { ChevronDown, ChevronUp, Loader2, Play, Plus, ScanEye } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Play,
+  Plus,
+  ScanEye,
+} from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
@@ -19,16 +26,16 @@ interface Field {
 interface ExtractionFormProps {
   onSubmit: (fields: Field[]) => Promise<void>;
   onStartProcess: (fields: Field[]) => Promise<void>;
+  fields: Field[];
+  setFields: React.Dispatch<React.SetStateAction<Field[]>>;
 }
 
-export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionFormProps) {
-  const [fields, setFields] = useState<Field[]>([
-    {
-      key: "",
-      description: "",
-      type: "text",
-    },
-  ]);
+export default function ExtractionForm({
+  onSubmit,
+  onStartProcess,
+  fields,
+  setFields,
+}: ExtractionFormProps) {
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
     { 0: true }
   );
@@ -76,20 +83,25 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
   };
 
   const is_fields_empty = () => {
-    return (fields.length == 1 && fields[0].key=="" && fields[0].description=="") || fields.length == 0
-  }
+    return (
+      (fields.length == 1 &&
+        fields[0].key == "" &&
+        fields[0].description == "") ||
+      fields.length == 0
+    );
+  };
 
   const onStartBtnClick = async () => {
     try {
-      setStartingProcess(true)
+      setStartingProcess(true);
       await await onStartProcess(fields);
-      setStartingProcess(false)
+      setStartingProcess(false);
     } catch (error) {
       console.error("Error start process:", error);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -202,7 +214,7 @@ export default function ExtractionForm({ onSubmit, onStartProcess }: ExtractionF
         <Button
           type="button"
           onClick={onStartBtnClick}
-          icon={startingProcess? Loader2: Play}
+          icon={startingProcess ? Loader2 : Play}
           disabled={is_fields_empty()}
           variant="primary"
         >
