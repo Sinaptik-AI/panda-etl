@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Title from "@/components/ui/Title";
 import { Button } from "@/components/ui/Button";
-import { Loader2, PlusIcon, GridIcon, ListIcon } from "lucide-react";
+import { Loader2, PlusIcon, GridIcon, ListIcon, TrashIcon } from "lucide-react";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProjects } from "@/services/projects";
 import { useQuery } from "@tanstack/react-query";
@@ -151,12 +151,12 @@ export default function Projects() {
 
                   <ContextMenuContent className="bg-white">
                     <ContextMenuItem
-                      className="hover:bg-blue-600 hover:text-white text-black"
                       onClick={() => {
                         setDeletedId(project.id);
                         setIsDeleteModalOpen(true);
                       }}
                     >
+                      <TrashIcon className="mr-2 h-4 w-4" />
                       Delete
                     </ContextMenuItem>
                   </ContextMenuContent>

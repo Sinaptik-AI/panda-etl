@@ -4,7 +4,7 @@ import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import File from "@/components/FileIconCard";
-import { Loader2, PlusIcon, GridIcon, ListIcon } from "lucide-react";
+import { Loader2, PlusIcon, GridIcon, ListIcon, TrashIcon } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
@@ -230,12 +230,12 @@ export default function Project() {
 
                         <ContextMenuContent className="bg-white">
                           <ContextMenuItem
-                            className="hover:bg-blue-600 hover:text-white text-black"
                             onClick={() => {
                               setDeletedId(asset.id);
                               setIsDeleteModalOpen(true);
                             }}
                           >
+                            <TrashIcon className="mr-2 h-4 w-4" />
                             Delete
                           </ContextMenuItem>
                         </ContextMenuContent>

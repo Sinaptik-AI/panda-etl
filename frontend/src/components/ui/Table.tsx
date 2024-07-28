@@ -5,6 +5,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
+import { TrashIcon } from "lucide-react";
 
 export interface Column<T> {
   header: string;
@@ -72,10 +73,8 @@ export function Table<T>({
                 </tr>
               </ContextMenuTrigger>
               <ContextMenuContent className="bg-white">
-                <ContextMenuItem
-                  className="hover:bg-blue-600 hover:text-white text-black"
-                  onClick={() => onDelete(row.id)}
-                >
+                <ContextMenuItem onClick={() => onDelete(row.id)}>
+                  <TrashIcon className="mr-2 h-4 w-4" />
                   Delete
                 </ContextMenuItem>
               </ContextMenuContent>
