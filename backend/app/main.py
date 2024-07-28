@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from .database import engine, Base
+from .models.base import Base
+from .database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 

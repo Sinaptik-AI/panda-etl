@@ -7,8 +7,7 @@ from sqlalchemy import (
     Enum as SQLAlchemyEnum,
 )
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from ..database import Base
+from .base import Base
 from enum import Enum
 
 
@@ -26,8 +25,6 @@ class ProcessStep(Base):
     process_id = Column(Integer, ForeignKey("processes.id"), nullable=False)
     asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
     output = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     status = Column(SQLAlchemyEnum(ProcessStepStatus), nullable=False)
 
     process = relationship("Process", back_populates="process_steps")

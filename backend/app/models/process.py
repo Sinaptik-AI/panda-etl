@@ -7,8 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLAlchemyEnum,
 )
-from datetime import datetime
-from ..database import Base
+from .base import Base
 from sqlalchemy.orm import relationship
 from enum import Enum
 
@@ -30,8 +29,6 @@ class Process(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     details = Column(JSON, nullable=True)
     message = Column(String(255), nullable=False)
     output = Column(JSON, nullable=True)
