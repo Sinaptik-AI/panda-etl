@@ -75,6 +75,7 @@ def get_processes(db: Session = Depends(get_db)):
         "data": [
             {
                 "id": process.id,
+                "name": process.name,
                 "type": process.type,
                 "status": process.status,
                 "project": process.project.name,
@@ -267,11 +268,19 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
             "data": None,
         }
 
+    completed_steps = [step for step in process_steps if step.status == ProcessStepStatus.COMPLETED]
+    if not completed_steps:
+        return {
+            "status": "error",
+            "message": "No completed steps found",
+            "data": None,
+        }
+
     csv_buffer = StringIO()
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = process_steps[0].output[0].keys()
+    headers = completed_steps[0].output[0].keys()
     csv_writer = csv.writer(
         csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
@@ -289,7 +298,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
                     number_columns.append(field["key"])
 
     # Write data rows
-    for step in process_steps:
+    for step in completed_steps:
         for output in step.output:
             row = []
             for key in headers:

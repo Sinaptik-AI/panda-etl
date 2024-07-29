@@ -138,7 +138,10 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       header: "Actions",
       accessor: "id",
       label: (process: ProcessData) => {
-        if (process.status !== ProcessStatus.COMPLETED) {
+        if (
+          process.status !== ProcessStatus.COMPLETED &&
+          process.status !== ProcessStatus.FAILED
+        ) {
           return "-";
         }
 
