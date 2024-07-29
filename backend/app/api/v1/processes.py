@@ -42,6 +42,7 @@ def get_process(process_id: int, db: Session = Depends(get_db)):
         "message": "Process successfully returned",
         "data": {
             "id": process.id,
+            "name": process.name,
             "type": process.type,
             "status": process.status,
             "project": process.project.name,
@@ -98,8 +99,7 @@ def get_processes(db: Session = Depends(get_db)):
 
 
 @process_router.post("/start")
-def start_processes(process: ProcessData, db: Session = Depends(get_db)):
-
+def start_process(process: ProcessData, db: Session = Depends(get_db)):
     process = process_repository.create_process(db, process)
 
     assets = project_repository.get_assets(db, process.project_id)
@@ -126,6 +126,7 @@ def start_processes(process: ProcessData, db: Session = Depends(get_db)):
         "data": [
             {
                 "id": process.id,
+                "name": process.name,
                 "type": process.type,
                 "status": process.status,
                 "project": process.project.name,
@@ -324,7 +325,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
 
 
 @process_router.get("/{process_id}/get-steps")
-def start_processes(process_id: int, db: Session = Depends(get_db)):
+def get_process_steps(process_id: int, db: Session = Depends(get_db)):
     process_steps = process_repository.get_process_steps(db, process_id)
 
     if not process_steps:

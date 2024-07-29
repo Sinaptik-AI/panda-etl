@@ -15,6 +15,7 @@ def get_processes(db: Session):
 
 def create_process(db: Session, process_data: ProcessData):
     process = models.Process(
+        name=process_data.name,
         type=process_data.type,
         status=models.ProcessStatus.PENDING,
         project_id=process_data.project_id,

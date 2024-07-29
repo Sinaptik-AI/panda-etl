@@ -179,6 +179,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
         "data": [
             {
                 "id": process.id,
+                "name": process.name,
                 "type": process.type,
                 "status": process.status,
                 "project_id": f"{process.project_id}",

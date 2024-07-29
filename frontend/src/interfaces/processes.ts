@@ -9,6 +9,7 @@ export enum ProcessStatus {
 
 export interface ProcessData {
   id: string;
+  name?: string;
   type: string;
   status: ProcessStatus;
   project?: string;
@@ -21,6 +22,7 @@ export interface ProcessData {
 }
 
 export interface ProcessRequest {
+  name?: string;
   type: string;
   details:
     | {

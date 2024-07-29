@@ -94,6 +94,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
 
   const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
+    { header: "Name", accessor: "name" },
     { header: "Type", accessor: "type" },
     ...(projectId
       ? []
