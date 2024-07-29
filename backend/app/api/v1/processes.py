@@ -280,7 +280,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = completed_steps[0].output[0].keys()
+    headers = ['Filename'] + list(completed_steps[0].output[0].keys())
     csv_writer = csv.writer(
         csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
@@ -300,8 +300,8 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     # Write data rows
     for step in completed_steps:
         for output in step.output:
-            row = []
-            for key in headers:
+            row = [step.asset.filename]
+            for key in headers[1:]:
                 value = output.get(key, "")
                 if key in date_columns:
                     try:

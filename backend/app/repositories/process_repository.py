@@ -42,7 +42,8 @@ def get_process_steps(db: Session, process_id: int):
         db.query(models.ProcessStep)
         .filter(models.ProcessStep.process_id == process_id)
         .options(
-            joinedload(models.ProcessStep.process).joinedload(models.Process.project)
+            joinedload(models.ProcessStep.process).joinedload(models.Process.project),
+            joinedload(models.ProcessStep.asset)
         )
         .all()
     )
