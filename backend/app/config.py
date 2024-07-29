@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     log_file_path: str = os.path.join(os.path.dirname(__file__), "..", "bambooetl.log")
     openai_api_key: str
     ai_model: str = "gpt-4o-mini"
+    max_retries: int = 3
 
     class Config:
         env_file = ".env"

@@ -108,7 +108,6 @@ def start_processes(process: ProcessData, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No Asset found!")
 
     for asset in assets[0]:
-
         process_step = ProcessStep(
             process_id=process.id,
             asset_id=asset.id,
@@ -163,65 +162,72 @@ def process_task(process_id: int):
             db.commit()
 
             api_key = user_repository.get_user_api_key(db)
-            try:
-                if process.type == "extractive_summary":
 
-                    from .extract import (
-                        extract_summary,
-                        highlight_sentences_in_pdf,
-                        extract_summary_of_summaries,
-                    )
+            retries = 0
+            success = False
+            while retries < settings.max_retries and not success:
+                try:
 
-                    summary, summary_sentences = extract_summary(
-                        process_step.asset.path,
-                        process_step.asset.filename,
-                        process.details,
-                    )
-                    highlighted_file_dir = os.path.join(
-                        settings.process_dir, str(process_id), str(process_step.id)
-                    )
+                    if process.type == "extractive_summary":
+                        from .extract import extract_summary, highlight_sentences_in_pdf
 
-                    os.makedirs(highlighted_file_dir, exist_ok=True)
+                        summary, summary_sentences = extract_summary(
+                            process_step.asset.path,
+                            process_step.asset.filename,
+                            process.details,
+                        )
+                        highlighted_file_dir = os.path.join(
+                            settings.process_dir, str(process_id), str(process_step.id)
+                        )
 
-                    highlighted_file_path = os.path.join(
-                        highlighted_file_dir,
-                        f"highlighted_{process_step.asset.filename}",
-                    )
+                        os.makedirs(highlighted_file_dir, exist_ok=True)
 
-                    highlight_sentences_in_pdf(
-                        process_step.asset.path,
-                        highlighted_file_path,
-                        summary_sentences,
-                    )
+                        highlighted_file_path = os.path.join(
+                            highlighted_file_dir,
+                            f"highlighted_{process_step.asset.filename}",
+                        )
 
-                    data = {
-                        "highlighted_pdf": highlighted_file_path,
-                        "summary": summary,
-                    }
+                        highlight_sentences_in_pdf(
+                            process_step.asset.path,
+                            highlighted_file_path,
+                            summary_sentences,
+                        )
 
-                    if summary:
-                        summaries.append(summary)
+                        data = {
+                            "highlighted_pdf": highlighted_file_path,
+                            "summary": summary,
+                        }
 
-                else:
-                    data = extract_data(
-                        api_key.key, process_step.asset.path, process.details
-                    )
+                        if summary:
+                            summaries.append(summary)
 
-                process_step.output = data
-                process_step.status = ProcessStepStatus.COMPLETED
-                db.add(process_step)
-                db.commit()
-            except Exception as e:
-                logger.error(traceback.format_exc())
-                failed_docs += 1
-                process_step.status = ProcessStepStatus.FAILED
-                db.add(process_step)
-                db.commit()
+                    else:
+                        data = extract_data(
+                            api_key.key, process_step.asset.path, process.details
+                        )
+
+                    process_step.output = data
+                    process_step.status = ProcessStepStatus.COMPLETED
+                    db.add(process_step)
+                    db.commit()
+                    success = True
+                except Exception as e:
+                    logger.error(traceback.format_exc())
+                    retries += 1
+                    if retries == settings.max_retries:
+                        failed_docs += 1
+                        process_step.status = ProcessStepStatus.FAILED
+                        db.add(process_step)
+                        db.commit()
 
         if (
             "show_final_summary" in process.details
             and process.details["show_final_summary"]
         ):
+            from .extract import (
+                extract_summary_of_summaries,
+            )
+
             logger.log(f"Extracting summary from summaries")
             summary_of_summaries = extract_summary_of_summaries(
                 summaries, process.details["transformation_prompt"]
@@ -265,7 +271,9 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
 
     # Write headers
     headers = process_steps[0].output[0].keys()
-    csv_writer = csv.writer(csv_buffer, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    csv_writer = csv.writer(
+        csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
+    )
     csv_writer.writerow(headers)
 
     # fetch date columns
@@ -284,7 +292,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
         for output in step.output:
             row = []
             for key in headers:
-                value = output.get(key, '')
+                value = output.get(key, "")
                 if key in date_columns:
                     try:
                         parsed_date = dateparser.parse(value)
