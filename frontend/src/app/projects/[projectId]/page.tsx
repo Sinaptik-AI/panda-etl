@@ -80,11 +80,14 @@ export default function Project() {
     refetchInterval: 2000,
   });
 
-  const { data: projectAssetsResponse, refetch: refetchProjectAssets } =
-    useQuery({
-      queryKey: ["projectAssets", id, page, pageSize],
-      queryFn: () => GetProjectAssets(id, page, pageSize),
-    });
+  const {
+    data: projectAssetsResponse,
+    refetch: refetchProjectAssets,
+    isLoading: isAssetsLoading,
+  } = useQuery({
+    queryKey: ["projectAssets", id, page, pageSize],
+    queryFn: () => GetProjectAssets(id, page, pageSize),
+  });
 
   const { mutateAsync: deleteAsset, isPending: isDeleteAssetPending } =
     useDeleteAssets();
@@ -198,7 +201,7 @@ export default function Project() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || isAssetsLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
       ) : (
         <>
