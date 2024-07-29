@@ -1,15 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import File from "@/components/FileIconCard";
-import { Loader2, PlusIcon, GridIcon, ListIcon, TrashIcon } from "lucide-react";
+import { Loader2, GridIcon, ListIcon, TrashIcon } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
-import { Button } from "@/components/ui/Button";
 import {
   AddProjectAsset,
   GetProject,
@@ -23,7 +22,6 @@ import PDFViewer from "@/components/PDFViewer";
 import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
-import Toggle from "@/components/ui/Toggle";
 import Pagination from "@/components/ui/Pagination";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useDeleteAssets } from "@/hooks/useProjects";
@@ -52,6 +50,7 @@ export default function Project() {
   const [deletedId, setDeletedId] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("assetsViewMode") as
@@ -176,6 +175,17 @@ export default function Project() {
     );
   };
 
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    handleFileUpload(files);
+  };
+
   return (
     <>
       <Head>
@@ -187,18 +197,6 @@ export default function Project() {
 
       <div className="flex justify-between items-center mb-8">
         <Title margin={false}>{project?.name}</Title>
-        <div className="flex space-x-4">
-          {activeTab === "assets" && (
-            <Toggle
-              options={viewOptions}
-              value={viewMode}
-              onChange={(value) => updateViewMode(value as "grid" | "table")}
-            />
-          )}
-          <Button onClick={newProcess} icon={PlusIcon}>
-            New process
-          </Button>
-        </div>
       </div>
 
       {isLoading || isAssetsLoading ? (
@@ -209,6 +207,26 @@ export default function Project() {
             tabs={projectTabs}
             onTabChange={(tabId) => setActiveTab(tabId)}
             defaultActiveTab={activeTab}
+            trailingButton
+            trailingButtonText={`${
+              activeTab === "assets" ? "Add Files" : "Add Process"
+            }`}
+            trailingClick={() => {
+              if (activeTab === "assets") {
+                handleButtonClick();
+              } else {
+                newProcess();
+              }
+            }}
+          />
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="application/pdf"
+            onChange={handleFileChange}
+            multiple
+            style={{ display: "none" }}
           />
 
           {activeTab === "assets" && (
