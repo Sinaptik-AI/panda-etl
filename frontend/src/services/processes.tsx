@@ -3,6 +3,7 @@ import {
   ProcessData,
   ProcessExecutionData,
   ProcessRequest,
+  ProcessResumeData,
 } from "@/interfaces/processes";
 
 export const processApiUrl = "/processes";
@@ -38,6 +39,32 @@ export const StartProcess = async (data: ProcessRequest) => {
     throw error;
   }
 };
+
+
+export const StopProcess = async (process_id: number|string) => {
+  try {
+    const response = await PostRequest<{ data: ProcessResumeData }>(
+      `${processApiUrl}/${process_id}/stop`,
+      null
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const ResumeProcess = async (process_id: number|string) => {
+  try {
+    const response = await PostRequest<{ data: ProcessResumeData }>(
+      `${processApiUrl}/${process_id}/resume`,
+      null
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 export const GetProcessSteps = async (processId: string) => {
   try {

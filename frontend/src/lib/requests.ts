@@ -23,7 +23,7 @@ export async function GetRequest<T>(
 
 export async function PostRequest<T>(
   url: string,
-  requestData: object,
+  requestData: object | null,
   headers = {},
   timeout?: number
 ): Promise<AxiosResponse> {

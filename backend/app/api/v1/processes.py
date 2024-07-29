@@ -137,6 +137,47 @@ def start_process(process: ProcessData, db: Session = Depends(get_db)):
     }
 
 
+@process_router.post("/{process_id}/stop")
+def stop_processes(process_id: int, db: Session = Depends(get_db)):
+
+    process = process_repository.get_process(db, process_id)
+
+    if process.status in [ProcessStatus.IN_PROGRESS, ProcessStatus.PENDING]:
+        process.status = ProcessStatus.STOPPED
+        db.commit()
+    else:
+        raise HTTPException(
+            status_code=404, detail="Process not in a state to be stopped"
+        )
+
+    return {
+        "status": "success",
+        "message": "Processes successfully stopped!",
+        "data": [{"id": process.id, "type": process.type, "status": process.status}],
+    }
+
+
+@process_router.post("/{process_id}/resume")
+def stop_processes(process_id: int, db: Session = Depends(get_db)):
+
+    process = process_repository.get_process(db, process_id)
+
+    if process.status in [ProcessStatus.STOPPED]:
+        process.status = ProcessStatus.PENDING
+        db.commit()
+        logger.log(f"Add to process {process.id} to the queue")
+        executor.submit(process_task, process.id)
+
+    else:
+        raise HTTPException(status_code=404, detail="Process ")
+
+    return {
+        "status": "success",
+        "message": "Processes successfully stopped!",
+        "data": [{"id": process.id, "type": process.type, "status": process.status}],
+    }
+
+
 # Background task processing function
 def process_task(process_id: int):
     db = SessionLocal()
@@ -153,7 +194,14 @@ def process_task(process_id: int):
 
         failed_docs = 0
         summaries = []
+        process_stopped = False
         for process_step in process_steps:
+
+            db.refresh(process)
+
+            if process.status == ProcessStatus.STOPPED:
+                process_stopped = True
+                break
 
             logger.log(f"Processing file: {process_step.asset.path}")
             if process_step.status == ProcessStepStatus.COMPLETED:
@@ -237,10 +285,12 @@ def process_task(process_id: int):
             process.output = {"summary": summary_of_summaries}
             logger.log(f"Extracting summary from summaries completed")
 
-        process.status = (
-            ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
-        )
-        process.completed_at = datetime.now()
+        if not process_stopped:
+            process.status = (
+                ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
+            )
+            process.completed_at = datetime.now()
+
     except Exception as e:
         logger.error(traceback.format_exc())
         process.status = ProcessStatus.FAILED

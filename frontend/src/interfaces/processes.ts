@@ -5,6 +5,7 @@ export enum ProcessStatus {
   IN_PROGRESS = 2,
   COMPLETED = 3,
   FAILED = 4,
+  STOPPED = 5
 }
 
 export interface ProcessData {
@@ -39,6 +40,12 @@ export interface ProcessExecutionData {
   project: string;
   project_id: string;
   started_at: string;
+}
+
+export interface ProcessResumeData {
+  id: number;
+  type: string;
+  status: string;
 }
 
 export interface ProcessDetailsResponse {
