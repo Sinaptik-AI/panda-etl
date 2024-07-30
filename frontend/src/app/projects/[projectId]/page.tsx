@@ -16,7 +16,7 @@ import {
   FetchAssetFile,
 } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import FileUploadCard from "@/components/FileUploadCard";
 import PDFViewer from "@/components/PDFViewer";
 import DragAndDrop from "@/components/DragAndDrop";
@@ -51,6 +51,8 @@ export default function Project() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("assetsViewMode") as
@@ -117,18 +119,25 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
-  const handleFileUpload = async (file: FileList | null) => {
-    if (file) {
+  const handleFileUpload = async (fileList: FileList | null) => {
+    if (fileList) {
+      const files = Array.from(fileList);
+      setUploadingFiles((prev) => [...prev, ...files]);
+
       try {
         setUploadingFile(true);
-        const response = await AddProjectAsset(id, file);
-        setUploadingFile(false);
-        if (!response.data) {
-          throw new Error("Failed to create project");
+        for (const file of files) {
+          const response = await AddProjectAsset(id, file);
+          if (!response.data) {
+            throw new Error("Failed to upload file");
+          }
         }
-        await refetchProjectAssets();
+        setUploadingFile(false);
+        setUploadingFiles([]);
+        queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
       } catch (error) {
-        console.error("Error creating project:", error);
+        console.error("Error uploading files:", error);
+        setUploadingFiles([]);
       }
     }
   };
@@ -277,6 +286,7 @@ export default function Project() {
                     setDeletedId(id);
                     setIsDeleteModalOpen(true);
                   }}
+                  uploadingFiles={uploadingFiles}
                 />
               )}
 

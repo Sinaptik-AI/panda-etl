@@ -5,8 +5,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
-import { TrashIcon } from "lucide-react";
-
+import { TrashIcon, Loader2 } from "lucide-react";
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((data: T) => React.ReactNode);
@@ -19,6 +18,7 @@ interface TableProps<T> {
   className?: string;
   onRowClick?: (data: any) => void;
   onDelete?: (id: string) => void;
+  uploadingFiles?: File[];
 }
 
 export function Table<T>({
@@ -27,7 +27,19 @@ export function Table<T>({
   onRowClick,
   className = "",
   onDelete,
+  uploadingFiles = [],
 }: TableProps<T>) {
+  const combinedData = [
+    ...uploadingFiles.map((file) => ({
+      id: file.name,
+      filename: file.name,
+      filetype: file.type,
+      size: file.size,
+      created_at: "Uploading",
+      isUploading: true,
+    })),
+    ...data,
+  ];
   return (
     <table className={`min-w-full bg-white ${className} shadow rounded`}>
       <thead>
@@ -40,12 +52,14 @@ export function Table<T>({
         </tr>
       </thead>
       <tbody>
-        {data.map((row: any, rowIndex) =>
+        {combinedData.map((row: any, rowIndex) =>
           onDelete ? (
             <ContextMenu key={rowIndex}>
               <ContextMenuTrigger asChild>
                 <tr
-                  className="hover:bg-gray-100 transition-colors duration-200"
+                  className={`hover:bg-gray-100 transition-colors duration-200 ${
+                    row.isUploading ? "opacity-50" : ""
+                  }`}
                   onClick={(e) => {
                     if (
                       onRowClick &&
@@ -63,11 +77,24 @@ export function Table<T>({
                         onRowClick && "cursor-pointer"
                       }`}
                     >
-                      {column.label
-                        ? column.label(row)
-                        : typeof column.accessor === "function"
-                        ? column.accessor(row)
-                        : (row[column.accessor] as React.ReactNode) ?? "-"}
+                      {row.isUploading ? (
+                        colIndex === 0 ? (
+                          <div className="flex items-center gap-2">
+                            {row.filename}
+                            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                          </div>
+                        ) : colIndex === columns.length - 1 ? (
+                          "Loading"
+                        ) : (
+                          "-"
+                        )
+                      ) : column.label ? (
+                        column.label(row)
+                      ) : typeof column.accessor === "function" ? (
+                        column.accessor(row)
+                      ) : (
+                        (row[column.accessor] as React.ReactNode) ?? "-"
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -100,11 +127,24 @@ export function Table<T>({
                     onRowClick && "cursor-pointer"
                   }`}
                 >
-                  {column.label
-                    ? column.label(row)
-                    : typeof column.accessor === "function"
-                    ? column.accessor(row)
-                    : (row[column.accessor] as React.ReactNode) ?? "-"}
+                  {row.isUploading ? (
+                    colIndex === 0 ? (
+                      <div className="flex items-center gap-2">
+                        {row.filename}
+                        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                      </div>
+                    ) : colIndex === columns.length - 1 ? (
+                      "Loading"
+                    ) : (
+                      "-"
+                    )
+                  ) : column.label ? (
+                    column.label(row)
+                  ) : typeof column.accessor === "function" ? (
+                    column.accessor(row)
+                  ) : (
+                    (row[column.accessor] as React.ReactNode) ?? "-"
+                  )}
                 </td>
               ))}
             </tr>

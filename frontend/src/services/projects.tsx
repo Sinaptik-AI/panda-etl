@@ -84,13 +84,10 @@ export const FetchAssetFile = async (
   }
 };
 
-export const AddProjectAsset = async (projectId: string, files: FileList) => {
+export const AddProjectAsset = async (projectId: string, file: File) => {
   try {
     const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append("files", file);
-    });
-
+    formData.append("files", file);
     const response = await PostRequest<{ data: any }>(
       `${projectsApiUrl}/${projectId}/assets`,
       formData
