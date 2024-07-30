@@ -22,6 +22,7 @@ export default function NewProcess() {
   const [step, setStep] = useState<number>(1);
   const [selectedProcess, setSelectedProcess] = useState<string>("extract");
   const [selectedOutput, setSelectedOutput] = useState<string>("csv");
+  const [processName, setProcessName] = useState<string>("");
   const projectId = params.projectId as string;
 
   const templateId = searchParams.get("template");
@@ -102,6 +103,8 @@ export default function NewProcess() {
           setSelectedProcess={setSelectedProcess}
           selectedOutput={selectedOutput}
           setSelectedOutput={setSelectedOutput}
+          processName={processName}
+          setProcessName={setProcessName}
           handleProceed={nextStep}
         />
       ) : step === 2 ? (
@@ -113,12 +116,14 @@ export default function NewProcess() {
             setStep={setStep}
             project={project}
             templateData={templateProcess?.fields}
+            processName={processName}
           />
         ) : selectedProcess === "extractive_summary" ? (
           <ExtractiveSummary
             setStep={setStep}
             project={project}
             templateData={templateProcess}
+            processName={processName}
           />
         ) : null)
       )}

@@ -15,6 +15,7 @@ def get_processes(db: Session):
 
 def create_process(db: Session, process_data: ProcessData):
     process = models.Process(
+        name=process_data.name,
         type=process_data.type,
         status=models.ProcessStatus.PENDING,
         project_id=process_data.project_id,
@@ -41,7 +42,8 @@ def get_process_steps(db: Session, process_id: int):
         db.query(models.ProcessStep)
         .filter(models.ProcessStep.process_id == process_id)
         .options(
-            joinedload(models.ProcessStep.process).joinedload(models.Process.project)
+            joinedload(models.ProcessStep.process).joinedload(models.Process.project),
+            joinedload(models.ProcessStep.asset)
         )
         .all()
     )

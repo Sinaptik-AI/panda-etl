@@ -18,6 +18,7 @@ interface ExtractiveSummaryProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   templateData?: any;
+  processName: string;
 }
 
 interface ExtractiveSummaryData {
@@ -42,6 +43,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   project,
   setStep,
   templateData,
+  processName,
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
@@ -175,6 +177,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   const handleProcessStart = async (data: ExtractiveSummaryData) => {
     const { data: processData } = await StartProcess({
+      name: processName,
       type: "extractive_summary",
       details: data.data,
       project_id: project.id,

@@ -1,7 +1,7 @@
 import React from "react";
 
 interface LabelStatus {
-  status: "success" | "error" | "warning" | "info";
+  status: "success" | "error" | "warning" | "info" | "default";
   children?: React.ReactNode;
 }
 

@@ -9,7 +9,6 @@ import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
-import { Button } from "@/components/ui/Button";
 import {
   AddProjectAsset,
   GetProject,
@@ -198,18 +197,6 @@ export default function Project() {
 
       <div className="flex justify-between items-center mb-8">
         <Title margin={false}>{project?.name}</Title>
-        {/* <div className="flex space-x-4">
-          {activeTab === "assets" && (
-            <Toggle
-              options={viewOptions}
-              value={viewMode}
-              onChange={(value) => updateViewMode(value as "grid" | "table")}
-            />
-          )}
-          <Button onClick={newProcess} icon={PlusIcon}>
-            New process
-          </Button>
-        </div> */}
       </div>
 
       {isLoading || isAssetsLoading ? (
@@ -222,7 +209,7 @@ export default function Project() {
             defaultActiveTab={activeTab}
             trailingButton
             trailingButtonText={`${
-              activeTab === "assets" ? "Add Files" : "Add Processes"
+              activeTab === "assets" ? "Add Files" : "Add Process"
             }`}
             trailingClick={() => {
               if (activeTab === "assets") {

@@ -15,12 +15,14 @@ interface ExtractionStepProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   templateData?: any;
+  processName: string;
 }
 
 export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   project,
   setStep,
   templateData,
+  processName,
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
@@ -48,10 +50,6 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     },
   });
 
-  useEffect(() => {
-    console.log("fields", fields);
-  }, [fields]);
-
   const handleSubmit = async (fields: ExtractionField[]) => {
     setExtractionFields(fields);
     const { data } = await Extract(project.id, fields);
@@ -60,6 +58,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 
   const handleProcessStart = async (fields: ExtractionField[]) => {
     const { data } = await StartProcess({
+      name: processName,
       type: "extract",
       details: {
         fields: fields,

@@ -5,12 +5,12 @@ import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectProcesses } from "@/services/projects";
-import { GetProcess, GetProcesses, processApiUrl } from "@/services/processes";
+import { GetProcess, GetProcesses, ResumeProcess, StopProcess, processApiUrl } from "@/services/processes";
 import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, Edit, Save, Copy } from "lucide-react";
+import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
@@ -71,6 +71,22 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     }
   }, [processDetails]);
 
+  const stop_process = async (process: ProcessData) => {
+    const response = await StopProcess(process.id);
+    if (!response.data) {
+      alert("Failed to stop process!")
+      throw new Error("Failed to stop process!");
+    }
+  } 
+
+  const resume_process = async (process: ProcessData) => {
+    const response = await ResumeProcess(process.id);
+    if (!response.data) {
+      alert("Failed to stop process!")
+      throw new Error("Failed to stop process!");
+    }
+  }
+
   const handleSave = async () => {
     console.log("Saving edited summary:", editedSummary);
     setIsEditing(false);
@@ -87,6 +103,9 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         return <Label status="warning">In progress</Label>;
       case ProcessStatus.PENDING:
         return <Label status="info">Pending</Label>;
+      case ProcessStatus.STOPPED: 
+        return <Label status="default">Stopped</Label>;
+        
       default:
         return "-" + process.status;
     }
@@ -94,6 +113,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
 
   const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
+    { header: "Name", accessor: "name" },
     { header: "Type", accessor: "type" },
     ...(projectId
       ? []
@@ -137,14 +157,44 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       header: "Actions",
       accessor: "id",
       label: (process: ProcessData) => {
-        if (process.status !== ProcessStatus.COMPLETED) {
-          return "-";
-        }
-
+  
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
 
         return (
           <div className="flex items-center space-x-1">
+            {process.status == ProcessStatus.IN_PROGRESS && (
+              <Link
+                href="#"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                onClick={(e) => {
+                  e.preventDefault();
+                  stop_process(process);
+                }}
+              >
+                <Tooltip content="Stop">
+                  <StopCircle size={16} />
+                </Tooltip>
+              </Link>
+            )}
+
+            {process.status == ProcessStatus.STOPPED && (
+              <Link
+                href="#"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                onClick={(e) => {
+                  e.preventDefault();
+                  resume_process(process);
+                }}
+              >
+                <Tooltip content="Start">
+                  <PlayCircle size={16} />
+                </Tooltip>
+              </Link>
+            )}
+            
+
             <Link
               href={downloadUrl}
               className="text-blue-600 hover:underline"
@@ -154,6 +204,8 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                 <Download size={16} />
               </Tooltip>
             </Link>
+
+            
             {process.type === "extractive_summary" &&
               process.details.transformation_prompt && (
                 <Link

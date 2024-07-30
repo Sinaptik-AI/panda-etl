@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FileText,
   Highlighter,
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { ProjectData } from "@/interfaces/projects";
-import { ExtractionField } from "@/interfaces/extract";
 
 type ProcessOption = {
   id: string;
@@ -33,6 +32,8 @@ interface Step1Props {
   selectedOutput: string;
   setSelectedOutput: React.Dispatch<React.SetStateAction<string>>;
   handleProceed: () => void;
+  processName: string;
+  setProcessName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -42,13 +43,9 @@ export const Step1: React.FC<Step1Props> = ({
   selectedOutput,
   setSelectedOutput,
   handleProceed,
+  processName,
+  setProcessName,
 }) => {
-  const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
   const processOptions: ProcessOption[] = [
     { id: "extract", label: "Extract", icon: FileText, disabled: false },
     {
@@ -76,6 +73,17 @@ export const Step1: React.FC<Step1Props> = ({
 
   return (
     <div className="max-w-2xl">
+      <div className="mb-6">
+        <h4 className="text-lg font-bold mb-2">Process name</h4>
+        <input
+          type="text"
+          value={processName}
+          onChange={(e) => setProcessName(e.target.value)}
+          placeholder="Enter process name"
+          className="w-full p-2 border rounded"
+        />
+      </div>
+
       <p className="text-gray-500">{project?.description}</p>
 
       <div className="space-y-8">

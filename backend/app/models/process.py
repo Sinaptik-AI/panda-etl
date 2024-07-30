@@ -24,6 +24,7 @@ class Process(Base):
     __tablename__ = "processes"
 
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, default="")
     type = Column(String(255), nullable=False)
     status = Column(SQLAlchemyEnum(ProcessStatus), nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)

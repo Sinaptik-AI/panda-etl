@@ -42,6 +42,7 @@ def get_process(process_id: int, db: Session = Depends(get_db)):
         "message": "Process successfully returned",
         "data": {
             "id": process.id,
+            "name": process.name,
             "type": process.type,
             "status": process.status,
             "project": process.project.name,
@@ -74,6 +75,7 @@ def get_processes(db: Session = Depends(get_db)):
         "data": [
             {
                 "id": process.id,
+                "name": process.name,
                 "type": process.type,
                 "status": process.status,
                 "project": process.project.name,
@@ -98,8 +100,7 @@ def get_processes(db: Session = Depends(get_db)):
 
 
 @process_router.post("/start")
-def start_processes(process: ProcessData, db: Session = Depends(get_db)):
-
+def start_process(process: ProcessData, db: Session = Depends(get_db)):
     process = process_repository.create_process(db, process)
 
     assets = project_repository.get_assets(db, process.project_id)
@@ -126,12 +127,54 @@ def start_processes(process: ProcessData, db: Session = Depends(get_db)):
         "data": [
             {
                 "id": process.id,
+                "name": process.name,
                 "type": process.type,
                 "status": process.status,
                 "project": process.project.name,
                 "project_id": f"{process.project_id}",
             }
         ],
+    }
+
+
+@process_router.post("/{process_id}/stop")
+def stop_processes(process_id: int, db: Session = Depends(get_db)):
+
+    process = process_repository.get_process(db, process_id)
+
+    if process.status in [ProcessStatus.IN_PROGRESS, ProcessStatus.PENDING]:
+        process.status = ProcessStatus.STOPPED
+        db.commit()
+    else:
+        raise HTTPException(
+            status_code=404, detail="Process not in a state to be stopped"
+        )
+
+    return {
+        "status": "success",
+        "message": "Processes successfully stopped!",
+        "data": [{"id": process.id, "type": process.type, "status": process.status}],
+    }
+
+
+@process_router.post("/{process_id}/resume")
+def stop_processes(process_id: int, db: Session = Depends(get_db)):
+
+    process = process_repository.get_process(db, process_id)
+
+    if process.status in [ProcessStatus.STOPPED]:
+        process.status = ProcessStatus.PENDING
+        db.commit()
+        logger.log(f"Add to process {process.id} to the queue")
+        executor.submit(process_task, process.id)
+
+    else:
+        raise HTTPException(status_code=404, detail="Process ")
+
+    return {
+        "status": "success",
+        "message": "Processes successfully stopped!",
+        "data": [{"id": process.id, "type": process.type, "status": process.status}],
     }
 
 
@@ -151,7 +194,14 @@ def process_task(process_id: int):
 
         failed_docs = 0
         summaries = []
+        process_stopped = False
         for process_step in process_steps:
+
+            db.refresh(process)
+
+            if process.status == ProcessStatus.STOPPED:
+                process_stopped = True
+                break
 
             logger.log(f"Processing file: {process_step.asset.path}")
             if process_step.status == ProcessStepStatus.COMPLETED:
@@ -235,10 +285,12 @@ def process_task(process_id: int):
             process.output = {"summary": summary_of_summaries}
             logger.log(f"Extracting summary from summaries completed")
 
-        process.status = (
-            ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
-        )
-        process.completed_at = datetime.now()
+        if not process_stopped:
+            process.status = (
+                ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
+            )
+            process.completed_at = datetime.now()
+
     except Exception as e:
         logger.error(traceback.format_exc())
         process.status = ProcessStatus.FAILED
@@ -266,11 +318,19 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
             "data": None,
         }
 
+    completed_steps = [step for step in process_steps if step.status == ProcessStepStatus.COMPLETED]
+    if not completed_steps:
+        return {
+            "status": "error",
+            "message": "No completed steps found",
+            "data": None,
+        }
+
     csv_buffer = StringIO()
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = process_steps[0].output[0].keys()
+    headers = ['Filename'] + list(completed_steps[0].output[0].keys())
     csv_writer = csv.writer(
         csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
@@ -288,10 +348,10 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
                     number_columns.append(field["key"])
 
     # Write data rows
-    for step in process_steps:
+    for step in completed_steps:
         for output in step.output:
-            row = []
-            for key in headers:
+            row = [step.asset.filename]
+            for key in headers[1:]:
                 value = output.get(key, "")
                 if key in date_columns:
                     try:
@@ -324,7 +384,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
 
 
 @process_router.get("/{process_id}/get-steps")
-def start_processes(process_id: int, db: Session = Depends(get_db)):
+def get_process_steps(process_id: int, db: Session = Depends(get_db)):
     process_steps = process_repository.get_process_steps(db, process_id)
 
     if not process_steps:
