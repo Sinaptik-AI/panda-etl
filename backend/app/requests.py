@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from app.config import settings
 
@@ -23,25 +24,57 @@ def request_api_key(email: str):
     return data.get("message", "No message in response")
 
 
-def extract_data(api_token, file_path, fields):
+def extract_text_from_pdf(api_token, file_path):
+    # Prepare the headers with the Bearer token
+    headers = {"Authorization": f"Bearer {api_token}"}
+    files = {}
+    file = open(file_path, "rb")
+    files["file"] = (os.path.basename(file_path), file)
+
+    response = requests.post(
+        f"{settings.bambooetl_server_url}/v1/extract/file/content",
+        files=files,
+        headers=headers,
+        timeout=3600,
+    )
+
+    # Check the response status code
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Unable to process file!")
+
+
+def extract_data(api_token, fields, file_path=None, pdf_content=None):
     fields_data = fields if isinstance(fields, str) else json.dumps(fields)
 
     # Prepare the headers with the Bearer token
     headers = {"Authorization": f"Bearer {api_token}"}
 
-    with open(file_path, "rb") as file:
-        files = {"file": (file_path, file)}
-        data = {"fields": fields_data}
+    # Prepare the data and files dictionaries
+    data = {"fields": fields_data}
+    files = {}
 
-        response = requests.post(
-            f"{settings.bambooetl_server_url}/v1/extract",
-            files=files,
-            data=data,
-            headers=headers,
-            timeout=300,
-        )
-        # Check the response status code
-        if response.status_code == 201 or response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception("Unable to process file!")
+    if file_path:
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"The file at {file_path} does not exist.")
+
+        file = open(file_path, "rb")
+        files["file"] = (os.path.basename(file_path), file)
+
+    elif pdf_content:
+        data["pdf_content"] = pdf_content
+
+    # Send the request
+    response = requests.post(
+        f"{settings.bambooetl_server_url}/v1/extract",
+        files=files if files else None,
+        data=data,
+        headers=headers,
+        timeout=3600,
+    )
+    # Check the response status code
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Unable to process file!")

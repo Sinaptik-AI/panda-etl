@@ -217,6 +217,9 @@ def process_task(process_id: int):
             success = False
             while retries < settings.max_retries and not success:
                 try:
+                    asset_content = project_repository.get_asset_content(
+                        db, asset_id=process_step.asset.id
+                    )
 
                     if process.type == "extractive_summary":
                         from .extract import extract_summary, highlight_sentences_in_pdf
@@ -225,6 +228,7 @@ def process_task(process_id: int):
                             process_step.asset.path,
                             process_step.asset.filename,
                             process.details,
+                            asset_content.content if asset_content else None,
                         )
                         highlighted_file_dir = os.path.join(
                             settings.process_dir, str(process_id), str(process_step.id)
@@ -252,8 +256,16 @@ def process_task(process_id: int):
                             summaries.append(summary)
 
                     else:
+
                         data = extract_data(
-                            api_key.key, process_step.asset.path, process.details
+                            api_key.key,
+                            process.details,
+                            file_path=(
+                                process_step.asset.path if not asset_content else None
+                            ),
+                            pdf_content=(
+                                None if not asset_content else asset_content.content
+                            ),
                         )
 
                     process_step.output = data
@@ -318,7 +330,9 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
             "data": None,
         }
 
-    completed_steps = [step for step in process_steps if step.status == ProcessStepStatus.COMPLETED]
+    completed_steps = [
+        step for step in process_steps if step.status == ProcessStepStatus.COMPLETED
+    ]
     if not completed_steps:
         return {
             "status": "error",
@@ -330,7 +344,7 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = ['Filename'] + list(completed_steps[0].output[0].keys())
+    headers = ["Filename"] + list(completed_steps[0].output[0].keys())
     csv_writer = csv.writer(
         csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )

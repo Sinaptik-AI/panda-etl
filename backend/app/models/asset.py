@@ -12,6 +12,7 @@ class Asset(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
 
     process_steps = relationship("ProcessStep", back_populates="asset")
+    content = relationship("AssetContent", back_populates="asset", uselist=False)
 
     def __repr__(self):
         return f"<Asset {self.filename}>"

@@ -1,18 +1,29 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
+import traceback
 from typing import List
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile, Query
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.schemas.project import ProjectCreate
 from app.repositories import project_repository
 from app.config import settings
 from app.models.asset import Asset
 from datetime import datetime, timezone
 
+from app.repositories import user_repository
+from app.requests import extract_text_from_pdf
+from app.logger import Logger
+
+
+# Thread pool executor for background tasks
+file_preprocessor = ThreadPoolExecutor(max_workers=5)
 
 project_router = APIRouter()
+
+logger = Logger()
 
 
 @project_router.post("/", status_code=201)
@@ -29,8 +40,14 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 
 
 @project_router.get("/")
-def get_projects(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100), db: Session = Depends(get_db)):
-    projects, total_count = project_repository.get_projects(db=db, page=page, page_size=page_size)
+def get_projects(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    projects, total_count = project_repository.get_projects(
+        db=db, page=page, page_size=page_size
+    )
 
     return {
         "status": "success",
@@ -72,12 +89,14 @@ def get_project(id: int, db: Session = Depends(get_db)):
 
 @project_router.get("/{id}/assets")
 def get_assets(
-    id: int, 
-    page: int = Query(1, ge=1), 
-    page_size: int = Query(20, ge=1, le=100), 
-    db: Session = Depends(get_db)
+    id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
 ):
-    assets, total_count = project_repository.get_assets(db=db, project_id=id, page=page, page_size=page_size)
+    assets, total_count = project_repository.get_assets(
+        db=db, project_id=id, page=page, page_size=page_size
+    )
     return {
         "status": "success",
         "message": "Projects successfully returned",
@@ -108,6 +127,7 @@ async def upload_files(
         # Ensure the upload directory exists
         os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
 
+        file_processing_tasks = []
         for file in files:
             # Check if the uploaded file is a PDF
             if file.content_type != "application/pdf":
@@ -132,7 +152,14 @@ async def upload_files(
 
             db.add(new_asset)
 
+            # Store processing task to run after commit
+            file_processing_tasks.append(new_asset)
+
         db.commit()
+        # Post-commit processing
+        for asset in file_processing_tasks:
+            print("Starting asset id", asset.id)
+            file_preprocessor.submit(preprocess_file, asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
     except Exception as e:
@@ -199,7 +226,7 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
     project = project_repository.get_project(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     project.deleted_at = datetime.now(tz=timezone.utc)
     db.commit()
 
@@ -218,7 +245,7 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
         project = project_repository.get_project(db, project_id)
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-        
+
         asset = project_repository.get_asset(db, asset_id)
 
         if asset is None:
@@ -229,5 +256,20 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
         db.commit()
         return {"message": "Asset deleted successfully"}
     except Exception as e:
-        print(e)
+        logger.error(traceback.print_exception())
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
+
+
+def preprocess_file(asset_id: int):
+    db = SessionLocal()
+
+    try:
+        asset = project_repository.get_asset(db=db, asset_id=asset_id)
+        api_key = user_repository.get_user_api_key(db)
+        pdf_content = extract_text_from_pdf(api_key.key, asset.path)
+        project_repository.add_asset_content(db, asset_id, pdf_content["content"])
+
+    except Exception as e:
+        logger.error(
+            f"failed to preprocess asser {asset_id}: {traceback.print_exception()}"
+        )

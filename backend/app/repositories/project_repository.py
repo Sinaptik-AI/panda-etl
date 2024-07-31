@@ -64,3 +64,19 @@ def get_processes(db: Session, project_id: int):
         .order_by(models.Process.id.desc())
         .all()
     )
+
+
+def add_asset_content(db: Session, asset_id: int, content: str):
+    print("Creating....")
+    asset_content = models.AssetContent(asset_id=asset_id, content=content)
+    print("Done....")
+    db.add(asset_content)
+    db.commit()
+
+
+def get_asset_content(db: Session, asset_id: int):
+    return (
+        db.query(models.AssetContent)
+        .filter(models.AssetContent.asset_id == asset_id)
+        .first()
+    )
