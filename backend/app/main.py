@@ -8,9 +8,6 @@ from .config import settings
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Create the database tables
-Base.metadata.create_all(bind=engine)
-
 # Import and include the routes with the /v1 prefix
 from .api import v1_router
 
