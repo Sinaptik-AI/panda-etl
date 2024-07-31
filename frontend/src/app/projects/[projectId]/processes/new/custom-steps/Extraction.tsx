@@ -85,7 +85,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
           fields={fields}
           setFields={setFields}
         />
-        <div className="mt-1">
+        <div className="lg:sticky lg:top-0 lg:self-start">
           {extractionResult && (
             <>
               <h2 className="text-2xl font-bold mb-5">Extraction preview</h2>
