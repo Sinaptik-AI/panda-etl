@@ -19,6 +19,7 @@ interface TableProps<T> {
   onRowClick?: (data: any) => void;
   onDelete?: (id: string) => void;
   uploadingFiles?: File[];
+  isAssetsLoading?: boolean;
 }
 
 export function Table<T>({
@@ -28,6 +29,7 @@ export function Table<T>({
   className = "",
   onDelete,
   uploadingFiles = [],
+  isAssetsLoading,
 }: TableProps<T>) {
   const combinedData = [
     ...uploadingFiles.map((file) => ({
@@ -58,7 +60,7 @@ export function Table<T>({
               <ContextMenuTrigger asChild>
                 <tr
                   className={`hover:bg-gray-100 transition-colors duration-200 ${
-                    row.isUploading ? "opacity-50" : ""
+                    row.isUploading || isAssetsLoading ? "opacity-50" : ""
                   }`}
                   onClick={(e) => {
                     if (
@@ -77,7 +79,7 @@ export function Table<T>({
                         onRowClick && "cursor-pointer"
                       }`}
                     >
-                      {row.isUploading ? (
+                      {row.isUploading || isAssetsLoading ? (
                         colIndex === 0 ? (
                           <div className="flex items-center gap-2">
                             {row.filename}
@@ -127,7 +129,7 @@ export function Table<T>({
                     onRowClick && "cursor-pointer"
                   }`}
                 >
-                  {row.isUploading ? (
+                  {row.isUploading || isAssetsLoading ? (
                     colIndex === 0 ? (
                       <div className="flex items-center gap-2">
                         {row.filename}

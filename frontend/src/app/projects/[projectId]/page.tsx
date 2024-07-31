@@ -240,7 +240,7 @@ export default function Project() {
 
           {activeTab === "assets" && (
             <>
-              {assets && assets?.length === 0 ? (
+              {!uploadingFile && assets && assets?.length === 0 ? (
                 <DragAndDrop
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
@@ -287,6 +287,7 @@ export default function Project() {
                     setIsDeleteModalOpen(true);
                   }}
                   uploadingFiles={uploadingFiles}
+                  isAssetsLoading={isAssetsLoading}
                 />
               )}
 
