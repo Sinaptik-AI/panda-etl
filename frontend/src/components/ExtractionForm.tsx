@@ -7,6 +7,7 @@ import {
   Play,
   Plus,
   ScanEye,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -125,21 +126,24 @@ export default function ExtractionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Fields</h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2">Fields</h2>
         <Button
           type="button"
-          icon={Plus}
-          onClick={addField}
+          icon={Sparkles}
+          // onClick={}
           variant="primary"
           className="flex items-center"
         >
-          Add Field
+          Add fields with AI
         </Button>
       </div>
       <div className="space-y-4">
         {fields.map((field, index) => (
-          <div key={index} className="bg-gray-50 rounded shadow-lg">
+          <div
+            key={index}
+            className="bg-gray-50 rounded shadow-lg overflow-hidden"
+          >
             <div
               className="flex justify-between items-center px-5 py-3 cursor-pointer"
               onClick={() => toggleField(index)}
@@ -151,7 +155,11 @@ export default function ExtractionForm({
                 <ChevronDown size={20} />
               )}
             </div>
-            {expandedFields[index] && (
+            <div
+              className={`field-content ${
+                expandedFields[index] ? "expanded" : ""
+              }`}
+            >
               <div className="p-4">
                 <Input
                   id={`field-key-${index}`}
@@ -186,20 +194,39 @@ export default function ExtractionForm({
                     label: type,
                   }))}
                 />
-                <div className="text-right">
+                <div className="flex justify-end space-x-2 mt-2">
                   <Button
                     type="button"
                     onClick={() => removeField(index)}
                     variant="danger"
-                    className="mt-2"
+                    outlined={true}
                   >
                     Remove
                   </Button>
+                  <Button
+                    type="button"
+                    onClick={() => toggleField(index)}
+                    variant="primary"
+                  >
+                    Save
+                  </Button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         ))}
+
+        <div className="bg-blue-50 rounded-lg shadow-lg border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300">
+          <div
+            className="flex justify-between items-center px-5 py-4 cursor-pointer"
+            onClick={addField}
+          >
+            <span className="text-lg font-semibold text-blue-600">
+              Add new field
+            </span>
+            <Plus className="text-blue-600" size={24} />
+          </div>
+        </div>
       </div>
       <div className="text-right space-x-4">
         <Button
