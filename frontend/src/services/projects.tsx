@@ -51,7 +51,7 @@ export const GetProjectAssets = async (
 ) => {
   try {
 
-    const uri  = page && pageSize ? `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`:
+    const uri  = (page && pageSize) && (page!=undefined && pageSize!=undefined) ? `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`:
     `${projectsApiUrl}/${projectId}/assets`  
     const response = await GetRequest<{ data: AssetData[] }>(
       uri
