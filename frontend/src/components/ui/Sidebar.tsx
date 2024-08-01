@@ -3,9 +3,24 @@ import React from "react";
 import Link from "next/link";
 import { X, Workflow, Folder, MessageCircle, Settings } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
+import { usePathname } from "next/navigation";
+
+const routes = [
+  {
+    name: "Projects",
+    path: "/projects",
+    Icon: <Folder className="w-5 h-5 mr-2" />,
+  },
+  {
+    name: "Processes",
+    path: "/processes",
+    Icon: <Workflow className="w-5 h-5 mr-2" />,
+  },
+];
 
 const Sidebar: React.FC = () => {
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const path = usePathname();
 
   return (
     <aside
@@ -13,9 +28,11 @@ const Sidebar: React.FC = () => {
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       } md:translate-x-0`}
     >
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">BambooETL</h2>
+      <div>
+        <div className="flex justify-between items-center px-4">
+          <Link href="/projects" className="cursor-pointer w-[170px] pt-3">
+            <h2 className="text-xl font-semibold">BambooETL</h2>
+          </Link>
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="md:hidden focus:outline-none"
@@ -23,31 +40,34 @@ const Sidebar: React.FC = () => {
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
-        <ul className="mt-9 font-bold">
-          <li className="mb-2">
-            <Link
-              href="/"
-              className="flex items-center text-gray-700 hover:text-blue-500"
-            >
-              <Folder className="w-5 h-5 mr-2" />
-              All projects
-            </Link>
-          </li>
-          <li className="mb-2">
-            <Link
-              href="/processes"
-              className="flex items-center text-gray-700 hover:text-blue-500"
-            >
-              <Workflow className="w-5 h-5 mr-2" />
-              Processes
-            </Link>
-          </li>
-        </ul>
+        <div className="p-4">
+          <ul className="mt-9">
+            {routes.map((route) => (
+              <li className="mb-2" key={route.path}>
+                <Link
+                  href={route.path}
+                  className={`flex items-center hover:text-blue-500 ${
+                    route.path === path
+                      ? "text-black font-semibold"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {route.Icon}
+                  {route.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
+
       <div className="absolute bottom-0 left-0 w-full p-4 border-t">
         <ul>
           <li className="mb-2">
-            <a href="mailto:help@sinaptik.ai" className="flex items-center ">
+            <a
+              href="mailto:help@sinaptik.ai"
+              className="flex items-center text-gray-700 hover:text-blue-500"
+            >
               <MessageCircle className="w-5 h-5 mr-2" />
               Contact us
             </a>

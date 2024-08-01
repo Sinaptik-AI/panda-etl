@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             className="flex items-center focus:outline-none"
           >
-            <User className="w-8 h-8 text-gray-500" />
+            <User className="w-5 h-5 text-gray-500" />
             <ChevronDown className="w-4 h-4 ml-1 text-gray-500" />
           </button>
           {isUserMenuOpen && (
