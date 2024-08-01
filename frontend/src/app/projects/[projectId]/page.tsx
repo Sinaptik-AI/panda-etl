@@ -217,16 +217,10 @@ export default function Project() {
             onTabChange={(tabId) => setActiveTab(tabId)}
             defaultActiveTab={activeTab}
             trailingButton
-            trailingButtonText={`${
-              activeTab === "assets" ? "Add Files" : "Add Process"
-            }`}
-            trailingClick={() => {
-              if (activeTab === "assets") {
-                handleButtonClick();
-              } else {
-                newProcess();
-              }
-            }}
+            trailingButtonText={`New process`}
+            trailingClick={newProcess}
+            trailingSecondaryClick={handleButtonClick}
+            trailingSecondaryButtonText="Upload files"
           />
 
           <input
