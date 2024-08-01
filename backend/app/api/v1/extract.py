@@ -1,6 +1,5 @@
-from typing import List, Tuple
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-import numpy as np
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -10,6 +9,7 @@ from app.repositories import user_repository
 from app.requests import extract_data
 from app.logger import Logger
 import traceback
+from app.config import settings
 
 
 extract_router = APIRouter()
@@ -25,20 +25,31 @@ class Field(BaseModel):
 
 class ExtractFields(BaseModel):
     fields: List[Field]
+    assetId: int
 
 
-@extract_router.post("/{project_id}", status_code=201)
+@extract_router.post("/{project_id}", status_code=200)
 async def extract(
     project_id: int, fields: ExtractFields, db: Session = Depends(get_db)
 ):
     try:
-        assets = project_repository.get_assets(db=db, project_id=project_id)
+        asset = project_repository.get_asset(db=db, asset_id=fields.assetId)
 
-        asset = assets[0]
+        if asset.project_id != project_id:
+            raise HTTPException(
+                status_code=400, detail="Check asset permission doesn't exists"
+            )
 
         api_key = user_repository.get_user_api_key(db)
 
-        data = extract_data(api_key.key, asset.path, fields.dict())
+        asset_content = project_repository.get_asset_content(db, asset_id=asset.id)
+
+        data = extract_data(
+            api_token=api_key.key,
+            fields=fields.dict(),
+            file_path=asset.path if not asset_content else None,
+            pdf_content=(None if not asset_content else asset_content.content),
+        )
 
         return {
             "status": "success",

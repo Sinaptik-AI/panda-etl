@@ -4,11 +4,11 @@ import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
 
 const extractApiUrl = "/extract";
 
-export const Extract = async (projectId: string, fields: ExtractionField[]) => {
+export const Extract = async (projectId: string, assetId: string, fields: ExtractionField[]) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}`,
-      { fields }, 
+      { fields, assetId }, 
       {},
       300000
     );

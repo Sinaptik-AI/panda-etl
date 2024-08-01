@@ -3,11 +3,12 @@ import React, { InputHTMLAttributes } from "react";
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  noMargin?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ label, id, error, ...props }) => {
+export const Input: React.FC<InputProps> = ({ label, id, error, noMargin, ...props }) => {
   return (
-    <div className="mb-4">
+    <div className={!noMargin ? "mb-4" : ""}>
       {label && (
         <label
           htmlFor={id}

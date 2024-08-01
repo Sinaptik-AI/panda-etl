@@ -46,12 +46,15 @@ export const CreateProject = async (data: {
 
 export const GetProjectAssets = async (
   projectId: string,
-  page: number,
-  pageSize: number
+  page: number | null = null,
+  pageSize: number|null = null
 ) => {
   try {
+
+    const uri  = page && pageSize ? `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`:
+    `${projectsApiUrl}/${projectId}/assets`  
     const response = await GetRequest<{ data: AssetData[] }>(
-      `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`
+      uri
     );
     return response;
   } catch (error) {

@@ -19,7 +19,7 @@ export default function PDFViewer({ file, url }: PDFViewerProps) {
     } else {
       setPdfUrl(null);
     }
-  }, [file]);
+  }, [file, url]);
 
   if (!pdfUrl) {
     return (

@@ -10,6 +10,9 @@ import { BASE_STORAGE_URL } from "@/constants";
 import { Extract } from "@/services/extract";
 import { StartProcess } from "@/services/processes";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 interface ExtractionStepProps {
   project: ProjectData;
@@ -26,6 +29,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fields, setFields] = useState<ExtractionField[]>(
     templateData ?? [
       {
@@ -44,7 +48,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
-      const response = await GetProjectAssets(project.id, 1, 1);
+      const response = await GetProjectAssets(project.id);
       const { data: asset } = response.data;
       return asset as AssetData[];
     },
@@ -52,8 +56,15 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 
   const handleSubmit = async (fields: ExtractionField[]) => {
     setExtractionFields(fields);
-    const { data } = await Extract(project.id, fields);
-    setExtractionResult(data.data);
+    if (assets && assets.length !== 0) {
+      const { data } = await Extract(project.id, assets[currentFileIndex].id, fields);
+      if (Array.isArray(data.data)) {
+        setExtractionResult(data.data[0]);
+      } else {
+          setExtractionResult(data.data);
+      }
+    }
+    
   };
 
   const handleProcessStart = async (fields: ExtractionField[]) => {
@@ -68,13 +79,28 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     router.push(`/projects/${project.id}?tab=processes`);
   };
 
+  const goToPreviousDocument = () => {
+    setCurrentFileIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const goToNextDocument = () => {
+    setCurrentFileIndex((prevIndex) => Math.min(prevIndex + 1, assets? assets.length - 1: 0));
+  };
+
+  const handleDocChange = (e: any) => {
+    if (e.target.value && e.target.value !== undefined && e.target.value < (assets? assets.length: 0)) {
+      setCurrentFileIndex(Math.max(e.target.value - 1, 0))
+    }
+
+  }
+
   useEffect(() => {
     if (assets?.length && project) {
       setPdfFileUrl(
-        `${BASE_STORAGE_URL}/${project.id}/${assets?.[0].filename}`
+        `${BASE_STORAGE_URL}/${project.id}/${assets?.[currentFileIndex].filename}`
       );
     }
-  }, [assets, project]);
+  }, [assets, project, currentFileIndex]);
 
   return (
     <>
@@ -105,8 +131,31 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
               </div>
             </>
           )}
-
+          
           <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
+          <div className="flex justify-between items-center w-full mb-4">
+            <Button
+              onClick={goToPreviousDocument}
+              disabled={currentFileIndex === 0}
+            >
+              <ArrowLeft size={16} />
+            </Button>
+            <Input
+              type="number"
+              value={currentFileIndex + 1}
+              onChange={handleDocChange}
+              min="1"
+              max={assets ? assets.length : 1}
+              style={{ flex: 1, textAlign: 'center', margin: '0 10px' }}
+              noMargin
+            />
+            <Button
+              onClick={goToNextDocument}
+              disabled={currentFileIndex === (assets ? assets.length - 1 : 0)}
+            >
+            <ArrowRight size={16} />
+            </Button>
+          </div>
           {pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
         </div>
       </div>
