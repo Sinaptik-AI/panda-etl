@@ -1,7 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "./Button";
-import { PlusIcon } from "lucide-react";
 
 interface Tab {
   id: string;
@@ -12,22 +10,14 @@ interface TabListProps {
   tabs: Tab[];
   onTabChange: (tabId: string) => void;
   defaultActiveTab?: string;
-  trailingButton?: boolean;
-  trailingButtonText?: string;
-  trailingClick?: () => void;
-  trailingSecondaryButtonText?: string;
-  trailingSecondaryClick?: () => void;
+  actions?: React.ReactNode;
 }
 
 const TabList: React.FC<TabListProps> = ({
   tabs,
   onTabChange,
   defaultActiveTab,
-  trailingButton,
-  trailingButtonText,
-  trailingClick,
-  trailingSecondaryButtonText,
-  trailingSecondaryClick,
+  actions,
 }) => {
   const [activeTab, setActiveTab] = useState<string>(
     defaultActiveTab || tabs[0].id
@@ -56,22 +46,7 @@ const TabList: React.FC<TabListProps> = ({
             </button>
           ))}
         </nav>
-        {trailingButton && (
-          <div className="flex gap-2">
-            {activeTab === "assets" && (
-              <Button
-                onClick={trailingSecondaryClick}
-                icon={PlusIcon}
-                variant="secondary"
-              >
-                {trailingSecondaryButtonText}
-              </Button>
-            )}
-            <Button onClick={trailingClick} icon={PlusIcon}>
-              {trailingButtonText}
-            </Button>
-          </div>
-        )}
+        {actions}
       </div>
     </div>
   );

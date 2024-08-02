@@ -4,7 +4,14 @@ import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import File from "@/components/FileIconCard";
-import { Loader2, GridIcon, ListIcon, TrashIcon } from "lucide-react";
+import {
+  Loader2,
+  GridIcon,
+  ListIcon,
+  TrashIcon,
+  PlusIcon,
+  UploadIcon,
+} from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
 import Title from "@/components/ui/Title";
@@ -32,6 +39,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
+import { Button } from "@/components/ui/Button";
 
 export default function Project() {
   const params = useParams();
@@ -109,7 +117,6 @@ export default function Project() {
   ];
 
   const handleFileClick = async (id: string) => {
-
     setCurrentFile(id);
     if (project) {
       if (typeof id == "string") {
@@ -120,8 +127,7 @@ export default function Project() {
         } else {
           console.error("File not found in uploadingFiles.");
         }
-      }
-      else{
+      } else {
         const response = await FetchAssetFile(project.id, id);
         setPdfFile(new Blob([response], { type: "application/pdf" }));
       }
@@ -132,7 +138,6 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
-  
   const handleFileUpload = async (fileList: FileList | null) => {
     if (fileList) {
       const files = Array.from(fileList);
@@ -150,7 +155,7 @@ export default function Project() {
         }
         setUploadingFile(false);
         setUploadingFiles([]);
-        setUploadedFiles([])
+        setUploadedFiles([]);
         queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
       } catch (error) {
         console.error("Error uploading files:", error);
@@ -234,11 +239,22 @@ export default function Project() {
             tabs={projectTabs}
             onTabChange={(tabId) => setActiveTab(tabId)}
             defaultActiveTab={activeTab}
-            trailingButton
-            trailingButtonText={`New process`}
-            trailingClick={newProcess}
-            trailingSecondaryClick={handleButtonClick}
-            trailingSecondaryButtonText="Upload files"
+            actions={
+              <div className="flex gap-2">
+                {activeTab === "assets" && (
+                  <Button
+                    onClick={handleButtonClick}
+                    icon={UploadIcon}
+                    variant="secondary"
+                  >
+                    Upload files
+                  </Button>
+                )}
+                <Button onClick={newProcess} icon={PlusIcon}>
+                  New process
+                </Button>
+              </div>
+            }
           />
 
           <input
