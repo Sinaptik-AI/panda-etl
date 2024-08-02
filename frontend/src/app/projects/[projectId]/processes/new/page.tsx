@@ -115,6 +115,7 @@ export default function NewProcess() {
           <ExtractionStep
             setStep={setStep}
             project={project}
+            outputType={selectedOutput}
             templateData={templateProcess?.fields}
             processName={processName}
           />
@@ -122,6 +123,7 @@ export default function NewProcess() {
           <ExtractiveSummary
             setStep={setStep}
             project={project}
+            outputType={selectedOutput}
             templateData={templateProcess}
             processName={processName}
           />

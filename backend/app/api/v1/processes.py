@@ -12,7 +12,7 @@ from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
 from app.models import ProcessStatus, ProcessStep
-from app.schemas.process import ProcessData
+from app.schemas.process import ProcessData, ProcessSuggestion
 from app.requests import extract_data
 from datetime import datetime
 
@@ -431,6 +431,24 @@ async def get_file(step_id: int, db: Session = Depends(get_db)):
             media_type="application/pdf",
             filename=f"highlighted_{process_step.asset.filename}",
         )
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve file")
+
+
+@process_router.post("/suggestion")
+def get_process_suggestion(
+    process_data: ProcessSuggestion, db: Session = Depends(get_db)
+):
+    try:
+        processes = process_repository.search_relevant_process(db, process_data)
+
+        return {
+            "status": "success",
+            "message": "Process steps successfully returned",
+            "data": processes,
+        }
 
     except Exception as e:
         print(e)

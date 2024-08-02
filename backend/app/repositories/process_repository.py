@@ -1,7 +1,8 @@
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session, joinedload, defer
 
 from app import models
-from app.schemas.process import ProcessData
+from app.schemas.process import ProcessData, ProcessSuggestion
 
 
 def get_processes(db: Session):
@@ -19,7 +20,7 @@ def create_process(db: Session, process_data: ProcessData):
         type=process_data.type,
         status=models.ProcessStatus.PENDING,
         project_id=process_data.project_id,
-        details=process_data.details,
+        details=process_data.data,
         message="Starting process",
     )
     db.add(process)
@@ -43,7 +44,7 @@ def get_process_steps(db: Session, process_id: int):
         .filter(models.ProcessStep.process_id == process_id)
         .options(
             joinedload(models.ProcessStep.process).joinedload(models.Process.project),
-            joinedload(models.ProcessStep.asset)
+            joinedload(models.ProcessStep.asset),
         )
         .all()
     )
@@ -57,4 +58,21 @@ def get_process_step(db: Session, step_id: int):
             joinedload(models.ProcessStep.process), joinedload(models.ProcessStep.asset)
         )
         .first()
+    )
+
+
+def search_relevant_process(db: Session, process_data: ProcessSuggestion):
+
+    # Perform the query
+    return (
+        db.query(models.Process)
+        .filter(models.Process.project_id == process_data.project_id)
+        .filter(models.Process.type == process_data.type)
+        .filter(
+            func.json_extract(models.Process.details, "$.output_type")
+            == process_data.output_type
+        )
+        .options(defer(models.Process.output))
+        .limit(10)
+        .all()
     )

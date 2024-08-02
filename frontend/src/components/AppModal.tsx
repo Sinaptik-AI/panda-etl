@@ -54,6 +54,15 @@ export const AppModal = ({
               <div className="flex items-center justify-center gap-2">
                 <Button
                   type="button"
+                  disabled={isLoading}
+                  onClick={closeModal}
+                  variant="danger"
+                  outlined
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
                   onClick={handleSubmit}
                   disabled={isLoading}
                 >
@@ -63,14 +72,7 @@ export const AppModal = ({
                     actionButtonText
                   )}
                 </Button>
-                <Button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={closeModal}
-                  variant="danger"
-                >
-                  Cancel
-                </Button>
+                
               </div>
             )}
           </div>

@@ -4,6 +4,7 @@ import {
   ProcessExecutionData,
   ProcessRequest,
   ProcessResumeData,
+  ProcessSuggestionRequest,
 } from "@/interfaces/processes";
 
 export const processApiUrl = "/processes";
@@ -70,6 +71,18 @@ export const GetProcessSteps = async (processId: string) => {
   try {
     const response = await GetRequest(
       `${processApiUrl}/${processId}/get-steps`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const GetProcessSuggestion = async (processData: ProcessSuggestionRequest) => {
+  try {
+    const response = await PostRequest<{ data: ProcessData[] }>(
+      `${processApiUrl}/suggestion`,
+      processData
     );
     return response;
   } catch (error) {

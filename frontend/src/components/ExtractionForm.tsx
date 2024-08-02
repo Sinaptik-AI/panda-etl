@@ -7,12 +7,15 @@ import {
   Play,
   Plus,
   ScanEye,
+  LayoutTemplate,
   Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { ProcessData, ProcessSuggestionRequest } from "@/interfaces/processes";
+import { ProcessSelectionDrawer } from "./ProcessSelectionDrawer";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -29,6 +32,7 @@ interface ExtractionFormProps {
   onStartProcess: (fields: Field[]) => Promise<void>;
   fields: Field[];
   setFields: React.Dispatch<React.SetStateAction<Field[]>>;
+  processData: ProcessSuggestionRequest
 }
 
 export default function ExtractionForm({
@@ -36,11 +40,13 @@ export default function ExtractionForm({
   onStartProcess,
   fields,
   setFields,
+  processData
 }: ExtractionFormProps) {
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
     { 0: true }
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
   const [startingProcess, setStartingProcess] = useState<boolean>(false);
 
   const addField = () => {
@@ -116,6 +122,21 @@ export default function ExtractionForm({
     }
   };
 
+  const onCancel = async () => {
+    setDisplayPsModel(false)
+  }
+
+  const handleProcessSuggestion = async () => {
+    setDisplayPsModel(true)
+  }
+
+  const handleProcessTemplate = async (template: ProcessData | null) => {
+    if (template) {
+      setFields(template.details.fields)
+      setDisplayPsModel(false)
+    } 
+  }
+ 
   const toggleField = (index: number) => {
     setExpandedFields({ ...expandedFields, [index]: !expandedFields[index] });
   };
@@ -128,6 +149,7 @@ export default function ExtractionForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-2">Fields</h2>
+        <div className="flex gap-2"> 
         <Button
           type="button"
           icon={Sparkles}
@@ -137,9 +159,21 @@ export default function ExtractionForm({
         >
           Add fields with AI
         </Button>
+
+        <Button
+          type="button"
+          icon={LayoutTemplate}
+          onClick={handleProcessSuggestion}
+          variant="primary"
+          className="flex items-center"
+        >
+          Template Suggestions
+        </Button>
+        </div>
+        
       </div>
       <div className="space-y-4">
-        {fields.map((field, index) => (
+        {fields?.map((field, index) => (
           <div
             key={index}
             className="bg-gray-50 rounded shadow-lg overflow-hidden"
@@ -248,6 +282,11 @@ export default function ExtractionForm({
           Start Process
         </Button>
       </div>
+
+
+
+      {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
+      
     </form>
   );
 }

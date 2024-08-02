@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 interface ExtractionStepProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
+  outputType: string;
   templateData?: any;
   processName: string;
 }
@@ -25,6 +26,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   project,
   setStep,
   templateData,
+  outputType,
   processName,
 }) => {
   const router = useRouter();
@@ -71,10 +73,11 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     const { data } = await StartProcess({
       name: processName,
       type: "extract",
-      details: {
+      data: {
         fields: fields,
+        output_type: outputType
       },
-      project_id: project.id,
+      project_id: project.id
     });
     router.push(`/projects/${project.id}?tab=processes`);
   };
@@ -110,6 +113,12 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
           onStartProcess={handleProcessStart}
           fields={fields}
           setFields={setFields}
+          processData={{
+            name: processName,
+            type: "extract",
+            project_id: project.id,
+            output_type: outputType,
+          }}
         />
         <div className="lg:sticky lg:top-0 lg:self-start">
           {extractionResult && (

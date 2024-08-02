@@ -12,13 +12,16 @@ import { BASE_STORAGE_URL } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectAssets } from "@/services/projects";
 import { AssetData } from "@/interfaces/assets";
-import { Play } from "lucide-react";
+import { LayoutTemplate, Play } from "lucide-react";
+import { ProcessData } from "@/interfaces/processes";
+import { ProcessSelectionDrawer } from "@/components/ProcessSelectionDrawer";
 
 interface ExtractiveSummaryProps {
   project: ProjectData;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   templateData?: any;
   processName: string;
+  outputType: string;
 }
 
 interface ExtractiveSummaryData {
@@ -30,6 +33,7 @@ interface ExtractiveSummaryData {
     negative_topics: string[];
     transformation_prompt: string;
     show_final_summary: boolean;
+    output_type: string
   };
 }
 
@@ -44,9 +48,11 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   setStep,
   templateData,
   processName,
+  outputType
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
+  const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
   const [formData, setFormData] = useState<ExtractiveSummaryData>({
     type: "extractive_summary",
     data: {
@@ -56,6 +62,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
       negative_topics: [],
       transformation_prompt: "",
       show_final_summary: false,
+      output_type: outputType
     },
   });
 
@@ -179,19 +186,55 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
     const { data: processData } = await StartProcess({
       name: processName,
       type: "extractive_summary",
-      details: data.data,
+      data: data.data,
       project_id: project.id,
     });
 
     router.push(`/projects/${project.id}?tab=processes`);
   };
 
+  const handleProcessTemplate = async (template: ProcessData | null) => {
+    if (template) {
+      setFormData({
+        type: "extractive_summary",
+        data: template.details as {
+          highlight: boolean;
+          summary_length: number;
+          positive_topics: string[];
+          negative_topics: string[];
+          transformation_prompt: string;
+          show_final_summary: boolean;
+          output_type: string
+        }
+      })
+      setDisplayPsModel(false)
+    } 
+  }
+
+  const onCancel = async () => {
+    setDisplayPsModel(false)
+  }
+
+  const handleProcessSuggestion = async () => {
+    setDisplayPsModel(true)
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
       <form
         onSubmit={handleSubmit}
         className="space-y-6 bg-white p-6 rounded-lg shadow"
       >
+        <Button
+          type="button"
+          icon={LayoutTemplate}
+          onClick={handleProcessSuggestion}
+          variant="primary"
+          className="flex items-center"
+        >
+          Template Suggestions
+        </Button>
         <Select
           label="Summary length"
           id="summary_length"
@@ -300,7 +343,18 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
         <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
         {pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
       </div>
+      {displayPsModel && <ProcessSelectionDrawer 
+      isOpen={displayPsModel} 
+      processData={{
+            name: processName,
+            type: "extractive_summary",
+            project_id: project.id,
+            output_type: outputType,
+          }}
+          onCancel={onCancel} 
+          onSubmit={handleProcessTemplate}/>}
     </div>
+    
   );
 };
 

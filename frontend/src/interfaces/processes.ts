@@ -25,9 +25,10 @@ export interface ProcessData {
 export interface ProcessRequest {
   name?: string;
   type: string;
-  details:
+  data:
     | {
         fields: ExtractionField[];
+        output_type: string;
       }
     | Record<string, any>;
   project_id: string;
@@ -74,4 +75,11 @@ export interface ProcessDetailsResponse {
       }>;
     };
   };
+}
+
+export interface ProcessSuggestionRequest {
+  name: string;
+  type: string;
+  project_id: string;
+  output_type: string;
 }
