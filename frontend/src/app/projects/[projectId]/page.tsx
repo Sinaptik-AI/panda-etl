@@ -52,6 +52,7 @@ export default function Project() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<[string, Date][]>([]);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -108,10 +109,22 @@ export default function Project() {
   ];
 
   const handleFileClick = async (id: string) => {
+
     setCurrentFile(id);
     if (project) {
-      const response = await FetchAssetFile(project.id, id);
-      setPdfFile(new Blob([response], { type: "application/pdf" }));
+      if (typeof id == "string") {
+        const file_obj = uploadingFiles.find((value) => value.name === id);
+        if (file_obj) {
+          const file_blob = new Blob([file_obj], { type: file_obj.type });
+          setPdfFile(file_blob);
+        } else {
+          console.error("File not found in uploadingFiles.");
+        }
+      }
+      else{
+        const response = await FetchAssetFile(project.id, id);
+        setPdfFile(new Blob([response], { type: "application/pdf" }));
+      }
     }
   };
 
@@ -119,6 +132,7 @@ export default function Project() {
     router.push(`/projects/${id}/processes/new`);
   };
 
+  
   const handleFileUpload = async (fileList: FileList | null) => {
     if (fileList) {
       const files = Array.from(fileList);
@@ -128,16 +142,20 @@ export default function Project() {
         setUploadingFile(true);
         for (const file of files) {
           const response = await AddProjectAsset(id, file);
+
           if (!response.data) {
             throw new Error("Failed to upload file");
           }
+          setUploadedFiles((prev) => [...prev, [file.name, new Date()]]);
         }
         setUploadingFile(false);
         setUploadingFiles([]);
+        setUploadedFiles([])
         queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
       } catch (error) {
         console.error("Error uploading files:", error);
         setUploadingFiles([]);
+        setUploadedFiles([]);
       }
     }
   };
@@ -281,6 +299,7 @@ export default function Project() {
                     setIsDeleteModalOpen(true);
                   }}
                   uploadingFiles={uploadingFiles}
+                  uploadedFiles={uploadedFiles}
                   isAssetsLoading={isAssetsLoading}
                 />
               )}

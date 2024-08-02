@@ -6,6 +6,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
 import { TrashIcon, Loader2 } from "lucide-react";
+import { formatFileSize } from "@/lib/utils";
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((data: T) => React.ReactNode);
@@ -19,6 +20,7 @@ interface TableProps<T> {
   onRowClick?: (data: any) => void;
   onDelete?: (id: string) => void;
   uploadingFiles?: File[];
+  uploadedFiles?: [string, Date][];
   isAssetsLoading?: boolean;
 }
 
@@ -29,17 +31,27 @@ export function Table<T>({
   className = "",
   onDelete,
   uploadingFiles = [],
+  uploadedFiles=[],
   isAssetsLoading,
 }: TableProps<T>) {
+
+  const getUploadedFileElements = (uploadedFiles: [string, Date][], fileName: string): [string, Date][] => {
+    return uploadedFiles.filter(([name, _timestamp]) => name === fileName);
+  };
+
+
   const combinedData = [
-    ...uploadingFiles.map((file) => ({
+    ...uploadingFiles.map((file) => {
+      const uploaded_file = getUploadedFileElements(uploadedFiles, file.name)
+      return {
       id: file.name,
       filename: file.name,
-      filetype: file.type,
-      size: file.size,
-      created_at: "Uploading",
-      isUploading: true,
-    })),
+      filetype: file.type.replace("application/", "").toUpperCase(),
+      size: formatFileSize(file.size),
+      created_at: uploaded_file.length == 0 ? "Uploading": uploaded_file[0][1].toISOString(),
+      isUploading: uploaded_file.length == 0,
+    }
+  }),
     ...data,
   ];
   return (

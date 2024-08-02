@@ -95,7 +95,7 @@ def get_assets(
     db: Session = Depends(get_db),
 ):
     assets, total_count = project_repository.get_assets(
-        db=db, project_id=id, page=page, page_size=page_size
+        db=db, project_id=id, page=page, page_size=page_size, order_by="desc"
     )
     return {
         "status": "success",

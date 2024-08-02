@@ -1,6 +1,6 @@
 from typing import Union
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import asc, desc, func
 
 from app import models
 from app.schemas.project import ProjectCreate
@@ -32,23 +32,34 @@ def get_assets(
     project_id: int,
     page: Union[int, None] = None,
     page_size: Union[int, None] = None,
+    order_by: str = "asc",
 ):
     total_count = (
         db.query(func.count(models.Asset.id))
         .filter(models.Asset.project_id == project_id)
         .scalar()
     )
+
+    if order_by == "desc":
+        order_by_column = desc(models.Asset.created_at)
+    else:
+        order_by_column = asc(models.Asset.created_at)
+
     if page_size:
         assets = (
             db.query(models.Asset)
             .filter(models.Asset.project_id == project_id)
+            .order_by(order_by_column)
             .offset((page - 1) * page_size)
             .limit(page_size)
             .all()
         )
     else:
         assets = (
-            db.query(models.Asset).filter(models.Asset.project_id == project_id).all()
+            db.query(models.Asset)
+            .filter(models.Asset.project_id == project_id)
+            .order_by(order_by_column)
+            .all()
         )
     return assets, total_count
 
@@ -67,9 +78,7 @@ def get_processes(db: Session, project_id: int):
 
 
 def add_asset_content(db: Session, asset_id: int, content: str):
-    print("Creating....")
     asset_content = models.AssetContent(asset_id=asset_id, content=content)
-    print("Done....")
     db.add(asset_content)
     db.commit()
 

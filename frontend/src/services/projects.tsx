@@ -93,7 +93,9 @@ export const AddProjectAsset = async (projectId: string, file: File) => {
     formData.append("files", file);
     const response = await PostRequest<{ data: any }>(
       `${projectsApiUrl}/${projectId}/assets`,
-      formData
+      formData,
+      {},
+      300000 // Longer time for uploading big files
     );
     return response;
   } catch (error) {
