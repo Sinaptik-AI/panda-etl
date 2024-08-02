@@ -45,7 +45,6 @@ export default function NewProcess() {
       setSelectedOutput(
         templateOutput || templateProcess.output_format || "csv"
       );
-      setStep(3);
     }
   }, [templateProcess, templateType, templateOutput]);
 
@@ -106,6 +105,7 @@ export default function NewProcess() {
           processName={processName}
           setProcessName={setProcessName}
           handleProceed={nextStep}
+          fromTemplate={!!templateProcess}
         />
       ) : step === 2 ? (
         <Step2 nextStep={nextStep} />

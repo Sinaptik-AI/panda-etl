@@ -13,6 +13,10 @@ const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
   children,
   delay = 0,
 }) => {
+  if (!content) {
+    return <>{children}</>;
+  }
+
   return (
     <Tippy content={content} delay={[delay, 0]} arrow={true} placement="top">
       <div>{children}</div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FileText,
   Highlighter,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { ProjectData } from "@/interfaces/projects";
+import Tooltip from "@/components/ui/Tooltip";
 
 type ProcessOption = {
   id: string;
@@ -34,6 +35,7 @@ interface Step1Props {
   handleProceed: () => void;
   processName: string;
   setProcessName: React.Dispatch<React.SetStateAction<string>>;
+  fromTemplate?: boolean;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -45,7 +47,10 @@ export const Step1: React.FC<Step1Props> = ({
   handleProceed,
   processName,
   setProcessName,
+  fromTemplate = false,
 }) => {
+  const [nameError, setNameError] = useState<string | null>(null);
+  const processNameInputRef = useRef<HTMLInputElement>(null);
   const processOptions: ProcessOption[] = [
     { id: "extract", label: "Extract", icon: FileText, disabled: false },
     {
@@ -67,21 +72,53 @@ export const Step1: React.FC<Step1Props> = ({
   ];
 
   const selectProcessType = (option: ProcessOption) => {
-    if (option.disabled) return;
+    if (option.disabled || fromTemplate) return;
     setSelectedProcess(option.id);
   };
+
+  const validateName = () => {
+    if (!processName.trim()) {
+      setNameError("Process name is required");
+      return false;
+    }
+    setNameError(null);
+    return true;
+  };
+
+  const handleProceedWithValidation = () => {
+    if (validateName()) {
+      handleProceed();
+    } else {
+      processNameInputRef.current?.focus();
+    }
+  };
+
+  useEffect(() => {
+    if (nameError) {
+      processNameInputRef.current?.focus();
+    }
+  }, [nameError]);
+
+  const tooltipContent = "This option cannot be changed when using a template.";
 
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
         <h4 className="text-lg font-bold mb-2">Process name</h4>
         <input
+          ref={processNameInputRef}
           type="text"
           value={processName}
-          onChange={(e) => setProcessName(e.target.value)}
+          onChange={(e) => {
+            setProcessName(e.target.value);
+            if (nameError) validateName();
+          }}
           placeholder="Enter process name"
-          className="w-full p-2 border rounded"
+          className={`w-full p-2 border rounded ${
+            nameError ? "border-red-500" : ""
+          }`}
         />
+        {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
       </div>
 
       <p className="text-gray-500">{project?.description}</p>
@@ -91,20 +128,31 @@ export const Step1: React.FC<Step1Props> = ({
           <h4 className="text-lg font-bold mb-4">Select process</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {processOptions.map((option) => (
-              <Card
+              <Tooltip
                 key={option.id}
-                className={`p-4 cursor-pointer ${
-                  option.disabled ? "opacity-50 cursor-not-allowed" : ""
-                } ${
-                  selectedProcess === option.id
-                    ? "border-blue-500 border-2"
+                content={
+                  fromTemplate && option.id !== selectedProcess
+                    ? tooltipContent
                     : ""
-                }`}
-                onClick={() => selectProcessType(option)}
+                }
               >
-                <option.icon className="w-8 h-8 mb-2" />
-                <h3 className="font-semibold">{option.label}</h3>
-              </Card>
+                <Card
+                  className={`p-4 cursor-pointer ${
+                    option.disabled ||
+                    (fromTemplate && option.id !== selectedProcess)
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  } ${
+                    selectedProcess === option.id
+                      ? "border-blue-500 border-2"
+                      : ""
+                  }`}
+                  onClick={() => selectProcessType(option)}
+                >
+                  <option.icon className="w-8 h-8 mb-2" />
+                  <h3 className="font-semibold">{option.label}</h3>
+                </Card>
+              </Tooltip>
             ))}
           </div>
         </div>
@@ -113,23 +161,35 @@ export const Step1: React.FC<Step1Props> = ({
           <h4 className="text-lg font-bold mb-4">Select output</h4>
           <RadioGroup
             value={selectedOutput}
-            onValueChange={setSelectedOutput}
+            onValueChange={fromTemplate ? undefined : setSelectedOutput}
             className="flex space-x-4"
           >
             {outputOptions.map((option) => (
-              <div key={option.id} className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={option.id}
-                  id={option.id}
-                  disabled={option.disabled}
-                  label={option.label}
-                />
-              </div>
+              <Tooltip
+                key={option.id}
+                content={
+                  fromTemplate && option.id !== selectedOutput
+                    ? tooltipContent
+                    : ""
+                }
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={option.id}
+                    id={option.id}
+                    disabled={
+                      option.disabled ||
+                      (fromTemplate && option.id !== selectedOutput)
+                    }
+                    label={option.label}
+                  />
+                </div>
+              </Tooltip>
             ))}
           </RadioGroup>
         </div>
 
-        <Button onClick={handleProceed}>
+        <Button onClick={handleProceedWithValidation}>
           Proceed <ArrowRight />
         </Button>
       </div>
