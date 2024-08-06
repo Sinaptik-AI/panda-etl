@@ -195,15 +195,26 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             )}
             
 
-            <Link
-              href={downloadUrl}
-              className="text-blue-600 hover:underline"
-              target="_blank"
-            >
-              <Tooltip content="Download CSV">
-                <Download size={16} />
-              </Tooltip>
-            </Link>
+            {process.status == ProcessStatus.IN_PROGRESS ? (
+                <span
+                  className="text-gray-400 cursor-not-allowed"
+                  title="Download not available"
+                >
+                  <Tooltip content="Download CSV">
+                    <Download size={16} />
+                  </Tooltip>
+                </span>
+              ) : (
+                <Link
+                  href={downloadUrl}
+                  className="text-blue-600 hover:underline"
+                  target="_blank"
+                >
+                  <Tooltip content="Download CSV">
+                    <Download size={16} />
+                  </Tooltip>
+                </Link>
+              )}
 
             
             {process.type === "extractive_summary" &&
