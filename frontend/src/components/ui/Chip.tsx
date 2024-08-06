@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 
 interface ChipProps {
   label: string;
-  isSelected: boolean;
-  onClick: () => void;
+  onDelete: () => void;
 }
 
-export const Chip: React.FC<ChipProps> = ({ label, isSelected, onClick }) => {
+const Chip: React.FC<ChipProps> = ({ label, onDelete }) => {
   return (
-    <button
-      className={`px-4 py-2 rounded-full m-1 ${
-        isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-      }`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
+    <div className="inline-flex items-center bg-blue-200 text-blue-700 px-2 py-1 rounded-full m-1">
+      <span>{label}</span>
+      <button
+        onClick={onDelete}
+        className="ml-2 rounded-full p-1 text-blue-400 hover:text-blue-500 "
+      >
+        x
+      </button>
+    </div>
   );
 };
+
+export default Chip;
