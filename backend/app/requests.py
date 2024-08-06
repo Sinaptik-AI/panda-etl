@@ -78,3 +78,25 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         return response.json()
     else:
         raise Exception("Unable to process file!")
+
+
+def extract_field_descriptions(api_token, fields):
+
+    # Prepare the headers with the Bearer token
+    headers = {"Authorization": f"Bearer {api_token}"}
+
+    # Prepare the data and files dictionaries
+    data = {"fields": fields}
+
+    # Send the request
+    response = requests.post(
+        f"{settings.bambooetl_server_url}/v1/extract/field-descriptions",
+        json=data,
+        headers=headers,
+        timeout=3600,
+    )
+    # Check the response status code
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Unable to process file!")

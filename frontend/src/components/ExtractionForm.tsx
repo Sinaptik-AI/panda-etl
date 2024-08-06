@@ -16,6 +16,8 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { ProcessData, ProcessSuggestionRequest } from "@/interfaces/processes";
 import { ProcessSelectionDrawer } from "./ProcessSelectionDrawer";
+import AddFieldsAIModal from "./AddFieldsAIModal";
+import { ExtractionField } from "@/interfaces/extract";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -47,6 +49,7 @@ export default function ExtractionForm({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
+  const [displayAIFieldsModel, setDisplayAIFieldsModel] = useState<boolean>(false);
   const [startingProcess, setStartingProcess] = useState<boolean>(false);
 
   const addField = () => {
@@ -121,10 +124,25 @@ export default function ExtractionForm({
       setIsLoading(false);
     }
   };
+ 
+  const handleAIFieldsBtn = () => {
+    setDisplayAIFieldsModel(true)
+  }
+
+  const onAIFieldBtnClose = () => {
+    setDisplayAIFieldsModel(false)
+  }
 
   const onCancel = async () => {
     setDisplayPsModel(false)
   }
+
+  const handleAIFieldsSubmit = (data: ExtractionField[]) => {
+    if (data.length > 0) {
+      setFields(prevFields => [...prevFields, ...data]);
+    }
+    onAIFieldBtnClose();
+  };
 
   const handleProcessSuggestion = async () => {
     setDisplayPsModel(true)
@@ -153,7 +171,7 @@ export default function ExtractionForm({
         <Button
           type="button"
           icon={Sparkles}
-          // onClick={}
+          onClick={handleAIFieldsBtn}
           variant="primary"
           className="flex items-center"
         >
@@ -287,6 +305,7 @@ export default function ExtractionForm({
 
       {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
       
+      {displayAIFieldsModel && <AddFieldsAIModal project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>}
     </form>
   );
 }
