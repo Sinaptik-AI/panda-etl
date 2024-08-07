@@ -103,12 +103,6 @@ def get_processes(db: Session, project_id: int):
     )
 
     return processes
-    return (
-        db.query(models.Process)
-        .filter(models.Process.project_id == project_id)
-        .order_by(models.Process.id.desc())
-        .all()
-    )
 
 
 def add_asset_content(db: Session, asset_id: int, content: str):
