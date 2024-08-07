@@ -195,7 +195,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             )}
             
 
-            {process.status == ProcessStatus.IN_PROGRESS ? (
+            {process.status == ProcessStatus.IN_PROGRESS || process.completed_step_count == 0 ? (
                 <span
                   className="text-gray-400 cursor-not-allowed"
                   title="Download not available"

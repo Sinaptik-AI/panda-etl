@@ -93,8 +93,9 @@ def get_processes(db: Session = Depends(get_db)):
                 "updated_at": (
                     process.updated_at.isoformat() if process.updated_at else None
                 ),
+                "completed_step_count": step_count,
             }
-            for process in processes
+            for process, step_count in processes
         ],
     }
 

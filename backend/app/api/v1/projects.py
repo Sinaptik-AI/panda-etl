@@ -200,6 +200,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Project not found")
 
     processes = project_repository.get_processes(db=db, project_id=id)
+
     return {
         "status": "success",
         "message": "Processes successfully returned",
@@ -215,8 +216,9 @@ def get_processes(id: int, db: Session = Depends(get_db)):
                 "completed_at": process.completed_at,
                 "created_at": process.created_at,
                 "updated_at": process.updated_at,
+                "completed_step_count": step_count,
             }
-            for process in processes
+            for process, step_count in processes
         ],
     }
 

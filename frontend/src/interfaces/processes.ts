@@ -20,6 +20,7 @@ export interface ProcessData {
   completed_at: string;
   created_at: string;
   updated_at: string;
+  completed_step_count?: number;
 }
 
 export interface ProcessRequest {
