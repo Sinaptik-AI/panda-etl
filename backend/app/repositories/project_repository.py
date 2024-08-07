@@ -1,10 +1,11 @@
 from typing import Union
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, defer, aliased
 from sqlalchemy import asc, desc, func
 
 from app import models
 from app.schemas.project import ProjectCreate
 from app.models.asset import Asset
+from app.models.process_step import ProcessStepStatus
 
 
 def create_project(db: Session, project: ProjectCreate):
@@ -69,6 +70,39 @@ def get_asset(db: Session, asset_id: int):
 
 
 def get_processes(db: Session, project_id: int):
+    # Alias for the ProcessStep model to use in the query
+    ProcessStepAlias = aliased(models.ProcessStep)
+
+    # Subquery to get the count of completed ProcessStep
+    completed_steps_count_subquery = (
+        db.query(
+            ProcessStepAlias.process_id,
+            func.count(ProcessStepAlias.id).label("completed_steps_count"),
+        )
+        .filter(ProcessStepAlias.status == ProcessStepStatus.COMPLETED)
+        .group_by(ProcessStepAlias.process_id)
+        .subquery()
+    )
+
+    # Main query to get processes with the count of completed steps
+    processes = (
+        db.query(
+            models.Process,
+            func.coalesce(
+                completed_steps_count_subquery.c.completed_steps_count, 0
+            ).label("completed_steps_count"),
+        )
+        .filter(models.Process.project_id == project_id)
+        .outerjoin(
+            completed_steps_count_subquery,
+            models.Process.id == completed_steps_count_subquery.c.process_id,
+        )
+        .options(joinedload(models.Process.project), defer(models.Process.output))
+        .order_by(models.Process.id.desc())
+        .all()
+    )
+
+    return processes
     return (
         db.query(models.Process)
         .filter(models.Process.project_id == project_id)
