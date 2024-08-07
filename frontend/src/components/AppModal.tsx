@@ -13,6 +13,7 @@ interface IProps {
   actionButtonText?: string;
   isLoading?: boolean;
   isFooter?: boolean;
+  title?: string;
 }
 
 export const AppModal = ({
@@ -23,31 +24,37 @@ export const AppModal = ({
   actionButtonText,
   isLoading,
   isFooter = true,
+  title = ""
 }: IProps) => {
   return (
     <>
       {createPortal(
         <div
           className="modal-container"
-          onClick={(e: any) => {
-            if (e.target.className === "modal-container")
-              closeModal && closeModal();
-          }}
+          // onClick={(e: any) => {
+          //   if (e.target.className === "modal-container")
+          //     closeModal && closeModal();
+          // }}
         >
           <div
-            className={`rounded-[5px] relative bg-white md:px-4 px-2 md:py-8 py-4 shadow-lg border dark:bg-darkMain dark:text-white ${modalWidth}`}
-          >
-            <span
-              className="absolute top-2 right-2 cursor-pointer"
-              onClick={() => {
-                closeModal && closeModal();
-              }}
-            >
-              <AiOutlineClose
-                className="text-[#191919] dark:text-white"
-                size="1.5em"
-              />
-            </span>
+            className={`rounded-[5px] relative bg-white md:px-4 px-2 py-4  shadow-lg border dark:bg-darkMain dark:text-white ${modalWidth}`}
+          > 
+
+            <div className="flex  justify-between mb-4">
+              <div className="text-lg text-black font-semibold">{title}</div>
+
+              <span
+                className=" cursor-pointer "
+                onClick={() => {
+                  closeModal && closeModal();
+                }}
+              >
+                <AiOutlineClose
+                  className="text-gray-500 hover:text-black"
+                  size="1.5em"
+                />
+              </span>
+            </div>
 
             <div className="mb-7 w-full">{children}</div>
             {isFooter && (
