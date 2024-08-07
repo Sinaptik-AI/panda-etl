@@ -139,7 +139,12 @@ export default function ExtractionForm({
 
   const handleAIFieldsSubmit = (data: ExtractionField[]) => {
     if (data.length > 0) {
-      setFields(prevFields => [...prevFields, ...data]);
+      if (fields.length == 1 ){
+        setFields(data)
+      } else {
+        setFields(prevFields => [...prevFields, ...data]);
+      }
+      
     }
     onAIFieldBtnClose();
   };
@@ -160,7 +165,7 @@ export default function ExtractionForm({
   };
 
   const validateKey = (key: string) => {
-    return /^[a-zA-Z0-9_]+$/.test(key);
+    return /^[\p{L}\p{N}_ ]+$/u.test(key);
   };
 
   return (

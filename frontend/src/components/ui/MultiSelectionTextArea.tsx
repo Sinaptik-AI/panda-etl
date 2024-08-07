@@ -4,13 +4,13 @@ import Chip from './Chip';
 interface TextInputProps {
   placeholder?: string;
   onUpdate: (items: string[]) => void;
-  validate_text?: (value: string) => string | null;
+  validate_text?: (value: string) => string|null;
 }
 
 interface TextInputState {
   inputValue: string;
   items: string[];
-  error: string; // Added to track the validation error
+  error: string;
 }
 
 const MultiSelectionTextArea: React.FC<TextInputProps> = ({ placeholder = 'Type here...', onUpdate, validate_text }) => {
@@ -25,33 +25,39 @@ const MultiSelectionTextArea: React.FC<TextInputProps> = ({ placeholder = 'Type 
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault(); // Prevent default Enter key behavior
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault(); // Prevent default behavior
 
-      const { inputValue } = state;
-      const trimmedValue = inputValue.trim();
+      const { inputValue, items } = state;
+      const values = inputValue.split(',').map(value => value.trim()).filter(value => value !== '');
 
-      if (trimmedValue === '') {
-        return; // Do nothing if the input is empty
-      }
+      let newItems = [...items];
+      let error = '';
 
-      // Validate the input value if validate_text function is provided
-      if (validate_text) {
-        const validationError = validate_text(trimmedValue);
-        if (validationError) {
-          // Set the error message
-          setState({ ...state, error: validationError });
-          return;
+      for (const value of values) {
+        // Validate the input value if validate_text function is provided
+        if (validate_text) {
+          const validationError = validate_text(value);
+          if (validationError) {
+            error = validationError;
+            break; // Stop processing if there's a validation error
+          }
         }
+        newItems = [...newItems, value];
       }
 
-      // Clear the error message and add the input value to items if it passes validation
+      if (error) {
+        setState({ ...state, error });
+        return;
+      }
+
+      // Clear the error message and add the input values to items if they pass validation
       setState({
         inputValue: '',
-        items: [...state.items, trimmedValue],
+        items: newItems,
         error: '', // Clear error if validation is successful
       });
-      onUpdate([...state.items, trimmedValue]); // Call the onUpdate callback with the updated list
+      onUpdate(newItems); // Call the onUpdate callback with the updated list
     }
   };
 
