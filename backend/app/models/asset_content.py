@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Text
+from sqlalchemy import JSON, Column, Integer, ForeignKey, String, Text
 from .base import Base
 from sqlalchemy.orm import relationship
 
@@ -10,7 +10,8 @@ class AssetContent(Base):
     asset_id = Column(
         Integer, ForeignKey("assets.id"), nullable=False, index=True, unique=True
     )
-    content = Column(Text, nullable=False)
+    content = Column(JSON, nullable=True)
+    language = Column(String(10), nullable=True, default="en")
 
     asset = relationship("Asset", back_populates="content")
 
