@@ -13,7 +13,11 @@ from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
 from app.models import ProcessStatus, ProcessStep
 from app.schemas.process import ProcessData, ProcessSuggestion
-from app.requests import extract_data
+from app.requests import (
+    extract_data,
+    extract_summary_of_summaries,
+    highlight_sentences_in_pdf,
+)
 from datetime import datetime
 
 from app.models.process_step import ProcessStepStatus
@@ -223,14 +227,20 @@ def process_task(process_id: int):
                     )
 
                     if process.type == "extractive_summary":
-                        from .extract import extract_summary, highlight_sentences_in_pdf
+                        from app.requests import extract_summary
 
-                        summary, summary_sentences = extract_summary(
-                            process_step.asset.path,
-                            process_step.asset.filename,
-                            process.details,
-                            asset_content.content if asset_content else None,
+                        data = extract_summary(
+                            api_token=api_key.key,
+                            config=process.details,
+                            file_path=(
+                                process_step.asset.path if not asset_content else None
+                            ),
+                            pdf_content=asset_content.content,
                         )
+
+                        summary = data.get("summary", "")
+                        summary_sentences = data.get("summary_sentences", "")
+
                         highlighted_file_dir = os.path.join(
                             settings.process_dir, str(process_id), str(process_step.id)
                         )
@@ -243,9 +253,10 @@ def process_task(process_id: int):
                         )
 
                         highlight_sentences_in_pdf(
-                            process_step.asset.path,
-                            highlighted_file_path,
-                            summary_sentences,
+                            api_token=api_key.key,
+                            sentences=summary_sentences,
+                            file_path=process_step.asset.path,
+                            output_path=highlighted_file_path,
                         )
 
                         data = {
@@ -258,15 +269,16 @@ def process_task(process_id: int):
 
                     else:
 
+                        if asset_content:
+                            asset_content = "\n".join(asset_content.content["content"])
+
                         data = extract_data(
                             api_key.key,
                             process.details,
                             file_path=(
                                 process_step.asset.path if not asset_content else None
                             ),
-                            pdf_content=(
-                                None if not asset_content else asset_content.content
-                            ),
+                            pdf_content=(None if not asset_content else asset_content),
                         )
 
                     process_step.output = data
@@ -287,14 +299,14 @@ def process_task(process_id: int):
             "show_final_summary" in process.details
             and process.details["show_final_summary"]
         ):
-            from .extract import (
-                extract_summary_of_summaries,
-            )
 
             logger.log(f"Extracting summary from summaries")
-            summary_of_summaries = extract_summary_of_summaries(
-                summaries, process.details["transformation_prompt"]
+
+            data = extract_summary_of_summaries(
+                api_key.key, summaries, process.details["transformation_prompt"]
             )
+            summary_of_summaries = data.get("summary", "")
+
             process.output = {"summary": summary_of_summaries}
             logger.log(f"Extracting summary from summaries completed")
 
@@ -345,7 +357,10 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
     csv_writer = csv.writer(csv_buffer)
 
     # Write headers
-    headers = ["Filename"] + list(completed_steps[0].output[0].keys())
+    if process.type == "extract":
+        headers = ["Filename"] + list(completed_steps[0].output[0].keys())
+    else:
+        headers = ["Filename", "summary"]
     csv_writer = csv.writer(
         csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
@@ -364,28 +379,32 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
 
     # Write data rows
     for step in completed_steps:
-        for output in step.output:
-            row = [step.asset.filename]
-            for key in headers[1:]:
-                value = output.get(key, "")
-                if key in date_columns:
-                    try:
-                        parsed_date = dateparser.parse(value)
-                        if parsed_date:
-                            value = parsed_date.strftime("%d-%m-%Y")
-                    except:
-                        logger.error(
-                            f"Unable to parse date {value} fallback to extracted text"
-                        )
-                elif key in number_columns:
-                    try:
-                        value = int(value)
-                    except:
-                        logger.error(
-                            f"Unable to parse number {value} fallback to extracted text"
-                        )
-                row.append(value)
-            csv_writer.writerow(row)
+        row = [step.asset.filename]
+        if process.type == "extract":
+            for output in step.output:
+                for key in headers[1:]:
+                    value = output.get(key, "")
+                    if key in date_columns:
+                        try:
+                            parsed_date = dateparser.parse(value)
+                            if parsed_date:
+                                value = parsed_date.strftime("%d-%m-%Y")
+                        except:
+                            logger.error(
+                                f"Unable to parse date {value} fallback to extracted text"
+                            )
+                    elif key in number_columns:
+                        try:
+                            value = int(value)
+                        except:
+                            logger.error(
+                                f"Unable to parse number {value} fallback to extracted text"
+                            )
+                    row.append(value)
+        else:
+            row.append(step.output["summary"])
+
+        csv_writer.writerow(row)
 
     csv_content = csv_buffer.getvalue()
 

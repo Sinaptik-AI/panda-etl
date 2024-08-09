@@ -48,11 +48,14 @@ async def extract(
 
         asset_content = project_repository.get_asset_content(db, asset_id=asset.id)
 
+        if asset_content:
+            asset_content = "\n".join(asset_content.content["content"])
+
         data = extract_data(
             api_token=api_key.key,
             fields=fields.dict(),
             file_path=asset.path if not asset_content else None,
-            pdf_content=(None if not asset_content else asset_content.content),
+            pdf_content=(None if not asset_content else asset_content),
         )
 
         return {

@@ -105,8 +105,10 @@ def get_processes(db: Session, project_id: int):
     return processes
 
 
-def add_asset_content(db: Session, asset_id: int, content: str):
-    asset_content = models.AssetContent(asset_id=asset_id, content=content)
+def add_asset_content(db: Session, asset_id: int, content: dict):
+    asset_content = models.AssetContent(
+        asset_id=asset_id, content=content, language=content["lang"]
+    )
     db.add(asset_content)
     db.commit()
 

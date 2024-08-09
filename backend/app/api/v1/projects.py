@@ -269,7 +269,7 @@ def preprocess_file(asset_id: int):
         asset = project_repository.get_asset(db=db, asset_id=asset_id)
         api_key = user_repository.get_user_api_key(db)
         pdf_content = extract_text_from_pdf(api_key.key, asset.path)
-        project_repository.add_asset_content(db, asset_id, pdf_content["content"])
+        project_repository.add_asset_content(db, asset_id, pdf_content)
 
     except Exception as e:
         logger.error(
