@@ -9,3 +9,6 @@ migrate:
 .PHONY: generate-migration 
 generate-migration: 
 	poetry run alembic revision --autogenerate -m "$$message"
+
+test:
+	poetry run pytest
