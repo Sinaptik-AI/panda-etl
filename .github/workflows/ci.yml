@@ -47,9 +47,6 @@ jobs:
       - name: Clear Poetry Cache
         run: poetry cache clear pypi --all
 
-      - name: Install future
-        run: pip wheel --use-pep517 "future==0.18.3"
-
       - name: Install dependencies
         run: |
           cd backend
