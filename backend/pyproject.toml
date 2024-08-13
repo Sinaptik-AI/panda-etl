@@ -13,6 +13,7 @@ alembic = "^1.13.2"
 pydantic-settings = "^2.3.4"
 starlette = "^0.37.2"
 dateparser = "^1.2.0"
+requests = "^2.32.3"
 
 
 [tool.poetry.group.dev.dependencies]
