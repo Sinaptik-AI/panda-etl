@@ -49,7 +49,11 @@ jobs:
         run: pip wheel --use-pep517 "future==0.18.3"
 
       - name: Install dependencies
-        run: poetry install --all-extras --with dev --verbose
+        run: |
+          cd backend
+          poetry install --all-extras --with dev --verbose
 
       - name: Run python tests
-        run: poetry run pytest
+        run: |
+          cd backend
+          poetry run pytest
