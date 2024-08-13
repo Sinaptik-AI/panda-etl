@@ -13,15 +13,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      SQLALCHEMY_DATABASE_URL: sqlite:///instance/test.db
+      SQLALCHEMY_DATABASE_URL: "sqlite:///instance/test.db"
+      OPENAI_API_KEY: "dump"
+      BAMBOOETL_SERVER_URL: "http://127.0.0.1:9000"
 
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -37,7 +40,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
-          echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" >> $env:GITHUB_PATH
+          echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Verify Poetry Installation
         run: poetry --version
@@ -45,11 +48,17 @@ jobs:
       - name: Clear Poetry Cache
         run: poetry cache clear pypi --all
 
-      - name: Install future
-        run: pip wheel --use-pep517 "future==0.18.3"
+      - name: Install Meson and Ninja (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          pip install meson ninja
 
       - name: Install dependencies
-        run: poetry install --all-extras --with dev --verbose
+        run: |
+          cd backend
+          poetry install --all-extras --with dev --verbose
 
       - name: Run python tests
-        run: poetry run pytest
+        run: |
+          cd backend
+          poetry run pytest
