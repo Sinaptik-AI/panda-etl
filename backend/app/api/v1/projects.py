@@ -179,7 +179,7 @@ async def upload_files(
     except HTTPException:
         raise
     except Exception as e:
-        print(e)
+        print(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
 

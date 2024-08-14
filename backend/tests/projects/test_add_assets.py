@@ -17,12 +17,6 @@ client = TestClient(app)
 
 
 @pytest.fixture
-def mock_db():
-    """Fixture to mock the database session"""
-    return MagicMock(spec=Session)
-
-
-@pytest.fixture
 def mock_file():
     """Fixture to mock an uploaded PDF file"""
     file_content = BytesIO(b"Dummy PDF content")
@@ -36,13 +30,23 @@ def mock_non_pdf_file():
     return UploadFile(filename="test.txt", file=file_content)
 
 
-def override_get_db():
-    """Override the get_db dependency to use the mock_db"""
-    mock_db_instance = MagicMock(spec=Session)
-    yield mock_db_instance
+@pytest.fixture
+def mock_db():
+    """Fixture to mock the database session"""
+    db = MagicMock(spec=Session)
+    return db
 
 
-app.dependency_overrides[get_db] = override_get_db
+@pytest.fixture(autouse=True)
+def override_get_db(mock_db):
+    """Override the get_db dependency with the mock"""
+
+    def _override_get_db():
+        return mock_db
+
+    app.dependency_overrides[get_db] = _override_get_db
+    yield
+    app.dependency_overrides.clear()
 
 
 @patch("app.repositories.project_repository.get_project")
@@ -57,6 +61,7 @@ def test_upload_files_success(
     mock_open,
     mock_get_project,
     mock_file,
+    mock_db,
 ):
     """Test uploading files successfully"""
     mock_get_project.return_value = MagicMock(id=1)
