@@ -64,6 +64,9 @@ async def extract(
             "data": data,
         }
 
+    except HTTPException:
+        raise
+
     except Exception as e:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=400, detail="Unable to process file!")
@@ -87,6 +90,9 @@ async def get_field_descriptions(
             "message": "File processed successfully",
             "data": data,
         }
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         logger.error(traceback.print_exc())

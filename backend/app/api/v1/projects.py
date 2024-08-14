@@ -45,46 +45,56 @@ def get_projects(
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    projects, total_count = project_repository.get_projects(
-        db=db, page=page, page_size=page_size
-    )
+    try:
+        projects, total_count = project_repository.get_projects(
+            db=db, page=page, page_size=page_size
+        )
 
-    return {
-        "status": "success",
-        "message": "Projects successfully returned",
-        "data": [
-            {
+        return {
+            "status": "success",
+            "message": "Projects successfully returned",
+            "data": [
+                {
+                    "id": project.id,
+                    "name": project.name,
+                    "description": project.description,
+                    "created_at": project.created_at.isoformat(),
+                    "updated_at": project.updated_at.isoformat(),
+                }
+                for project in projects
+            ],
+            "total_count": total_count,
+            "page": page,
+            "page_size": page_size,
+        }
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Unable to process request!")
+
+
+@project_router.get("/{id}")
+def get_project(id: int, db: Session = Depends(get_db)):
+    try:
+        project = project_repository.get_project(db=db, project_id=id)
+        if project is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        return {
+            "status": "success",
+            "message": "Projects successfully returned",
+            "data": {
                 "id": project.id,
                 "name": project.name,
                 "description": project.description,
                 "created_at": project.created_at.isoformat(),
                 "updated_at": project.updated_at.isoformat(),
-            }
-            for project in projects
-        ],
-        "total_count": total_count,
-        "page": page,
-        "page_size": page_size,
-    }
-
-
-@project_router.get("/{id}")
-def get_project(id: int, db: Session = Depends(get_db)):
-    project = project_repository.get_project(db=db, project_id=id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    return {
-        "status": "success",
-        "message": "Projects successfully returned",
-        "data": {
-            "id": project.id,
-            "name": project.name,
-            "description": project.description,
-            "created_at": project.created_at.isoformat(),
-            "updated_at": project.updated_at.isoformat(),
-        },
-    }
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
 @project_router.get("/{id}/assets")
@@ -94,25 +104,29 @@ def get_assets(
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    assets, total_count = project_repository.get_assets(
-        db=db, project_id=id, page=page, page_size=page_size, order_by="desc"
-    )
-    return {
-        "status": "success",
-        "message": "Projects successfully returned",
-        "data": [
-            {
-                "id": asset.id,
-                "filename": asset.filename,
-                "created_at": asset.created_at.isoformat(),
-                "updated_at": asset.updated_at.isoformat(),
-            }
-            for asset in assets
-        ],
-        "total_count": total_count,
-        "page": page,
-        "page_size": page_size,
-    }
+    try:
+        assets, total_count = project_repository.get_assets(
+            db=db, project_id=id, page=page, page_size=page_size, order_by="desc"
+        )
+        return {
+            "status": "success",
+            "message": "Projects successfully returned",
+            "data": [
+                {
+                    "id": asset.id,
+                    "filename": asset.filename,
+                    "created_at": asset.created_at.isoformat(),
+                    "updated_at": asset.updated_at.isoformat(),
+                }
+                for asset in assets
+            ],
+            "total_count": total_count,
+            "page": page,
+            "page_size": page_size,
+        }
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
 @project_router.post("/{id}/assets")
@@ -162,8 +176,10 @@ async def upload_files(
             file_preprocessor.submit(preprocess_file, asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
+    except HTTPException:
+        raise
     except Exception as e:
-        print(e)
+        print(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
 
@@ -188,6 +204,8 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
             filepath, media_type="application/pdf", filename=asset.filename
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
@@ -195,50 +213,65 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
 
 @project_router.get("/{id}/processes")
 def get_processes(id: int, db: Session = Depends(get_db)):
-    project = project_repository.get_project(db=db, project_id=id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
+    try:
+        project = project_repository.get_project(db=db, project_id=id)
+        if project is None:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    processes = project_repository.get_processes(db=db, project_id=id)
+        processes = project_repository.get_processes(db=db, project_id=id)
 
-    return {
-        "status": "success",
-        "message": "Processes successfully returned",
-        "data": [
-            {
-                "id": process.id,
-                "name": process.name,
-                "type": process.type,
-                "status": process.status,
-                "project_id": f"{process.project_id}",
-                "details": process.details,
-                "started_at": process.started_at,
-                "completed_at": process.completed_at,
-                "created_at": process.created_at,
-                "updated_at": process.updated_at,
-                "completed_step_count": step_count,
-            }
-            for process, step_count in processes
-        ],
-    }
+        return {
+            "status": "success",
+            "message": "Processes successfully returned",
+            "data": [
+                {
+                    "id": process.id,
+                    "name": process.name,
+                    "type": process.type,
+                    "status": process.status,
+                    "project_id": f"{process.project_id}",
+                    "details": process.details,
+                    "started_at": process.started_at,
+                    "completed_at": process.completed_at,
+                    "created_at": process.created_at,
+                    "updated_at": process.updated_at,
+                    "completed_step_count": step_count,
+                }
+                for process, step_count in processes
+            ],
+        }
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Failed to fetch response")
 
 
 @project_router.delete("/{project_id}")
 async def delete_project(project_id: int, db: Session = Depends(get_db)):
-    project = project_repository.get_project(db, project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    try:
+        project = project_repository.get_project(db, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    project.deleted_at = datetime.now(tz=timezone.utc)
-    db.commit()
+        project.deleted_at = datetime.now(tz=timezone.utc)
 
-    # Soft delete assets associated with the project
-    [assets, _count] = project_repository.get_assets(db, project_id)
-    for asset in assets:
-        asset.deleted_at = datetime.now(tz=timezone.utc)
+        # Soft delete assets associated with the project
+        [assets, _count] = project_repository.get_assets(db, project_id)
+        for asset in assets:
+            asset.deleted_at = datetime.now(tz=timezone.utc)
+
         db.commit()
 
-    return {"message": "Project and associated assets deleted successfully"}
+        return {"message": "Project and associated assets deleted successfully"}
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Failed to delete!")
 
 
 @project_router.delete("/{project_id}/assets/{asset_id}")
@@ -257,8 +290,12 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
         asset.deleted_at = datetime.now(tz=timezone.utc)
         db.commit()
         return {"message": "Asset deleted successfully"}
+
+    except HTTPException:
+        raise
+
     except Exception as e:
-        logger.error(traceback.print_exception())
+        logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
 
 
