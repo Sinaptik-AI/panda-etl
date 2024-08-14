@@ -42,12 +42,6 @@ def override_get_db():
     yield mock_db_instance
 
 
-def override_get_db_side_effect():
-    """Override the get_db dependency to use the mock_db"""
-    mock_db_instance = MagicMock(spec=Session, side_effect=Exception("Database error"))
-    yield mock_db_instance
-
-
 app.dependency_overrides[get_db] = override_get_db
 
 
@@ -55,8 +49,14 @@ app.dependency_overrides[get_db] = override_get_db
 @patch("app.api.v1.projects.open")
 @patch("app.api.v1.projects.os.makedirs")
 @patch("app.api.v1.projects.file_preprocessor.submit")
+@patch("app.api.v1.projects.preprocess_file")
 def test_upload_files_success(
-    mock_submit, mock_makedirs, mock_open, mock_get_project, mock_file, mock_db
+    mock_preprocess_file,
+    mock_submit,
+    mock_makedirs,
+    mock_open,
+    mock_get_project,
+    mock_file,
 ):
     """Test uploading files successfully"""
     mock_get_project.return_value = MagicMock(id=1)
@@ -77,9 +77,6 @@ def test_upload_files_success(
 
     # Check if the processing task was submitted
     mock_submit.assert_called_once()
-
-    # Ensure the database session type was correctly passed
-    assert isinstance(mock_db, Session)
 
 
 @patch("app.repositories.project_repository.get_project")
