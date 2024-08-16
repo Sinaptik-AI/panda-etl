@@ -18,7 +18,12 @@ def mock_db():
 
 
 def create_mock_asset(
-    id: int, filename: str, created_at: datetime, updated_at: datetime
+    id: int,
+    filename: str,
+    created_at: datetime,
+    updated_at: datetime,
+    type: str,
+    details: dict,
 ) -> Asset:
     """Helper function to create a mock Asset object"""
     asset = MagicMock(spec=Asset)
@@ -26,6 +31,8 @@ def create_mock_asset(
     asset.filename = filename
     asset.created_at = created_at
     asset.updated_at = updated_at
+    asset.type = type
+    asset.details = details
     return asset
 
 
@@ -39,18 +46,24 @@ def test_get_assets_success(mock_get_assets, mock_db):
             filename="asset1.png",
             created_at=datetime(2023, 8, 10, 10, 0, 0),
             updated_at=datetime(2023, 8, 10, 12, 0, 0),
+            type="pdf",
+            details={},
         ),
         create_mock_asset(
             id=2,
             filename="asset2.png",
             created_at=datetime(2023, 8, 11, 11, 0, 0),
             updated_at=datetime(2023, 8, 11, 13, 0, 0),
+            type="pdf",
+            details={},
         ),
     ]
     total_count = 2
     mock_get_assets.return_value = (mock_assets, total_count)
 
     response = client.get("/v1/projects/1/assets?page=1&page_size=2")
+
+    print(response.json())
 
     assert response.status_code == 200
     assert response.json() == {
@@ -62,12 +75,16 @@ def test_get_assets_success(mock_get_assets, mock_db):
                 "filename": "asset1.png",
                 "created_at": "2023-08-10T10:00:00",
                 "updated_at": "2023-08-10T12:00:00",
+                "type": "pdf",
+                "details": {},
             },
             {
                 "id": 2,
                 "filename": "asset2.png",
                 "created_at": "2023-08-11T11:00:00",
                 "updated_at": "2023-08-11T13:00:00",
+                "type": "pdf",
+                "details": {},
             },
         ],
         "total_count": total_count,
