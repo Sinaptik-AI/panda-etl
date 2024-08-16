@@ -119,6 +119,8 @@ def get_assets(
                     "filename": asset.filename,
                     "created_at": asset.created_at.isoformat(),
                     "updated_at": asset.updated_at.isoformat(),
+                    "type": asset.type,
+                    "details": asset.details,
                 }
                 for asset in assets
             ],
@@ -207,7 +209,11 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
 
         # Save the file info in the database
         new_asset = Asset(
-            filename=filename, path=filepath, project_id=id, details={"url": url}
+            filename=filename,
+            path=filepath,
+            project_id=id,
+            type="url",
+            details={"url": url},
         )
 
         db.add(new_asset)

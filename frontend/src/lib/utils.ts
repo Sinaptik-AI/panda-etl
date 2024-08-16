@@ -25,3 +25,18 @@ export const isValidURL = (url: string): boolean => {
       return false;
   }
 }
+
+export const truncateTextFromCenter = (text: string, maxLength: number) => {
+  if (!text) {
+    return text;
+  } 
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const partLength = Math.floor((maxLength - 3) / 2);
+  const start = text.slice(0, partLength);
+  const end = text.slice(text.length - partLength);
+
+  return `${start}...${end}`;
+};

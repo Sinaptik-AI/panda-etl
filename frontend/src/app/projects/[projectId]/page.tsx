@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/ContextMenu";
 import { Button } from "@/components/ui/Button";
 import AssetUploadModal from "@/components/AssetUploadModal";
+import { AssetData } from "@/interfaces/assets";
+import WebsiteViewer from "@/components/WebsiteViewer";
 
 export default function Project() {
   const params = useParams();
@@ -55,6 +57,7 @@ export default function Project() {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
+  const [url, setURL] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [deletedId, setDeletedId] = useState("");
@@ -118,11 +121,12 @@ export default function Project() {
     { label: project?.name || "", href: `/projects/${project?.id}` },
   ];
 
-  const handleFileClick = async (id: string) => {
-    setCurrentFile(id);
+  const handleFileClick = async (asset: AssetData) => {
+    setURL(null)
+    setCurrentFile(asset.id);
     if (project) {
-      if (typeof id == "string") {
-        const file_obj = uploadingFiles.find((value) => value.name === id);
+      if (typeof asset.id == "string") {
+        const file_obj = uploadingFiles.find((value) => value.name === asset.id);
         if (file_obj) {
           const file_blob = new Blob([file_obj], { type: file_obj.type });
           setPdfFile(file_blob);
@@ -130,8 +134,14 @@ export default function Project() {
           console.error("File not found in uploadingFiles.");
         }
       } else {
-        const response = await FetchAssetFile(project.id, id);
-        setPdfFile(new Blob([response], { type: "application/pdf" }));
+        const assetExtracted = assets.find((value: AssetData) => value.id == asset.id)
+        if (assetExtracted.type == "url") {
+          setURL(assetExtracted.details.url)
+        } else {
+          const response = await FetchAssetFile(project.id, asset.id);
+          setPdfFile(new Blob([response], { type: "application/pdf" }));
+        }
+        
       }
     }
   };
@@ -281,7 +291,7 @@ export default function Project() {
                           <File
                             key={asset.id}
                             name={asset.filename}
-                            onClick={() => handleFileClick(asset.id)}
+                            onClick={() => handleFileClick(asset)}
                           />
                         </ContextMenuTrigger>
 
@@ -308,7 +318,7 @@ export default function Project() {
                 <Table
                   data={assets || []}
                   columns={columns}
-                  onRowClick={(row) => handleFileClick(row.id)}
+                  onRowClick={(row) => handleFileClick(row)}
                   onDelete={(id: string) => {
                     setDeletedId(id);
                     setIsDeleteModalOpen(true);
@@ -344,7 +354,9 @@ export default function Project() {
             onClose={() => setCurrentFile(null)}
             title={"Preview"}
           >
-            <PDFViewer file={pdfFile} />
+            {
+              url? <WebsiteViewer url={url} />: (<PDFViewer file={pdfFile} />)
+            }
           </Drawer>
         </>
       )}
