@@ -14,3 +14,7 @@ class Asset(AssetBase):
 
     class Config:
         orm_mode = True
+
+
+class UrlAssetCreate(BaseModel):
+    url: str

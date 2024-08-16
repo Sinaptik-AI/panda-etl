@@ -15,3 +15,13 @@ export const formatFileSize = (sizeInBytes: number): string => {
     return sizeInBytes + " Bytes";
   }
 };
+
+
+export const isValidURL = (url: string): boolean => {
+  try {
+      new URL(url);
+      return true;
+  } catch {
+      return false;
+  }
+}

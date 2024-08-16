@@ -14,8 +14,10 @@ from app.models.asset import Asset
 from datetime import datetime, timezone
 
 from app.repositories import user_repository
-from app.requests import extract_text_from_pdf
+from app.requests import extract_text_from_file
 from app.logger import Logger
+from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
+from app.schemas.asset import UrlAssetCreate
 
 
 # Thread pool executor for background tasks
@@ -183,6 +185,44 @@ async def upload_files(
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
 
+@project_router.post("/{id}/assets/url")
+async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get_db)):
+    try:
+        url = data.url
+        project = project_repository.get_project(db=db, project_id=id)
+        if project is None:
+            raise HTTPException(status_code=400, detail="Project not found")
+
+        if not url or not is_valid_url(url):
+            raise HTTPException(status_code=400, detail="Invalid Url")
+
+        # Ensure the upload directory exists
+        os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
+
+        # Generate a secure filename
+        filename = generate_unique_filename(url)
+        filepath = os.path.join(settings.upload_dir, str(id), filename)
+
+        fetch_html_and_save(url, filepath)
+
+        # Save the file info in the database
+        new_asset = Asset(
+            filename=filename, path=filepath, project_id=id, details={"url": url}
+        )
+
+        db.add(new_asset)
+        db.commit()
+        logger.log("Starting Preprocess Asset ID:", new_asset.id)
+        file_preprocessor.submit(preprocess_file, new_asset.id)
+
+        return JSONResponse(content="Successfully uploaded the files")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Failed to upload files")
+
+
 @project_router.get("/{id}/assets/{asset_id}")
 async def get_file(asset_id: int, db: Session = Depends(get_db)):
     try:
@@ -305,10 +345,11 @@ def preprocess_file(asset_id: int):
     try:
         asset = project_repository.get_asset(db=db, asset_id=asset_id)
         api_key = user_repository.get_user_api_key(db)
-        pdf_content = extract_text_from_pdf(api_key.key, asset.path)
+        pdf_content = extract_text_from_file(api_key.key, asset.path, asset.type)
         project_repository.add_asset_content(db, asset_id, pdf_content)
 
     except Exception as e:
+        print(e)
         logger.error(
-            f"failed to preprocess asser {asset_id}: {traceback.print_exception()}"
+            f"failed to preprocess asset {asset_id}: {traceback.print_exception()}"
         )

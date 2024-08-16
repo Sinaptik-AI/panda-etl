@@ -21,6 +21,7 @@ import {
   GetProject,
   GetProjectAssets,
   FetchAssetFile,
+  AddProjectURLAsset,
 } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
 import { Button } from "@/components/ui/Button";
+import AssetUploadModal from "@/components/AssetUploadModal";
 
 export default function Project() {
   const params = useParams();
@@ -58,9 +60,9 @@ export default function Project() {
   const [deletedId, setDeletedId] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<[string, Date][]>([]);
+  const [openUploadModal, setOpenUploadModal] = useState<boolean>(false); 
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -199,6 +201,7 @@ export default function Project() {
       {
         onSuccess() {
           setIsDeleteModalOpen(false);
+          refetchProjectAssets();
         },
         onError(error) {
           console.log(error);
@@ -207,16 +210,21 @@ export default function Project() {
     );
   };
 
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const onUploadSubmit = async (type: string, data: string | FileList | null) => {
+    if (type == "file") {
+      handleFileUpload(data as FileList);
+    } else if (type == "url") {
+      const response = await AddProjectURLAsset(id, data as string)
+      if (!response.data) {
+        return false;
+      }
+      refetchProjectAssets();
     }
-  };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    handleFileUpload(files);
-  };
+    setOpenUploadModal(false)
+    return true;
+  }
+
 
   return (
     <>
@@ -243,11 +251,11 @@ export default function Project() {
               <div className="flex gap-2">
                 {activeTab === "assets" && (
                   <Button
-                    onClick={handleButtonClick}
+                    onClick={() => setOpenUploadModal(true)}
                     icon={UploadIcon}
                     variant="secondary"
                   >
-                    Upload files
+                    Upload
                   </Button>
                 )}
                 <Button onClick={newProcess} icon={PlusIcon}>
@@ -255,15 +263,6 @@ export default function Project() {
                 </Button>
               </div>
             }
-          />
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="application/pdf"
-            onChange={handleFileChange}
-            multiple
-            style={{ display: "none" }}
           />
 
           {activeTab === "assets" && (
@@ -360,6 +359,16 @@ export default function Project() {
           onSubmit={handleDelete}
         />
       )}
+
+      {
+        openUploadModal && (
+          <AssetUploadModal 
+            project_id={project?.id}
+            onSubmit={onUploadSubmit}
+            onCancel={() => setOpenUploadModal(false)}
+          />
+        )
+      }
     </>
   );
 }

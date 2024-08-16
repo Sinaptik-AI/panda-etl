@@ -25,7 +25,7 @@ def request_api_key(email: str):
     return data.get("message", "No message in response")
 
 
-def extract_text_from_pdf(api_token, file_path):
+def extract_text_from_file(api_token: str, file_path: str, type: str):
     # Prepare the headers with the Bearer token
     headers = {"Authorization": f"Bearer {api_token}"}
     files = {}

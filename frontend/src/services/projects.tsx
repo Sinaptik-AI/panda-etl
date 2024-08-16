@@ -103,6 +103,20 @@ export const AddProjectAsset = async (projectId: string, file: File) => {
   }
 };
 
+export const AddProjectURLAsset = async (projectId: string, url: string) => {
+  try {
+    const response = await PostRequest<{ data: any }>(
+      `${projectsApiUrl}/${projectId}/assets/url`,
+      {url: url},
+      {},
+      300000 // Longer time for uploading big files
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const GetProjectProcesses = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProcessData[] }>(
