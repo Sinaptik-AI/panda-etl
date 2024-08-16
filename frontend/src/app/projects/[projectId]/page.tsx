@@ -184,6 +184,7 @@ export default function Project() {
 
   const columns: Column<(typeof assets)[0]>[] = [
     { header: "File name", accessor: "filename" },
+    { header: "Content type", accessor: "type" },
     { header: "File type", accessor: "filetype" },
     { header: "Size", accessor: "size" },
     {
