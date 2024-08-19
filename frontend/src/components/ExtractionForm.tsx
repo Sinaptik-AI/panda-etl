@@ -16,8 +16,8 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { ProcessData, ProcessSuggestionRequest } from "@/interfaces/processes";
 import { ProcessSelectionDrawer } from "./ProcessSelectionDrawer";
-import AddFieldsAIModal from "./AddFieldsAIModal";
 import { ExtractionField } from "@/interfaces/extract";
+import AddFieldsAIDrawer from "./AddFieldsAIDrawer";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -314,7 +314,7 @@ export default function ExtractionForm({
 
       {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
       
-      <AddFieldsAIModal isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>
+      <AddFieldsAIDrawer isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>
     </form>
   );
 }

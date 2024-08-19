@@ -14,7 +14,7 @@ interface IProps {
     onSubmit: (data: ExtractionField[]) => void;
 }
 
-const AddFieldsAIModal = ({
+const AddFieldsAIDrawer = ({
     isOpen=true,
     project_id,
     onSubmit,
@@ -52,15 +52,6 @@ const AddFieldsAIModal = ({
       };
   
     return (
-        // <AppModal
-        // closeModal={onCancel}
-        // actionButtonText="Generate"
-        // handleSubmit={handleSubmit}
-        // isLoading={isLoading}
-        // modalWidth="w-[600px]"
-        // title="Add Fields with AI"
-        // >
-        //  </AppModal> 
         <Drawer
             isOpen={isOpen}
             onClose={onCancel}
@@ -95,4 +86,4 @@ const AddFieldsAIModal = ({
     );
     };
 
-export default AddFieldsAIModal;
+export default AddFieldsAIDrawer;
