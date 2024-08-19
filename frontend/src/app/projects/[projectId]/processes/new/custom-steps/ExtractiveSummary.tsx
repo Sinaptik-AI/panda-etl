@@ -7,14 +7,14 @@ import { Input } from "@/components/ui/Input";
 import { ProjectData } from "@/interfaces/projects";
 import { useRouter } from "next/navigation";
 import { StartProcess } from "@/services/processes";
-import PDFViewer from "@/components/PDFViewer";
-import { BASE_STORAGE_URL } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectAssets } from "@/services/projects";
 import { AssetData } from "@/interfaces/assets";
 import { LayoutTemplate, Play } from "lucide-react";
 import { ProcessData } from "@/interfaces/processes";
 import { ProcessSelectionDrawer } from "@/components/ProcessSelectionDrawer";
+import AssetViewer from "@/components/AssetViewer";
+import CustomViewsPaginator from "@/components/CustomViewsPaginator";
 
 interface ExtractiveSummaryProps {
   project: ProjectData;
@@ -51,8 +51,9 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   outputType
 }) => {
   const router = useRouter();
-  const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
   const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
+  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | null>(null);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [formData, setFormData] = useState<ExtractiveSummaryData>({
     type: "extractive_summary",
     data: {
@@ -89,7 +90,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
-      const response = await GetProjectAssets(project.id, 1, 1);
+      const response = await GetProjectAssets(project.id);
       const { data: asset } = response.data;
       return asset as AssetData[];
     },
@@ -97,11 +98,9 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   useEffect(() => {
     if (assets?.length && project) {
-      setPdfFileUrl(
-        `${BASE_STORAGE_URL}/${project.id}/${assets?.[0].filename}`
-      );
+      setCurrentAssetPreview(assets[currentFileIndex])
     }
-  }, [assets, project]);
+  }, [assets, project, currentFileIndex]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -217,6 +216,10 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   const handleProcessSuggestion = async () => {
     setDisplayPsModel(true)
+  }
+
+  const handlePageChange = (index: number) => {
+    setCurrentFileIndex(index)
   }
 
   return (
@@ -340,8 +343,9 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
       </form>
 
       <div className="mt-1">
-        <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
-        {pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
+        <h2 className="text-2xl font-bold mb-5">Preview</h2>
+        <CustomViewsPaginator totalElements={assets? assets.length: 0} currentIndex={currentFileIndex} onChange={handlePageChange}/>
+        { currentAssetPreview && <AssetViewer project_id={project.id} asset={currentAssetPreview}/> }
       </div>
       {displayPsModel && <ProcessSelectionDrawer 
       isOpen={displayPsModel} 

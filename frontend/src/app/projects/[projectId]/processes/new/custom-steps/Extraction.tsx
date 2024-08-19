@@ -5,15 +5,11 @@ import { GetProjectAssets } from "@/services/projects";
 import { AssetData } from "@/interfaces/assets";
 import ExtractionForm from "@/components/ExtractionForm";
 import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
-import PDFViewer from "@/components/PDFViewer";
-import { BASE_STORAGE_URL } from "@/constants";
 import { Extract } from "@/services/extract";
 import { StartProcess } from "@/services/processes";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import WebsiteViewer from "@/components/WebsiteViewer";
+import AssetViewer from "@/components/AssetViewer";
+import CustomViewsPaginator from "@/components/CustomViewsPaginator";
 
 interface ExtractionStepProps {
   project: ProjectData;
@@ -31,9 +27,9 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   processName,
 }) => {
   const router = useRouter();
-  const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
-  const [url, setUrl] = useState<string | null>(null)
+  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
+
   const [fields, setFields] = useState<ExtractionField[]>(
     templateData ?? [
       {
@@ -84,30 +80,13 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     router.push(`/projects/${project.id}?tab=processes`);
   };
 
-  const goToPreviousDocument = () => {
-    setCurrentFileIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-  };
-
-  const goToNextDocument = () => {
-    setCurrentFileIndex((prevIndex) => Math.min(prevIndex + 1, assets? assets.length - 1: 0));
-  };
-
-  const handleDocChange = (e: any) => {
-    if (e.target.value && e.target.value !== undefined && e.target.value < (assets? assets.length: 0)) {
-      setCurrentFileIndex(Math.max(e.target.value - 1, 0))
-    }
-
+  const handlePageChange = (index: number) => {
+    setCurrentFileIndex(index)
   }
 
   useEffect(() => {
     if (assets?.length && project) {
-      if (assets?.[currentFileIndex].type == "url") {
-        setUrl(assets?.[currentFileIndex].details.url as string)
-      } else {
-        setPdfFileUrl(
-          `${BASE_STORAGE_URL}/${project.id}/${assets?.[currentFileIndex].filename}`
-        );
-      }
+      setCurrentAssetPreview(assets?.[currentFileIndex])
     }
   }, [assets, project, currentFileIndex]);
 
@@ -147,31 +126,9 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
             </>
           )}
           
-          <h2 className="text-2xl font-bold mb-5">PDF preview</h2>
-          <div className="flex justify-between items-center w-full mb-4">
-            <Button
-              onClick={goToPreviousDocument}
-              disabled={currentFileIndex === 0}
-            >
-              <ArrowLeft size={16} />
-            </Button>
-            <Input
-              type="number"
-              value={currentFileIndex + 1}
-              onChange={handleDocChange}
-              min="1"
-              max={assets ? assets.length : 1}
-              style={{ flex: 1, textAlign: 'center', margin: '0 10px' }}
-              noMargin
-            />
-            <Button
-              onClick={goToNextDocument}
-              disabled={currentFileIndex === (assets ? assets.length - 1 : 0)}
-            >
-            <ArrowRight size={16} />
-            </Button>
-          </div>
-          {  assets?.[currentFileIndex].type == "url"?  url && <WebsiteViewer url={url}/> : pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
+          <h2 className="text-2xl font-bold mb-5">Preview</h2>
+          <CustomViewsPaginator totalElements={assets? assets.length: 0} currentIndex={currentFileIndex} onChange={handlePageChange}/>
+          { currentAssetPreview && <AssetViewer project_id={project.id} asset={currentAssetPreview}/> }
         </div>
       </div>
     </>
