@@ -237,7 +237,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           className="flex items-center text-md"
           iconStyles="w-4 h-4 mr-2"
         >
-          Template Suggestions
+          Use process as templates
         </Button>
         <Select
           label="Summary length"
