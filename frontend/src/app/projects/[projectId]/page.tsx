@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -20,13 +20,11 @@ import {
   AddProjectAsset,
   GetProject,
   GetProjectAssets,
-  FetchAssetFile,
   AddProjectURLAsset,
 } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import FileUploadCard from "@/components/FileUploadCard";
-import PDFViewer from "@/components/PDFViewer";
 import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
@@ -43,7 +41,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import AssetUploadModal from "@/components/AssetUploadModal";
 import { AssetData } from "@/interfaces/assets";
-import WebsiteViewer from "@/components/WebsiteViewer";
+import AssetViewer from "@/components/AssetViewer";
 
 export default function Project() {
   const params = useParams();
@@ -54,10 +52,8 @@ export default function Project() {
   const isProcesses = searchParams.get("processes");
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
-  const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
-  const [pdfFile, setPdfFile] = useState<Blob | null>(null);
-  const [url, setURL] = useState<string | null>(null);
+  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | Blob | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [deletedId, setDeletedId] = useState("");
@@ -122,26 +118,18 @@ export default function Project() {
   ];
 
   const handleFileClick = async (asset: AssetData) => {
-    setURL(null)
-    setCurrentFile(asset.id);
     if (project) {
       if (typeof asset.id == "string") {
         const file_obj = uploadingFiles.find((value) => value.name === asset.id);
         if (file_obj) {
           const file_blob = new Blob([file_obj], { type: file_obj.type });
-          setPdfFile(file_blob);
+          setCurrentAssetPreview(file_blob)
         } else {
           console.error("File not found in uploadingFiles.");
         }
       } else {
         const assetExtracted = assets.find((value: AssetData) => value.id == asset.id)
-        if (assetExtracted.type == "url") {
-          setURL(assetExtracted.details.url)
-        } else {
-          const response = await FetchAssetFile(project.id, asset.id);
-          setPdfFile(new Blob([response], { type: "application/pdf" }));
-        }
-        
+        setCurrentAssetPreview(assetExtracted) 
       }
     }
   };
@@ -351,12 +339,12 @@ export default function Project() {
           )}
 
           <Drawer
-            isOpen={currentFile !== null}
-            onClose={() => setCurrentFile(null)}
+            isOpen={currentAssetPreview !== null}
+            onClose={() => setCurrentAssetPreview(null)}
             title={"Preview"}
           >
             {
-              url? <WebsiteViewer url={url} />: (<PDFViewer file={pdfFile} />)
+              currentAssetPreview && project && <AssetViewer project_id={project.id} asset={currentAssetPreview}/>
             }
           </Drawer>
         </>
