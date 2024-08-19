@@ -6,6 +6,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger";
   icon?: React.ForwardRefExoticComponent<any>;
   outlined?: boolean;
+  iconStyles?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -14,6 +15,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   icon,
   className = "",
+  iconStyles = 'w-6 h-6 mr-2',
   disabled,
   outlined = false,
   ...props
@@ -51,7 +53,7 @@ export const Button: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            {icon && React.createElement(icon, { className: "w-6 h-6 mr-2" })}
+            {icon && React.createElement(icon, { className: iconStyles })}
             {children}
           </>
         )}

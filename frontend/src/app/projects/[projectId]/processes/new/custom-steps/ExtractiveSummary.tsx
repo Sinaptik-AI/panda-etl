@@ -38,9 +38,9 @@ interface ExtractiveSummaryData {
 }
 
 const summaryLengthOptions = [
-  { value: "2.5", label: "Concise" },
-  { value: "7.5", label: "Moderate" },
-  { value: "15", label: "Descriptive" },
+  { value: "2.5", label: "Short" },
+  { value: "5.0", label: "Medium" },
+  { value: "7.5", label: "Long" },
 ];
 
 export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
@@ -58,7 +58,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
     type: "extractive_summary",
     data: {
       highlight: false,
-      summary_length: 7.5,
+      summary_length: 5.0,
       positive_topics: [],
       negative_topics: [],
       transformation_prompt: "",
@@ -73,7 +73,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
         ...prev,
         data: {
           ...prev.data,
-          summary_length: templateData.summary_length || 7.5,
+          summary_length: templateData.summary_length || 5.0,
           highlight: templateData.highlight || false,
           positive_topics: templateData.positive_topics || [],
           negative_topics: templateData.negative_topics || [],
@@ -233,8 +233,9 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           type="button"
           icon={LayoutTemplate}
           onClick={handleProcessSuggestion}
-          variant="primary"
-          className="flex items-center"
+          variant="secondary"
+          className="flex items-center text-md"
+          iconStyles="w-4 h-4 mr-2"
         >
           Template Suggestions
         </Button>
@@ -258,7 +259,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Positive Topics
+            Focus Topics
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
             {formData.data.positive_topics.map((topic, index) => (

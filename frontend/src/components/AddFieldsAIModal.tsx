@@ -4,14 +4,18 @@ import { AppModal } from "./AppModal";
 import MultiSelectionTextArea from "./ui/MultiSelectionTextArea";
 import { GetAIFieldDescriptions } from "@/services/extract";
 import { ExtractionField } from "@/interfaces/extract";
+import Drawer from "./ui/Drawer";
+import { Button } from "./ui/Button";
 
 interface IProps {
     project_id: string;
+    isOpen?: boolean;
     onCancel: () => void;
     onSubmit: (data: ExtractionField[]) => void;
 }
 
 const AddFieldsAIModal = ({
+    isOpen=true,
     project_id,
     onSubmit,
     onCancel
@@ -48,20 +52,46 @@ const AddFieldsAIModal = ({
       };
   
     return (
-        <AppModal
-        closeModal={onCancel}
-        actionButtonText="Generate"
-        handleSubmit={handleSubmit}
-        isLoading={isLoading}
-        modalWidth="w-[600px]"
-        title="Add Fields with AI"
-        >
+        // <AppModal
+        // closeModal={onCancel}
+        // actionButtonText="Generate"
+        // handleSubmit={handleSubmit}
+        // isLoading={isLoading}
+        // modalWidth="w-[600px]"
+        // title="Add Fields with AI"
+        // >
+        //  </AppModal> 
+        <Drawer
+            isOpen={isOpen}
+            onClose={onCancel}
+            title={"Add Fields with AI"}
+            >
             <div className="text-gray-700 mb-4">
             Add the names of the fields you want to extract and let our magic AI help you out.
             </div>
             <MultiSelectionTextArea placeholder="Type in fields. Separate them with a comma and press enter" 
                     onUpdate={onUpdate} validate_text={validateKey}/>
-        </AppModal>
+
+            <div className="flex sticky bottom-0 bg-white border-t border-gray-200 p-4 gap-4 justify-center">
+                <Button
+                    onClick={onCancel}
+                    variant="danger"
+                    outlined
+                >
+                    Cancel
+                </Button>
+
+                <Button
+                    onClick={handleSubmit}
+                    isLoading={isLoading}
+                    >
+                    Save
+                </Button>
+
+                </div>
+
+        </Drawer>
+        
     );
     };
 

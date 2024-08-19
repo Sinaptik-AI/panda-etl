@@ -4,6 +4,7 @@ import Link from "next/link";
 import { X, Workflow, Folder, MessageCircle, Settings } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 import { usePathname } from "next/navigation";
+import LogoDark from "@/icons/LogoDark";
 
 const routes = [
   {
@@ -30,8 +31,9 @@ const Sidebar: React.FC = () => {
     >
       <div>
         <div className="flex justify-between items-center px-4">
-          <Link href="/projects" className="cursor-pointer w-[170px] pt-3">
-            <h2 className="text-xl font-semibold">BambooETL</h2>
+          <Link href="/projects" className="flex justify-center items-center cursor-pointer w-[170px] pt-3">
+            <LogoDark color="black"/>
+            <h2 className="text-xl font-semibold">Panda{'{'}·{'}'}etl</h2>
           </Link>
           <button
             onClick={() => setIsSidebarOpen(false)}

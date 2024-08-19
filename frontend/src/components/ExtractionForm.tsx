@@ -177,8 +177,9 @@ export default function ExtractionForm({
           type="button"
           icon={Sparkles}
           onClick={handleAIFieldsBtn}
-          variant="primary"
-          className="flex items-center"
+          variant="secondary"
+          className="flex items-center text-md"
+          iconStyles="w-4 h-4 mr-2"
         >
           Add fields with AI
         </Button>
@@ -187,10 +188,11 @@ export default function ExtractionForm({
           type="button"
           icon={LayoutTemplate}
           onClick={handleProcessSuggestion}
-          variant="primary"
-          className="flex items-center"
+          variant="secondary"
+          className="flex items-center text-md"
+          iconStyles="w-4 h-4 mr-2"
         >
-          Template Suggestions
+          Use process as templates
         </Button>
         </div>
         
@@ -257,6 +259,7 @@ export default function ExtractionForm({
                     onClick={() => removeField(index)}
                     variant="danger"
                     outlined={true}
+                    className="text-sm"
                   >
                     Remove
                   </Button>
@@ -264,6 +267,7 @@ export default function ExtractionForm({
                     type="button"
                     onClick={() => toggleField(index)}
                     variant="primary"
+                    className="text-sm"
                   >
                     Save
                   </Button>
@@ -278,7 +282,7 @@ export default function ExtractionForm({
             className="flex justify-between items-center px-5 py-4 cursor-pointer"
             onClick={addField}
           >
-            <span className="text-lg font-semibold text-blue-600">
+            <span className="text-[16px] font-semibold text-blue-600">
               Add new field
             </span>
             <Plus className="text-blue-600" size={24} />
@@ -310,7 +314,7 @@ export default function ExtractionForm({
 
       {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
       
-      {displayAIFieldsModel && <AddFieldsAIModal project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>}
+      <AddFieldsAIModal isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>
     </form>
   );
 }
