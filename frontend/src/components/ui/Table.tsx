@@ -6,7 +6,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
 import { TrashIcon, Loader2 } from "lucide-react";
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize, truncateTextFromCenter } from "@/lib/utils";
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((data: T) => React.ReactNode);
@@ -54,6 +54,7 @@ export function Table<T>({
   }),
     ...data,
   ];
+
   return (
     <table className={`min-w-full bg-white ${className} shadow rounded`}>
       <thead>
@@ -85,12 +86,14 @@ export function Table<T>({
                   }}
                 >
                   {columns.map((column, colIndex) => (
+                  
                     <td
                       key={colIndex}
                       className={`py-2 px-4 border-b ${
                         onRowClick && "cursor-pointer"
                       }`}
                     >
+
                       {row.isUploading || isAssetsLoading ? (
                         colIndex === 0 ? (
                           <div className="flex items-center gap-2">
@@ -107,7 +110,7 @@ export function Table<T>({
                       ) : typeof column.accessor === "function" ? (
                         column.accessor(row)
                       ) : (
-                        (row[column.accessor] as React.ReactNode) ?? "-"
+                        (row.type == "url" && column.accessor == "filename"? truncateTextFromCenter(row.details.url, 80): truncateTextFromCenter(row[column.accessor], 80) as React.ReactNode) ?? "-"
                       )}
                     </td>
                   ))}

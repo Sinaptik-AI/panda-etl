@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import WebsiteViewer from "@/components/WebsiteViewer";
 
 interface ExtractionStepProps {
   project: ProjectData;
@@ -31,6 +32,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 }) => {
   const router = useRouter();
   const [pdfFileUrl, setPdfFileUrl] = useState<string>("");
+  const [url, setUrl] = useState<string | null>(null)
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fields, setFields] = useState<ExtractionField[]>(
     templateData ?? [
@@ -99,9 +101,13 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 
   useEffect(() => {
     if (assets?.length && project) {
-      setPdfFileUrl(
-        `${BASE_STORAGE_URL}/${project.id}/${assets?.[currentFileIndex].filename}`
-      );
+      if (assets?.[currentFileIndex].type == "url") {
+        setUrl(assets?.[currentFileIndex].details.url as string)
+      } else {
+        setPdfFileUrl(
+          `${BASE_STORAGE_URL}/${project.id}/${assets?.[currentFileIndex].filename}`
+        );
+      }
     }
   }, [assets, project, currentFileIndex]);
 
@@ -165,7 +171,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
             <ArrowRight size={16} />
             </Button>
           </div>
-          {pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
+          {  assets?.[currentFileIndex].type == "url"?  url && <WebsiteViewer url={url}/> : pdfFileUrl && <PDFViewer url={pdfFileUrl} />}
         </div>
       </div>
     </>
