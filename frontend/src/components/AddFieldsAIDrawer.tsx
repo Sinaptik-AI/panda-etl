@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { AppModal } from "./AppModal";
 import MultiSelectionTextArea from "./ui/MultiSelectionTextArea";
 import { GetAIFieldDescriptions } from "@/services/extract";
 import { ExtractionField } from "@/interfaces/extract";
