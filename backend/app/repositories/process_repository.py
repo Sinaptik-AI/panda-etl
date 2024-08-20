@@ -90,10 +90,8 @@ def get_process_step(db: Session, step_id: int):
 
 def search_relevant_process(db: Session, process_data: ProcessSuggestion):
 
-    # Perform the query
     return (
         db.query(models.Process)
-        .filter(models.Process.project_id == process_data.project_id)
         .filter(models.Process.type == process_data.type)
         .filter(
             func.json_extract(models.Process.details, "$.output_type")
