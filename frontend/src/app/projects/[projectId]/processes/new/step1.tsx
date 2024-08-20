@@ -59,9 +59,9 @@ export const Step1: React.FC<Step1Props> = ({
       icon: FileSearch,
       disabled: false,
     },
-    { id: "highlight", label: "Highlight", icon: Highlighter, disabled: true },
-    { id: "fill-form", label: "Fill Form", icon: FileInput, disabled: true },
-    { id: "key-sentences", label: "Key Sentences", icon: Key, disabled: true },
+    // { id: "highlight", label: "Highlight", icon: Highlighter, disabled: true },
+    // { id: "fill-form", label: "Fill Form", icon: FileInput, disabled: true },
+    // { id: "key-sentences", label: "Key Sentences", icon: Key, disabled: true },
   ];
 
   const outputOptions: OutputOption[] = [
@@ -149,7 +149,7 @@ export const Step1: React.FC<Step1Props> = ({
                   }`}
                   onClick={() => selectProcessType(option)}
                 >
-                  <option.icon className="w-8 h-8 mb-2" />
+                  <option.icon className="w-6 h-6 mb-2" />
                   <h3 className="font-semibold">{option.label}</h3>
                 </Card>
               </Tooltip>
