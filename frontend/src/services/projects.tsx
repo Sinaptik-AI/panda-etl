@@ -18,10 +18,17 @@ export const GetProject = async (projectId: string) => {
   }
 };
 
-export const GetProjects = async (page: number, pageSize: number) => {
+export const GetProjects = async (
+  page: number | null = null,
+  pageSize: number|null = null
+) => {
   try {
+
+    const url  = (page && pageSize) && (page!=undefined && pageSize!=undefined) ? `${projectsApiUrl}?page=${page}&page_size=${pageSize}`:
+    `${projectsApiUrl}`  
+
     const response = await GetRequest<{ data: ProjectData[] }>(
-      `${projectsApiUrl}?page=${page}&page_size=${pageSize}`
+      url
     );
     return response;
   } catch (error) {

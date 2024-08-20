@@ -19,6 +19,8 @@ import { marked } from "marked";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 import "@/app/style/editor.css";
+import { ProcessSelectionDrawer } from "./ProjectSelectionDrawer";
+import { ProjectData } from "@/interfaces/projects";
 
 interface ProcessesProps {
   projectId?: string;
@@ -28,6 +30,8 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const router = useRouter();
   const [currentFile, setCurrentFile] = useState<ProcessData | null>(null);
   const [isEditing, setIsEditing] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProcessData | null>(null);
+  const [openProjectSelection, setOpenProjectSelection] = useState<boolean>(false);
   const [editedSummary, setEditedSummary] = useState("");
 
   const { data: processes } = useQuery({
@@ -110,6 +114,28 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         return "-" + process.status;
     }
   };
+
+  const onProjectSelectionCancel = () => {
+    setOpenProjectSelection(false);
+    setSelectedTemplate(null);
+  }
+
+  const onProjectSelection = (project: ProjectData) => {
+    setOpenProjectSelection(false);
+    if (!selectedTemplate) {
+      alert("No template selected!")
+      return
+    }
+    const templateParams = new URLSearchParams({
+            template: selectedTemplate.id,
+            type: selectedTemplate.type,
+            output: "csv",
+          }).toString();
+          router.push(
+            `/projects/${project.id}/processes/new?${templateParams}`
+          );
+    setSelectedTemplate(null);
+  }
 
   const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
@@ -237,18 +263,13 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
               <Link
                 href="#"
                 className="text-blue-600 hover:underline"
-                onClick={(e) => {
+                onClick={(e) =>{
                   e.preventDefault();
-                  const templateParams = new URLSearchParams({
-                    template: process.id,
-                    type: process.type,
-                    output: "csv",
-                  }).toString();
-                  router.push(
-                    `/projects/${process.project_id}/processes/new?${templateParams}`
-                  );
+                  setSelectedTemplate(process)
+                  setOpenProjectSelection(true);
                 }}
               >
+            
                 <Tooltip content="Use as template">
                   <Copy size={16} />
                 </Tooltip>
@@ -343,7 +364,11 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         ) : (
           <Loader2 className="animate-spin" />
         )}
+
       </Drawer>
+      
+      <ProcessSelectionDrawer isOpen={openProjectSelection} onSubmit={onProjectSelection} onCancel={onProjectSelectionCancel}/>
+
     </>
   );
 };
