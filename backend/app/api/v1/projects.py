@@ -62,8 +62,9 @@ def get_projects(
                     "description": project.description,
                     "created_at": project.created_at.isoformat(),
                     "updated_at": project.updated_at.isoformat(),
+                    "asset_count": asset_count,
                 }
-                for project in projects
+                for project, asset_count in projects
             ],
             "total_count": total_count,
             "page": page,

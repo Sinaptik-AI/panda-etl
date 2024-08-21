@@ -21,7 +21,16 @@ def create_project(db: Session, project: ProjectCreate):
 def get_projects(db: Session, page: int = 1, page_size: int = 20):
     total_count = db.query(func.count(models.Project.id)).scalar()
     projects = (
-        db.query(models.Project).offset((page - 1) * page_size).limit(page_size).all()
+        db.query(
+            models.Project,
+            func.count(models.Asset.id).label("asset_count"),  # Count the assets
+        )
+        .filter(models.Project.deleted_at == None)
+        .outerjoin(models.Asset, models.Project.id == models.Asset.project_id)
+        .group_by(models.Project.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
     )
     return projects, total_count
 
