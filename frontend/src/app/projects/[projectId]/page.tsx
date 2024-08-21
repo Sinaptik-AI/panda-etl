@@ -208,11 +208,11 @@ export default function Project() {
     );
   };
 
-  const onUploadSubmit = async (type: string, data: string | FileList | null) => {
+  const onUploadSubmit = async (type: string, data: string[] | FileList | null) => {
     if (type == "file") {
       handleFileUpload(data as FileList);
     } else if (type == "url") {
-      const response = await AddProjectURLAsset(id, data as string)
+      const response = await AddProjectURLAsset(id, data as string[])
       if (!response.data) {
         return false;
       }
@@ -360,15 +360,13 @@ export default function Project() {
         />
       )}
 
-      {
-        openUploadModal && (
-          <AssetUploadModal 
-            project_id={project?.id}
-            onSubmit={onUploadSubmit}
-            onCancel={() => setOpenUploadModal(false)}
-          />
-        )
-      }
+      {openUploadModal && <AssetUploadModal
+        isOpen={openUploadModal}
+        project_id={project?.id}
+        onSubmit={onUploadSubmit}
+        onCancel={() => setOpenUploadModal(false)}
+      />}
+  
     </>
   );
 }

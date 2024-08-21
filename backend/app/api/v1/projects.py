@@ -190,36 +190,46 @@ async def upload_files(
 @project_router.post("/{id}/assets/url")
 async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get_db)):
     try:
-        url = data.url
+        urls = data.url
         project = project_repository.get_project(db=db, project_id=id)
         if project is None:
             raise HTTPException(status_code=400, detail="Project not found")
 
-        if not url or not is_valid_url(url):
+        if not urls:
             raise HTTPException(status_code=400, detail="Invalid Url")
 
-        # Ensure the upload directory exists
-        os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
+        for url in urls:
+            if not is_valid_url(url):
+                raise HTTPException(status_code=400, detail="Invalid Url")
 
-        # Generate a secure filename
-        filename = generate_unique_filename(url)
-        filepath = os.path.join(settings.upload_dir, str(id), filename)
+        url_assets = []
+        for url in urls:
+            os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
 
-        fetch_html_and_save(url, filepath)
+            # Generate a secure filename
+            filename = generate_unique_filename(url)
+            filepath = os.path.join(settings.upload_dir, str(id), filename)
 
-        # Save the file info in the database
-        new_asset = Asset(
-            filename=filename,
-            path=filepath,
-            project_id=id,
-            type="url",
-            details={"url": url},
-        )
+            fetch_html_and_save(url, filepath)
 
-        db.add(new_asset)
+            # Save the file info in the database
+            new_asset = Asset(
+                filename=filename,
+                path=filepath,
+                project_id=id,
+                type="url",
+                details={"url": url},
+            )
+
+            url_assets.append(new_asset)
+
+            db.add(new_asset)
+
         db.commit()
-        logger.log("Starting Preprocess Asset ID:", new_asset.id)
-        file_preprocessor.submit(preprocess_file, new_asset.id)
+
+        for url_asset in url_assets:
+            logger.log("Starting Preprocess Asset ID:", url_asset.id)
+            file_preprocessor.submit(preprocess_file, url_asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
