@@ -110,11 +110,11 @@ export const AddProjectAsset = async (projectId: string, file: File) => {
   }
 };
 
-export const AddProjectURLAsset = async (projectId: string, url: string) => {
+export const AddProjectURLAsset = async (projectId: string, urls: string[]) => {
   try {
     const response = await PostRequest<{ data: any }>(
       `${projectsApiUrl}/${projectId}/assets/url`,
-      {url: url},
+      {url: urls},
       {},
       300000 // Longer time for uploading big files
     );

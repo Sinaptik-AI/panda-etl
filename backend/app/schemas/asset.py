@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from pydantic import BaseModel
 
 
@@ -17,4 +18,4 @@ class Asset(AssetBase):
 
 
 class UrlAssetCreate(BaseModel):
-    url: str
+    url: List[str]
