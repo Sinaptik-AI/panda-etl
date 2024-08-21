@@ -6,7 +6,6 @@ from fastapi import HTTPException
 
 from app.main import app
 from app.api.v1.extract import GetFieldDescriptionRequest
-from app.repositories import project_repository, user_repository
 from app.database import get_db
 
 # Test client setup

@@ -10,7 +10,7 @@ import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle } from "lucide-react";
+import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle, FileArchive } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
@@ -183,8 +183,9 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       header: "Actions",
       accessor: "id",
       label: (process: ProcessData) => {
-  
+        
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
+        const downloadPdfZipUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-highlighted-pdf-zip`;
 
         return (
           <div className="flex items-center space-x-1">
@@ -241,7 +242,28 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                   </Tooltip>
                 </Link>
               )}
-
+              
+              { process.type === "extractive_summary" ? (process.status == ProcessStatus.IN_PROGRESS || process.completed_step_count == 0 ? (
+                <span
+                  className="text-gray-400 cursor-not-allowed"
+                  title="Download not available"
+                >
+                  <Tooltip content="Download highlighted pdfs">
+                  <FileArchive size={16}/>
+                  </Tooltip>
+                </span>
+              ) : (
+                <Link
+                  href={downloadPdfZipUrl}
+                  className="text-blue-600 hover:underline"
+                  target="_blank"
+                >
+                  <Tooltip content="Download highlighted pdfs">
+                    <FileArchive size={16}/>
+                  </Tooltip>
+                </Link>
+              )): ""
+            }
             
             {process.type === "extractive_summary" &&
               process.details.transformation_prompt && (

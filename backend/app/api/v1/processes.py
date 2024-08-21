@@ -1,8 +1,10 @@
+import io
 import os
+import zipfile
 
 import dateparser
 from fastapi import APIRouter, Depends, HTTPException, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 import csv
 from io import StringIO
@@ -429,6 +431,64 @@ def get_process_steps(process_id: int, db: Session = Depends(get_db)):
         "message": "Process steps successfully returned",
         "data": process_steps,
     }
+
+
+@process_router.get(
+    "/{process_id}/download-highlighted-pdf-zip", response_class=StreamingResponse
+)
+def download_process_steps_zip(process_id: int, db: Session = Depends(get_db)):
+
+    process = process_repository.get_process(db=db, process_id=process_id)
+    if not process:
+        raise HTTPException(status_code=404, detail="No process found!")
+
+    if process.type != "extractive_summary":
+        raise HTTPException(status_code=404, detail="No highlighted pdf found!")
+
+    process_steps = process_repository.get_process_steps(db, process_id)
+
+    if not process_steps:
+        raise HTTPException(status_code=404, detail="No process steps found!")
+
+    # Initialize an in-memory file to store the zip data
+    memory_file = io.BytesIO()
+
+    file_exists = False
+    # Create a zip archive in the memory file
+    with zipfile.ZipFile(memory_file, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for step in process_steps:
+
+            if step.output and "highlighted_pdf" in step.output:
+
+                pdf_path = step.output["highlighted_pdf"]
+
+                filename = os.path.basename(pdf_path)
+
+                # Read the PDF file content
+                try:
+                    with open(pdf_path, "rb") as pdf_file:
+                        pdf_content = pdf_file.read()
+
+                    zipf.writestr(filename, pdf_content)
+
+                    file_exists = True
+                except FileNotFoundError:
+                    continue
+
+    if not file_exists:
+        raise HTTPException(status_code=404, detail="No Highlighted pdf's exists!")
+
+    # Set the pointer to the beginning of the in-memory file
+    memory_file.seek(0)
+
+    # Return the zip file as a StreamingResponse
+    return StreamingResponse(
+        memory_file,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename=highlighted_pdfs_{process_id}.zip"
+        },
+    )
 
 
 @process_router.get("/{process_id}/steps/{step_id}/download")
