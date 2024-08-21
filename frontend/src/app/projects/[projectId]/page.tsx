@@ -108,7 +108,7 @@ export default function Project() {
   const totalPages = Math.ceil(totalAssets / pageSize);
 
   const projectTabs = [
-    { id: "assets", label: "Files" },
+    { id: "assets", label: "Docs" },
     { id: "processes", label: "Processes" },
   ];
 
@@ -173,7 +173,6 @@ export default function Project() {
   const columns: Column<(typeof assets)[0]>[] = [
     { header: "File name", accessor: "filename" },
     { header: "Content type", accessor: "type" },
-    { header: "File type", accessor: "filetype" },
     { header: "Size", accessor: "size" },
     {
       header: "Uploaded at",
@@ -254,7 +253,7 @@ export default function Project() {
                     icon={UploadIcon}
                     variant="secondary"
                   >
-                    Upload
+                    Add Docs
                   </Button>
                 )}
                 <Button onClick={newProcess} icon={PlusIcon}>

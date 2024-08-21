@@ -10,11 +10,12 @@ import { StartProcess } from "@/services/processes";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectAssets } from "@/services/projects";
 import { AssetData } from "@/interfaces/assets";
-import { LayoutTemplate, Play } from "lucide-react";
+import { Info, LayoutTemplate, Play } from "lucide-react";
 import { ProcessData } from "@/interfaces/processes";
 import { ProcessSelectionDrawer } from "@/components/ProcessSelectionDrawer";
 import AssetViewer from "@/components/AssetViewer";
 import CustomViewsPaginator from "@/components/CustomViewsPaginator";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface ExtractiveSummaryProps {
   project: ProjectData;
@@ -248,13 +249,16 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           onChange={handleSelectChange}
         />
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-top space-x-2">
           <Checkbox
             name="highlight"
             label="Highlight key sentences"
             checked={formData.data.highlight}
             onChange={handleCheckboxChange}
           />
+          <Tooltip content="You can only highlight text in standard PDFs. Highlighting isn’t available for scanned documents or websites">
+              <Info className="mb-1 w-4 h-4 inline-block text-blue-600" />
+          </Tooltip>
         </div>
 
         <div>
