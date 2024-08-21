@@ -40,7 +40,7 @@ interface ExtractiveSummaryData {
 
 const summaryLengthOptions = [
   { value: "2.5", label: "Short" },
-  { value: "5.0", label: "Medium" },
+  { value: "5", label: "Medium" },
   { value: "7.5", label: "Long" },
 ];
 

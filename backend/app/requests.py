@@ -168,7 +168,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
     headers = {"Authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
-    data = {"sentences": sentences}
+    data = {"sentences": json.dumps(sentences)}
     files = {}
 
     if file_path:

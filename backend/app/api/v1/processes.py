@@ -237,7 +237,9 @@ def process_task(process_id: int):
                             file_path=(
                                 process_step.asset.path if not asset_content else None
                             ),
-                            pdf_content=asset_content.content,
+                            pdf_content=(
+                                asset_content.content if asset_content else None
+                            ),
                         )
 
                         summary = data.get("summary", "")
