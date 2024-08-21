@@ -55,11 +55,14 @@ export const ProcessSelectionDrawer = ({
               isLoading && <div>Loading...</div>
             }
             {projects?.map((project: ProjectData) => (
+            
               <SelectableAccordion
                 key={`project-select-${project.id}`}
                 title={project.name}
                 isSelected={selectedProject !== null && selectedProject.id === project.id}
                 onSelect={() => handleChipClick(project)}
+                disabled={project.asset_count === 0}
+                disabledWarning="Add Assets first to select project for this template!"
               >
                 <div className="space-y-6">
                   {project.description.length===0? "No Project Description": project.description}

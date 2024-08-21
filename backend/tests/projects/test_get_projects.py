@@ -35,19 +35,25 @@ def test_get_projects_success(mock_get_projects, mock_db):
     """Test getting projects successfully"""
     # Mock data returned by the repository
     mock_projects = [
-        create_mock_project(
-            id=1,
-            name="Project 1",
-            description="Description 1",
-            created_at=datetime(2023, 8, 10, 10, 0, 0),
-            updated_at=datetime(2023, 8, 10, 12, 0, 0),
+        (
+            create_mock_project(
+                id=1,
+                name="Project 1",
+                description="Description 1",
+                created_at=datetime(2023, 8, 10, 10, 0, 0),
+                updated_at=datetime(2023, 8, 10, 12, 0, 0),
+            ),
+            1,
         ),
-        create_mock_project(
-            id=2,
-            name="Project 2",
-            description="Description 2",
-            created_at=datetime(2023, 8, 11, 11, 0, 0),
-            updated_at=datetime(2023, 8, 11, 13, 0, 0),
+        (
+            create_mock_project(
+                id=2,
+                name="Project 2",
+                description="Description 2",
+                created_at=datetime(2023, 8, 11, 11, 0, 0),
+                updated_at=datetime(2023, 8, 11, 13, 0, 0),
+            ),
+            1,
         ),
     ]
     total_count = 2
@@ -66,6 +72,7 @@ def test_get_projects_success(mock_get_projects, mock_db):
                 "description": "Description 1",
                 "created_at": "2023-08-10T10:00:00",
                 "updated_at": "2023-08-10T12:00:00",
+                "asset_count": 1,
             },
             {
                 "id": 2,
@@ -73,6 +80,7 @@ def test_get_projects_success(mock_get_projects, mock_db):
                 "description": "Description 2",
                 "created_at": "2023-08-11T11:00:00",
                 "updated_at": "2023-08-11T13:00:00",
+                "asset_count": 1,
             },
         ],
         "total_count": total_count,
