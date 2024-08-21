@@ -308,6 +308,9 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
         for asset in assets:
             asset.deleted_at = datetime.now(tz=timezone.utc)
 
+        # Soft delete process associated with the project
+        project_repository.delete_processes_and_steps(db, project_id)
+
         db.commit()
 
         return {"message": "Project and associated assets deleted successfully"}

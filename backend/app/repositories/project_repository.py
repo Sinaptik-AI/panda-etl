@@ -5,7 +5,9 @@ from sqlalchemy import asc, desc, func
 from app import models
 from app.schemas.project import ProjectCreate
 from app.models.asset import Asset
-from app.models.process_step import ProcessStepStatus
+from app.models.process import Process
+from app.models.process_step import ProcessStep, ProcessStepStatus
+from datetime import datetime, timezone
 
 
 def create_project(db: Session, project: ProjectCreate):
@@ -119,3 +121,23 @@ def get_asset_content(db: Session, asset_id: int):
         .filter(models.AssetContent.asset_id == asset_id)
         .first()
     )
+
+
+def delete_processes_and_steps(db: Session, project_id: int):
+
+    process_ids = db.query(Process.id).filter(Process.project_id == project_id).all()
+
+    process_ids = [process_id[0] for process_id in process_ids]
+
+    current_timestamp = datetime.now(tz=timezone.utc)
+
+    db.query(Process).filter(Process.project_id == project_id).update(
+        {Process.deleted_at: current_timestamp}
+    )
+
+    if process_ids:
+        db.query(ProcessStep).filter(ProcessStep.process_id.in_(process_ids)).update(
+            {ProcessStep.deleted_at: current_timestamp}, synchronize_session=False
+        )
+
+    db.commit()

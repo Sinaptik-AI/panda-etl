@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session, joinedload, defer, aliased
 
 from app import models
 from app.schemas.process import ProcessData, ProcessSuggestion
-from app.models.process_step import ProcessStepStatus
+from app.models.process_step import ProcessStep, ProcessStepStatus
+from datetime import datetime, timezone
 
 
 def get_processes(db: Session):
@@ -101,3 +102,14 @@ def search_relevant_process(db: Session, process_data: ProcessSuggestion):
         .limit(10)
         .all()
     )
+
+
+def delete_process_steps(db: Session, process_id: int):
+
+    current_timestamp = datetime.now(tz=timezone.utc)
+
+    db.query(ProcessStep).filter(ProcessStep.process_id == process_id).update(
+        {ProcessStep.deleted_at: current_timestamp}
+    )
+
+    db.commit()

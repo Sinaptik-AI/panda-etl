@@ -28,7 +28,7 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [deletedId, setDeletedId] = useState("");
+  const [deletedProject, setDeletedProject] = useState<ProjectData | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { mutateAsync: deleteProject, isPending: deleteLoading } =
     useDeleteProject();
@@ -101,17 +101,21 @@ export default function Projects() {
   };
 
   const handleDelete = () => {
-    deleteProject(
-      { id: deletedId },
-      {
-        onSuccess() {
-          setIsDeleteModalOpen(false);
-        },
-        onError(error) {
-          console.log(error);
-        },
-      }
-    );
+
+    if (deletedProject) {
+      deleteProject(
+        { id: deletedProject.id },
+        {
+          onSuccess() {
+            setIsDeleteModalOpen(false);
+          },
+          onError(error) {
+            console.log(error);
+          },
+        }
+      );
+    }
+    
   };
 
   return (
@@ -152,7 +156,7 @@ export default function Projects() {
                   <ContextMenuContent className="bg-white">
                     <ContextMenuItem
                       onClick={() => {
-                        setDeletedId(project.id);
+                        setDeletedProject(project);
                         setIsDeleteModalOpen(true);
                       }}
                     >
@@ -169,7 +173,8 @@ export default function Projects() {
               columns={columns}
               onRowClick={(project) => handleProjectClick(project.id)}
               onDelete={(id: string) => {
-                setDeletedId(id);
+                const project = projects.find(obj => obj.id === id);
+                setDeletedProject(project !== undefined ? project : null);
                 setIsDeleteModalOpen(true);
               }}
             />
@@ -186,12 +191,14 @@ export default function Projects() {
 
       {isDeleteModalOpen && (
         <ConfirmationDialog
-          text={`Are you sure you want to delete this Project?`}
+          text={`All related files and processes will be permanently removed. To confirm the deletion of this project and its associated data, please type 'delete ${deletedProject?.name}'.`}
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}
+          actionButtonText="Confirm"
           isLoading={deleteLoading}
           onSubmit={handleDelete}
+          acceptanceString={`delete ${deletedProject?.name}`}
         />
       )}
     </>
