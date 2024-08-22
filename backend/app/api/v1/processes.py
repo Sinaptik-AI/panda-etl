@@ -190,7 +190,7 @@ def process_task(process_id: int):
     db = SessionLocal()
     process = process_repository.get_process(db, process_id)
     process.status = ProcessStatus.IN_PROGRESS
-    process.started_at = datetime.now()
+    process.started_at = datetime.utcnow()
     db.commit()
 
     try:
@@ -318,7 +318,7 @@ def process_task(process_id: int):
             process.status = (
                 ProcessStatus.COMPLETED if failed_docs == 0 else ProcessStatus.FAILED
             )
-            process.completed_at = datetime.now()
+            process.completed_at = datetime.utcnow()
 
     except Exception as e:
         logger.error(traceback.format_exc())

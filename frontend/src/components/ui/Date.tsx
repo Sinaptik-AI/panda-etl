@@ -1,8 +1,8 @@
 import React from "react";
-import { parseISO, isValid, formatDistanceToNow } from "date-fns";
+import { parseISO, isValid, formatDistanceToNow, subMinutes } from "date-fns";
 
 interface DateLabelProps {
-  dateString: string;
+  dateString: string | Date;
   addSuffix?: boolean;
 }
 
@@ -13,9 +13,23 @@ const DateLabel: React.FC<DateLabelProps> = ({
   let formattedDate = "Invalid Date";
 
   try {
-    const date = parseISO(dateString);
+    
+    let date: Date;
+
+    if (dateString instanceof Date) {
+      date = dateString;
+    } else {
+      date = parseISO(dateString);
+    }
+
     if (isValid(date)) {
-      formattedDate = formatDistanceToNow(date, { addSuffix });
+
+      if (dateString instanceof Date) {
+        formattedDate = formatDistanceToNow(date, { addSuffix });
+      }else {
+        const utcDate = subMinutes(date, date.getTimezoneOffset());
+        formattedDate = formatDistanceToNow(utcDate, { addSuffix });
+      }
     }
   } catch (error) {
     console.error("Error parsing date:", error);

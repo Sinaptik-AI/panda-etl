@@ -48,7 +48,7 @@ export function Table<T>({
       filename: file.name,
       filetype: file.type.replace("application/", "").toUpperCase(),
       size: formatFileSize(file.size),
-      created_at: uploaded_file.length == 0 ? "Uploading": uploaded_file[0][1].toISOString(),
+      created_at: uploaded_file.length == 0 ? "Uploading": uploaded_file[0][1],
       isUploading: uploaded_file.length == 0,
     }
   }),
