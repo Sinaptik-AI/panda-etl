@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/Button";
 import AssetUploadModal from "@/components/AssetUploadModal";
 import { AssetData } from "@/interfaces/assets";
 import AssetViewer from "@/components/AssetViewer";
+import Tooltip from "@/components/ui/Tooltip";
 
 export default function Project() {
   const params = useParams();
@@ -256,9 +257,16 @@ export default function Project() {
                     Add Docs
                   </Button>
                 )}
-                <Button onClick={newProcess} icon={PlusIcon}>
-                  New process
-                </Button>
+                { ( assets && assets.length == 0 || assets == undefined) ? (
+                  <Tooltip content="Add docs to the project before running a process">
+                  <Button onClick={newProcess} icon={PlusIcon} disabled={true}>
+                    New process
+                  </Button>
+                  </Tooltip>):(<Button onClick={newProcess} icon={PlusIcon} >
+                    New process
+                  </Button>)
+                }
+                
               </div>
             }
           />
