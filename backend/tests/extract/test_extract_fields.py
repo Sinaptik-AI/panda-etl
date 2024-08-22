@@ -114,10 +114,12 @@ def test_get_field_descriptions_exception(
     )
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Unable to process file!"}
+    assert response.json() == {"detail": "Unable to fetch AI Field Descriptions"}
 
     mock_get_project.assert_called_once_with(db=mock_db, project_id=1)
     mock_get_user_api_key.assert_called_once_with(mock_db)
-    mock_extract_field_descriptions.assert_called_once_with(
+
+    assert mock_extract_field_descriptions.call_count == 3
+    mock_extract_field_descriptions.assert_called_with(
         api_token="fake_api_key", fields=field_description_request.fields
     )

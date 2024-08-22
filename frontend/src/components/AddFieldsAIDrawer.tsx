@@ -22,6 +22,7 @@ const AddFieldsAIDrawer = ({
 
     const [fieldsList, setFieldList] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const onUpdate = (items: string[]) => {
         setFieldList(items)
@@ -29,13 +30,20 @@ const AddFieldsAIDrawer = ({
 
     const handleSubmit = async () => {
         setIsLoading(true)
+        setError(null)
 
         const standardizedFieldsList = fieldsList.map(field => field.replace(/\s+/g, '_'));
 
         if (standardizedFieldsList.length > 0) {
-            const { data } = await GetAIFieldDescriptions(project_id, standardizedFieldsList)
-            setIsLoading(false)
-            onSubmit(data.data)
+            try{
+                const { data } = await GetAIFieldDescriptions(project_id, standardizedFieldsList)
+                setIsLoading(false)
+                onSubmit(data.data)
+            } 
+            catch(e) {
+                setIsLoading(false)
+                setError(e instanceof Error ? e.message : String(e));
+            } 
         } else {
             setIsLoading(false)
             onSubmit([])
@@ -62,21 +70,29 @@ const AddFieldsAIDrawer = ({
             <MultiSelectionTextArea placeholder="Type in fields. Separate them with a comma and press enter" 
                     onUpdate={onUpdate} validate_text={validateKey}/>
 
+            
             <div className="flex sticky bottom-0 bg-white border-t border-gray-200 p-4 gap-4 justify-center">
-                <Button
-                    onClick={onCancel}
-                    variant="danger"
-                    outlined
-                >
-                    Cancel
-                </Button>
 
-                <Button
-                    onClick={handleSubmit}
-                    isLoading={isLoading}
+                <div className="flex flex-col gap-4 justify-center">
+                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                <div className="flex gap-4">
+                    <Button
+                        onClick={onCancel}
+                        variant="danger"
+                        outlined
                     >
-                    Save
-                </Button>
+                        Cancel
+                    </Button>
+
+                    <Button
+                        onClick={handleSubmit}
+                        isLoading={isLoading}
+                        >
+                        Save
+                    </Button>
+                </div>
+                </div>
+                
 
                 </div>
 

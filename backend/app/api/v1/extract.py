@@ -84,12 +84,29 @@ async def get_field_descriptions(
 
         api_key = user_repository.get_user_api_key(db)
 
-        data = extract_field_descriptions(api_token=api_key.key, fields=fields.fields)
-        return {
-            "status": "success",
-            "message": "File processed successfully",
-            "data": data,
-        }
+        settings.max_retries
+        retries = 0
+        success = False
+        while retries < settings.max_retries and not success:
+            try:
+                data = extract_field_descriptions(
+                    api_token=api_key.key, fields=fields.fields
+                )
+                success = True
+                return {
+                    "status": "success",
+                    "message": "File processed successfully",
+                    "data": data,
+                }
+
+            except Exception as e:
+                logger.error(e)
+                logger.log("Retrying AI Field Extraction!")
+                retries += 1
+
+        raise HTTPException(
+            status_code=400, detail="Unable to fetch AI Field Descriptions"
+        )
 
     except HTTPException:
         raise

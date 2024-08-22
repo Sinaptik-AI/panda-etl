@@ -314,7 +314,7 @@ export default function ExtractionForm({
 
       {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
       
-      <AddFieldsAIDrawer isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>
+      {displayAIFieldsModel && <AddFieldsAIDrawer isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>}
     </form>
   );
 }
