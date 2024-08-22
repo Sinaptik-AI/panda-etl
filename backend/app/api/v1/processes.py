@@ -357,20 +357,13 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
             "data": None,
         }
 
+    # Initialize the CSV buffer and writer
     csv_buffer = StringIO()
-    csv_writer = csv.writer(csv_buffer)
-
-    # Write headers
-    if process.type == "extract":
-        headers = ["Filename"] + list(completed_steps[0].output[0].keys())
-    else:
-        headers = ["Filename", "summary"]
     csv_writer = csv.writer(
-        csv_buffer, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
+        csv_buffer, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
-    csv_writer.writerow(headers)
 
-    # fetch date columns
+    # Fetch date columns and number columns
     date_columns = []
     number_columns = []
     if process.type == "extract":
@@ -381,37 +374,50 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
                 elif field["type"] == "number":
                     number_columns.append(field["key"])
 
+    # Write the header
+    headers = ["Filename"]
+    if process.type == "extract" and completed_steps:
+        # Extract headers from the first completed step's output keys
+        headers += list(
+            completed_steps[0].output[0].keys()
+        )  # Assuming output is a list of dicts
+    else:
+        headers.append("summary")
+    csv_writer.writerow(headers)
+
     # Write data rows
     for step in completed_steps:
-        row = [step.asset.filename]
         if process.type == "extract":
             for output in step.output:
-                for key in headers[1:]:
+                row = [step.asset.filename]
+                for key in headers[1:]:  # Skip "Filename" column
                     value = output.get(key, "")
                     if key in date_columns:
                         try:
                             parsed_date = dateparser.parse(value)
                             if parsed_date:
                                 value = parsed_date.strftime("%d-%m-%Y")
-                        except:
+                        except Exception as e:
                             logger.error(
-                                f"Unable to parse date {value} fallback to extracted text"
+                                f"Unable to parse date {value}, fallback to extracted text. Error: {e}"
                             )
                     elif key in number_columns:
                         try:
                             value = int(value)
-                        except:
+                        except Exception as e:
                             logger.error(
-                                f"Unable to parse number {value} fallback to extracted text"
+                                f"Unable to parse number {value}, fallback to extracted text. Error: {e}"
                             )
                     row.append(value)
+                csv_writer.writerow(row)
         else:
-            row.append(step.output["summary"])
+            row = [step.asset.filename, step.output.get("summary", "")]
+            csv_writer.writerow(row)
 
-        csv_writer.writerow(row)
-
+    # Get the CSV content from the buffer
     csv_content = csv_buffer.getvalue()
 
+    # Create a Response object with the CSV data
     response = Response(content=csv_content)
     response.headers["Content-Disposition"] = (
         f"attachment; filename=process_{process_id}.csv"
