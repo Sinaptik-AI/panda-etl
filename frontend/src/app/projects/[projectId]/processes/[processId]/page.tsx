@@ -18,6 +18,7 @@ import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { processApiUrl } from "@/services/processes";
 import Tooltip from "@/components/ui/Tooltip";
+import { truncateTextFromCenter } from "@/lib/utils";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -37,8 +38,8 @@ const statusLabel = (process: ProcessDetailsResponse) => {
 const columns: Column<ProcessDetailsResponse>[] = [
   { header: "ID", accessor: (row: ProcessDetailsResponse) => row.id },
   {
-    header: "Type",
-    accessor: (row: ProcessDetailsResponse) => row.process.type,
+    header: "File name",
+    accessor: (row: ProcessDetailsResponse) => truncateTextFromCenter(row.asset.filename, 50),
   },
   {
     header: "Status",

@@ -1,3 +1,4 @@
+import { AssetData } from "./assets";
 import { ExtractionField } from "./extract";
 
 export enum ProcessStatus {
@@ -76,6 +77,7 @@ export interface ProcessDetailsResponse {
       }>;
     };
   };
+  asset: AssetData
 }
 
 export interface ProcessSuggestionRequest {
