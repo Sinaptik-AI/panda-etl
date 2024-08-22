@@ -52,8 +52,8 @@ const AddFieldsAIDrawer = ({
     }
     
     const validateKey = (key: string) => {
-        if (!/^[\p{L}\p{N}_ ]+$/u.test(key)) {
-          return "Field name can only contain letters, numbers, spaces, and underscores, including accents.";
+        if (!/^[\w\s\u00C0-\u024F\u1E00-\u1EFF]+$/.test(key)) {
+            return "Field name can only contain letters, numbers, spaces, and underscores, including accents.";
         }
         return null;
       };

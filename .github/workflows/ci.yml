@@ -62,3 +62,13 @@ jobs:
         run: |
           cd backend
           poetry run pytest
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm i
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
