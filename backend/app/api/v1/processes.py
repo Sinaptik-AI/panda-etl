@@ -169,14 +169,14 @@ def stop_processes(process_id: int, db: Session = Depends(get_db)):
 
     process = process_repository.get_process(db, process_id)
 
-    if process.status in [ProcessStatus.STOPPED]:
+    if process.status in [ProcessStatus.STOPPED, ProcessStatus.FAILED]:
         process.status = ProcessStatus.PENDING
         db.commit()
         logger.log(f"Add to process {process.id} to the queue")
         executor.submit(process_task, process.id)
 
     else:
-        raise HTTPException(status_code=404, detail="Process ")
+        raise HTTPException(status_code=400, detail="Process not found!")
 
     return {
         "status": "success",

@@ -10,7 +10,7 @@ import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle, FileArchive } from "lucide-react";
+import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle, FileArchive, RefreshCcw } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
@@ -221,6 +221,21 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
               </Link>
             )}
             
+            {process.status == ProcessStatus.FAILED && (
+              <Link
+                href="#"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                onClick={(e) => {
+                  e.preventDefault();
+                  resume_process(process);
+                }}
+              >
+                <Tooltip content="Retry">
+                  <RefreshCcw size={16} />
+                </Tooltip>
+              </Link>
+            )}
 
             {process.status == ProcessStatus.IN_PROGRESS || process.completed_step_count == 0 ? (
                 <span

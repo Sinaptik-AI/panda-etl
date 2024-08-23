@@ -4,7 +4,6 @@ import Head from "next/head";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { Download, Loader2 } from "lucide-react";
-import { useGetProcessSteps } from "@/hooks/useProcesses";
 import { ProcessDetailsResponse, ProcessStatus } from "@/interfaces/processes";
 import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
@@ -16,9 +15,10 @@ import { useProcessStep } from "@/hooks/useProcessStep";
 import Accordion from "@/components/ui/Accordion";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
-import { processApiUrl } from "@/services/processes";
+import { GetProcessSteps, processApiUrl } from "@/services/processes";
 import Tooltip from "@/components/ui/Tooltip";
 import { truncateTextFromCenter } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -95,8 +95,14 @@ export default function Process() {
     data: processResponse,
     isLoading,
     isError,
-    error,
-  } = useGetProcessSteps(processId);
+  } = useQuery({
+    queryKey: ["useGetProcessStepsStale", processId],
+    queryFn: () => GetProcessSteps(processId),
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0, 
+  })
+
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedProcess, setSelectedProcess] =
     useState<ProcessDetailsResponse | null>(null);
