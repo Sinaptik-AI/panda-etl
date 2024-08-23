@@ -10,7 +10,7 @@ const DateLabel: React.FC<DateLabelProps> = ({
   dateString,
   addSuffix = true,
 }) => {
-  let formattedDate = "Invalid Date";
+  let formattedDate = "-";
 
   try {
     
