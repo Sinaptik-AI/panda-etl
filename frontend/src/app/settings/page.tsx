@@ -78,7 +78,7 @@ const ApiUsageSettings: React.FC = () => {
       <div className="flex items-center mt-1">
         <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
           <div
-            className="bg-blue-600 h-2.5 rounded-full"
+            className="bg-primary h-2.5 rounded-full"
             style={{ width: `${(apiUsage / 1000) * 100}%` }}
           ></div>
         </div>

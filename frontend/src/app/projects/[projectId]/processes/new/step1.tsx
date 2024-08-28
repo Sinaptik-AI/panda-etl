@@ -144,7 +144,7 @@ export const Step1: React.FC<Step1Props> = ({
                       : ""
                   } ${
                     selectedProcess === option.id
-                      ? "border-blue-500 border-2"
+                      ? "border-primary border-2"
                       : ""
                   }`}
                   onClick={() => selectProcessType(option)}

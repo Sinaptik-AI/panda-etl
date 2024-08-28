@@ -36,7 +36,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, classNames }) => {
               className={`inline-flex items-center text-sm font-medium ${
                 index === items.length - 1
                   ? "text-gray-700"
-                  : "text-blue-600 hover:text-blue-700"
+                  : "text-primary hover:text-primary-dark"
               }`}
             >
               {item.label}

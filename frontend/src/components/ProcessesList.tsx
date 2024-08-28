@@ -5,12 +5,29 @@ import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
 import { useQuery } from "@tanstack/react-query";
 import { GetProjectProcesses } from "@/services/projects";
-import { GetProcess, GetProcesses, ResumeProcess, StopProcess, processApiUrl } from "@/services/processes";
+import {
+  GetProcess,
+  GetProcesses,
+  ResumeProcess,
+  StopProcess,
+  processApiUrl,
+} from "@/services/processes";
 import { ProcessData, ProcessStatus } from "@/interfaces/processes";
 import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, Edit, Save, Copy, StopCircle, PlayCircle, FileArchive, RefreshCcw } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Loader2,
+  Edit,
+  Save,
+  Copy,
+  StopCircle,
+  PlayCircle,
+  FileArchive,
+  RefreshCcw,
+} from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
@@ -30,8 +47,11 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const router = useRouter();
   const [currentFile, setCurrentFile] = useState<ProcessData | null>(null);
   const [isEditing, setIsEditing] = useState(true);
-  const [selectedTemplate, setSelectedTemplate] = useState<ProcessData | null>(null);
-  const [openProjectSelection, setOpenProjectSelection] = useState<boolean>(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProcessData | null>(
+    null
+  );
+  const [openProjectSelection, setOpenProjectSelection] =
+    useState<boolean>(false);
   const [editedSummary, setEditedSummary] = useState("");
 
   const { data: processes } = useQuery({
@@ -78,18 +98,18 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const stop_process = async (process: ProcessData) => {
     const response = await StopProcess(process.id);
     if (!response.data) {
-      alert("Failed to stop process!")
+      alert("Failed to stop process!");
       throw new Error("Failed to stop process!");
     }
-  } 
+  };
 
   const resume_process = async (process: ProcessData) => {
     const response = await ResumeProcess(process.id);
     if (!response.data) {
-      alert("Failed to stop process!")
+      alert("Failed to stop process!");
       throw new Error("Failed to stop process!");
     }
-  }
+  };
 
   const handleSave = async () => {
     console.log("Saving edited summary:", editedSummary);
@@ -107,9 +127,9 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         return <Label status="warning">In progress</Label>;
       case ProcessStatus.PENDING:
         return <Label status="info">Pending</Label>;
-      case ProcessStatus.STOPPED: 
+      case ProcessStatus.STOPPED:
         return <Label status="default">Stopped</Label>;
-        
+
       default:
         return "-" + process.status;
     }
@@ -118,24 +138,22 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const onProjectSelectionCancel = () => {
     setOpenProjectSelection(false);
     setSelectedTemplate(null);
-  }
+  };
 
   const onProjectSelection = (project: ProjectData) => {
     setOpenProjectSelection(false);
     if (!selectedTemplate) {
-      alert("No template selected!")
-      return
+      alert("No template selected!");
+      return;
     }
     const templateParams = new URLSearchParams({
-            template: selectedTemplate.id,
-            type: selectedTemplate.type,
-            output: "csv",
-          }).toString();
-          router.push(
-            `/projects/${project.id}/processes/new?${templateParams}`
-          );
+      template: selectedTemplate.id,
+      type: selectedTemplate.type,
+      output: "csv",
+    }).toString();
+    router.push(`/projects/${project.id}/processes/new?${templateParams}`);
     setSelectedTemplate(null);
-  }
+  };
 
   const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
@@ -150,7 +168,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             label: (process: ProcessData) => (
               <Link
                 href={`/projects/${process.project_id}`}
-                className="text-blue-600"
+                className="text-primary"
               >
                 {process.project}
               </Link>
@@ -183,7 +201,6 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
       header: "Actions",
       accessor: "id",
       label: (process: ProcessData) => {
-        
         const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
         const downloadPdfZipUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-highlighted-pdf-zip`;
 
@@ -192,7 +209,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             {process.status == ProcessStatus.IN_PROGRESS && (
               <Link
                 href="#"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
                 target="_blank"
                 onClick={(e) => {
                   e.preventDefault();
@@ -208,7 +225,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             {process.status == ProcessStatus.STOPPED && (
               <Link
                 href="#"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
                 target="_blank"
                 onClick={(e) => {
                   e.preventDefault();
@@ -220,11 +237,11 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                 </Tooltip>
               </Link>
             )}
-            
+
             {process.status == ProcessStatus.FAILED && (
               <Link
                 href="#"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
                 target="_blank"
                 onClick={(e) => {
                   e.preventDefault();
@@ -237,54 +254,59 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
               </Link>
             )}
 
-            {process.status == ProcessStatus.IN_PROGRESS || process.completed_step_count == 0 ? (
-                <span
-                  className="text-gray-400 cursor-not-allowed"
-                  title="Download not available"
-                >
-                  <Tooltip content="Download CSV">
-                    <Download size={16} />
-                  </Tooltip>
-                </span>
-              ) : (
-                <Link
-                  href={downloadUrl}
-                  className="text-blue-600 hover:underline"
-                  target="_blank"
-                >
-                  <Tooltip content="Download CSV">
-                    <Download size={16} />
-                  </Tooltip>
-                </Link>
-              )}
-              
-              { process.type === "extractive_summary" ? (process.status == ProcessStatus.IN_PROGRESS || process.completed_step_count == 0 ? (
+            {process.status == ProcessStatus.IN_PROGRESS ||
+            process.completed_step_count == 0 ? (
+              <span
+                className="text-gray-400 cursor-not-allowed"
+                title="Download not available"
+              >
+                <Tooltip content="Download CSV">
+                  <Download size={16} />
+                </Tooltip>
+              </span>
+            ) : (
+              <Link
+                href={downloadUrl}
+                className="text-primary hover:underline"
+                target="_blank"
+              >
+                <Tooltip content="Download CSV">
+                  <Download size={16} />
+                </Tooltip>
+              </Link>
+            )}
+
+            {process.type === "extractive_summary" ? (
+              process.status == ProcessStatus.IN_PROGRESS ||
+              process.completed_step_count == 0 ? (
                 <span
                   className="text-gray-400 cursor-not-allowed"
                   title="Download not available"
                 >
                   <Tooltip content="Download highlighted pdfs">
-                  <FileArchive size={16}/>
+                    <FileArchive size={16} />
                   </Tooltip>
                 </span>
               ) : (
                 <Link
                   href={downloadPdfZipUrl}
-                  className="text-blue-600 hover:underline"
+                  className="text-primary hover:underline"
                   target="_blank"
                 >
                   <Tooltip content="Download highlighted pdfs">
-                    <FileArchive size={16}/>
+                    <FileArchive size={16} />
                   </Tooltip>
                 </Link>
-              )): ""
-            }
-            
+              )
+            ) : (
+              ""
+            )}
+
             {process.type === "extractive_summary" &&
               process.details.transformation_prompt && (
                 <Link
                   href="#"
-                  className="text-blue-600 hover:underline"
+                  className="text-primary hover:underline"
                   onClick={(e) => {
                     e.preventDefault();
                     setCurrentFile(process);
@@ -299,14 +321,13 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
               process.type === "extract") && (
               <Link
                 href="#"
-                className="text-blue-600 hover:underline"
-                onClick={(e) =>{
+                className="text-primary hover:underline"
+                onClick={(e) => {
                   e.preventDefault();
-                  setSelectedTemplate(process)
+                  setSelectedTemplate(process);
                   setOpenProjectSelection(true);
                 }}
               >
-            
                 <Tooltip content="Use as template">
                   <Copy size={16} />
                 </Tooltip>
@@ -379,7 +400,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                 />
                 <button
                   onClick={handleSave}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
                 >
                   <Save className="inline-block mr-2" size={16} />
                   Download
@@ -401,11 +422,13 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         ) : (
           <Loader2 className="animate-spin" />
         )}
-
       </Drawer>
-      
-      <ProcessSelectionDrawer isOpen={openProjectSelection} onSubmit={onProjectSelection} onCancel={onProjectSelectionCancel}/>
 
+      <ProcessSelectionDrawer
+        isOpen={openProjectSelection}
+        onSubmit={onProjectSelection}
+        onCancel={onProjectSelectionCancel}
+      />
     </>
   );
 };

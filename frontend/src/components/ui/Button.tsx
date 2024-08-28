@@ -15,7 +15,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   icon,
   className = "",
-  iconStyles = 'w-6 h-6 mr-2',
+  iconStyles = "w-6 h-6 mr-2",
   disabled,
   outlined = false,
   ...props
@@ -25,8 +25,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary: outlined
-      ? "border-2 border-blue-600 bg-blue-100 text-blue-600 hover:bg-blue-200 focus:ring-blue-500"
-      : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+      ? "border-2 border-primary bg-blue-100 text-primary hover:bg-blue-200 focus:ring-primary"
+      : "bg-primary hover:bg-primary-dark text-white focus:ring-primary",
     secondary: outlined
       ? "border-2 border-gray-600 bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500"
       : "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500",

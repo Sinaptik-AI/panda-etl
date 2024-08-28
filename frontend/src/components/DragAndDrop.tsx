@@ -96,7 +96,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
       <div
         ref={dropZoneRef}
         className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer ${
-          isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+          isDragging ? "border-primary bg-blue-50" : "border-gray-300"
         } ${
           files ? "bg-gray-900" : "bg-gray-800"
         } transition-all duration-300 ease-in-out`}
@@ -111,7 +111,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
             {Array.from(files).map((file, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <File className="w-6 h-6 mr-2 text-blue-500" />
+                  <File className="w-6 h-6 mr-2 text-primary" />
                   <span className="text-gray-200">{file.name}</span>
                 </div>
               </div>

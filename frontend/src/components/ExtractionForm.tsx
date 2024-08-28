@@ -34,7 +34,7 @@ interface ExtractionFormProps {
   onStartProcess: (fields: Field[]) => Promise<void>;
   fields: Field[];
   setFields: React.Dispatch<React.SetStateAction<Field[]>>;
-  processData: ProcessSuggestionRequest
+  processData: ProcessSuggestionRequest;
 }
 
 export default function ExtractionForm({
@@ -42,14 +42,15 @@ export default function ExtractionForm({
   onStartProcess,
   fields,
   setFields,
-  processData
+  processData,
 }: ExtractionFormProps) {
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
     { 0: true }
   );
   const [isLoading, setIsLoading] = useState(false);
   const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
-  const [displayAIFieldsModel, setDisplayAIFieldsModel] = useState<boolean>(false);
+  const [displayAIFieldsModel, setDisplayAIFieldsModel] =
+    useState<boolean>(false);
   const [startingProcess, setStartingProcess] = useState<boolean>(false);
 
   const addField = () => {
@@ -124,42 +125,41 @@ export default function ExtractionForm({
       setIsLoading(false);
     }
   };
- 
+
   const handleAIFieldsBtn = () => {
-    setDisplayAIFieldsModel(true)
-  }
+    setDisplayAIFieldsModel(true);
+  };
 
   const onAIFieldBtnClose = () => {
-    setDisplayAIFieldsModel(false)
-  }
+    setDisplayAIFieldsModel(false);
+  };
 
   const onCancel = async () => {
-    setDisplayPsModel(false)
-  }
+    setDisplayPsModel(false);
+  };
 
   const handleAIFieldsSubmit = (data: ExtractionField[]) => {
     if (data.length > 0) {
-      if (fields.length == 1 ){
-        setFields(data)
+      if (fields.length == 1) {
+        setFields(data);
       } else {
-        setFields(prevFields => [...prevFields, ...data]);
+        setFields((prevFields) => [...prevFields, ...data]);
       }
-      
     }
     onAIFieldBtnClose();
   };
 
   const handleProcessSuggestion = async () => {
-    setDisplayPsModel(true)
-  }
+    setDisplayPsModel(true);
+  };
 
   const handleProcessTemplate = async (template: ProcessData | null) => {
     if (template) {
-      setFields(template.details.fields)
-      setDisplayPsModel(false)
-    } 
-  }
- 
+      setFields(template.details.fields);
+      setDisplayPsModel(false);
+    }
+  };
+
   const toggleField = (index: number) => {
     setExpandedFields({ ...expandedFields, [index]: !expandedFields[index] });
   };
@@ -172,30 +172,29 @@ export default function ExtractionForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-2">Fields</h2>
-        <div className="flex gap-2"> 
-        <Button
-          type="button"
-          icon={Sparkles}
-          onClick={handleAIFieldsBtn}
-          variant="secondary"
-          className="flex items-center text-md"
-          iconStyles="w-4 h-4 mr-2"
-        >
-          Add fields with AI
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            icon={Sparkles}
+            onClick={handleAIFieldsBtn}
+            variant="secondary"
+            className="flex items-center text-md"
+            iconStyles="w-4 h-4 mr-2"
+          >
+            Add fields with AI
+          </Button>
 
-        <Button
-          type="button"
-          icon={LayoutTemplate}
-          onClick={handleProcessSuggestion}
-          variant="secondary"
-          className="flex items-center text-md"
-          iconStyles="w-4 h-4 mr-2"
-        >
-          Use process as templates
-        </Button>
+          <Button
+            type="button"
+            icon={LayoutTemplate}
+            onClick={handleProcessSuggestion}
+            variant="secondary"
+            className="flex items-center text-md"
+            iconStyles="w-4 h-4 mr-2"
+          >
+            Use process as templates
+          </Button>
         </div>
-        
       </div>
       <div className="space-y-4">
         {fields?.map((field, index) => (
@@ -282,10 +281,10 @@ export default function ExtractionForm({
             className="flex justify-between items-center px-5 py-4 cursor-pointer"
             onClick={addField}
           >
-            <span className="text-[16px] font-semibold text-blue-600">
+            <span className="text-[16px] font-semibold text-primary">
               Add new field
             </span>
-            <Plus className="text-blue-600" size={24} />
+            <Plus className="text-primary" size={24} />
           </div>
         </div>
       </div>
@@ -310,11 +309,23 @@ export default function ExtractionForm({
         </Button>
       </div>
 
+      {displayPsModel && (
+        <ProcessSelectionDrawer
+          isOpen={displayPsModel}
+          processData={processData}
+          onCancel={onCancel}
+          onSubmit={handleProcessTemplate}
+        />
+      )}
 
-
-      {displayPsModel && <ProcessSelectionDrawer isOpen={displayPsModel} processData={processData} onCancel={onCancel} onSubmit={handleProcessTemplate}/>}
-      
-      {displayAIFieldsModel && <AddFieldsAIDrawer isOpen={displayAIFieldsModel} project_id={processData.project_id} onSubmit={handleAIFieldsSubmit} onCancel={onAIFieldBtnClose}/>}
+      {displayAIFieldsModel && (
+        <AddFieldsAIDrawer
+          isOpen={displayAIFieldsModel}
+          project_id={processData.project_id}
+          onSubmit={handleAIFieldsSubmit}
+          onCancel={onAIFieldBtnClose}
+        />
+      )}
     </form>
   );
 }

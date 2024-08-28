@@ -31,9 +31,14 @@ const Sidebar: React.FC = () => {
     >
       <div>
         <div className="flex justify-between items-center px-4">
-          <Link href="/projects" className="flex justify-center items-center cursor-pointer w-[170px] pt-3">
-            <LogoDark color="black"/>
-            <h2 className="text-xl font-semibold">Panda{'{'}·{'}'}etl</h2>
+          <Link
+            href="/projects"
+            className="flex justify-center items-center cursor-pointer w-[170px] pt-3"
+          >
+            <LogoDark color="black" />
+            <h2 className="text-xl font-semibold">
+              Panda{"{"}·{"}"}etl
+            </h2>
           </Link>
           <button
             onClick={() => setIsSidebarOpen(false)}
@@ -48,7 +53,7 @@ const Sidebar: React.FC = () => {
               <li className="mb-2" key={route.path}>
                 <Link
                   href={route.path}
-                  className={`flex items-center hover:text-blue-500 ${
+                  className={`flex items-center hover:text-primary-dark ${
                     route.path === path
                       ? "text-black font-semibold"
                       : "text-gray-700"
@@ -68,7 +73,7 @@ const Sidebar: React.FC = () => {
           <li className="mb-2">
             <a
               href="mailto:help@sinaptik.ai"
-              className="flex items-center text-gray-700 hover:text-blue-500"
+              className="flex items-center text-gray-700 hover:text-priamry-hover"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               Contact us
@@ -77,7 +82,7 @@ const Sidebar: React.FC = () => {
           <li className="mb-10">
             <Link
               href="/settings"
-              className="flex items-center text-gray-700 hover:text-blue-500"
+              className="flex items-center text-gray-700 hover:text-priamry-hover"
             >
               <Settings className="w-5 h-5 mr-2" />
               Settings
@@ -86,14 +91,14 @@ const Sidebar: React.FC = () => {
           <li className="flex justify-between text-sm text-gray-500">
             <a
               href="https://sinaptik.notion.site/Terms-of-Service-6531411a9dfe4f1b9cb6045e93e9723c?pvs=4"
-              className="hover:text-blue-500"
+              className="hover:text-primary"
               target="_blank"
             >
               Terms
             </a>
             <a
               href="https://sinaptik.notion.site/Datenschutzrichtlinie-012906dd21f14443971247291fdbc474?pvs=4"
-              className="hover:text-blue-500"
+              className="hover:text-primary"
               target="_blank"
             >
               Privacy Policy

@@ -34,7 +34,7 @@ interface ExtractiveSummaryData {
     negative_topics: string[];
     transformation_prompt: string;
     show_final_summary: boolean;
-    output_type: string
+    output_type: string;
   };
 }
 
@@ -49,11 +49,12 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   setStep,
   templateData,
   processName,
-  outputType
+  outputType,
 }) => {
   const router = useRouter();
   const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
-  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | null>(null);
+  const [currentAssetPreview, setCurrentAssetPreview] =
+    useState<AssetData | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [formData, setFormData] = useState<ExtractiveSummaryData>({
     type: "extractive_summary",
@@ -64,7 +65,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
       negative_topics: [],
       transformation_prompt: "",
       show_final_summary: false,
-      output_type: outputType
+      output_type: outputType,
     },
   });
 
@@ -99,7 +100,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   useEffect(() => {
     if (assets?.length && project) {
-      setCurrentAssetPreview(assets[currentFileIndex])
+      setCurrentAssetPreview(assets[currentFileIndex]);
     }
   }, [assets, project, currentFileIndex]);
 
@@ -204,28 +205,27 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           negative_topics: string[];
           transformation_prompt: string;
           show_final_summary: boolean;
-          output_type: string
-        }
-      })
-      setDisplayPsModel(false)
-    } 
-  }
+          output_type: string;
+        },
+      });
+      setDisplayPsModel(false);
+    }
+  };
 
   const onCancel = async () => {
-    setDisplayPsModel(false)
-  }
+    setDisplayPsModel(false);
+  };
 
   const handleProcessSuggestion = async () => {
-    setDisplayPsModel(true)
-  }
+    setDisplayPsModel(true);
+  };
 
   const handlePageChange = (index: number) => {
-    setCurrentFileIndex(index)
-  }
+    setCurrentFileIndex(index);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
       <form
         onSubmit={handleSubmit}
         className="space-y-6 bg-white p-6 rounded-lg shadow"
@@ -257,7 +257,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
             onChange={handleCheckboxChange}
           />
           <Tooltip content="You can only highlight text in standard PDFs. Highlighting isn’t available for scanned documents or websites">
-              <Info className="mb-1 w-4 h-4 inline-block text-blue-600" />
+            <Info className="mb-1 w-4 h-4 inline-block text-primary" />
           </Tooltip>
         </div>
 
@@ -269,13 +269,13 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
             {formData.data.positive_topics.map((topic, index) => (
               <span
                 key={index}
-                className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center"
+                className="bg-blue-100 text-primary text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center"
               >
                 {topic}
                 <button
                   type="button"
                   onClick={() => removeTopic("positive", index)}
-                  className="ml-1 text-blue-600 hover:text-blue-800"
+                  className="ml-1 text-primary hover:text-primary-dark"
                 >
                   ×
                 </button>
@@ -349,21 +349,29 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
       <div className="mt-1">
         <h2 className="text-2xl font-bold mb-5">Preview</h2>
-        <CustomViewsPaginator totalElements={assets? assets.length: 0} currentIndex={currentFileIndex} onChange={handlePageChange}/>
-        { currentAssetPreview && <AssetViewer project_id={project.id} asset={currentAssetPreview}/> }
+        <CustomViewsPaginator
+          totalElements={assets ? assets.length : 0}
+          currentIndex={currentFileIndex}
+          onChange={handlePageChange}
+        />
+        {currentAssetPreview && (
+          <AssetViewer project_id={project.id} asset={currentAssetPreview} />
+        )}
       </div>
-      {displayPsModel && <ProcessSelectionDrawer 
-      isOpen={displayPsModel} 
-      processData={{
+      {displayPsModel && (
+        <ProcessSelectionDrawer
+          isOpen={displayPsModel}
+          processData={{
             name: processName,
             type: "extractive_summary",
             project_id: project.id,
             output_type: outputType,
           }}
-          onCancel={onCancel} 
-          onSubmit={handleProcessTemplate}/>}
+          onCancel={onCancel}
+          onSubmit={handleProcessTemplate}
+        />
+      )}
     </div>
-    
   );
 };
 

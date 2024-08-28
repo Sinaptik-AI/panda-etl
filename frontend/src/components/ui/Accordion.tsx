@@ -16,7 +16,7 @@ const Accordion: React.FC<AccordionProps> = ({ title, children }) => {
         className="w-full text-left p-4 bg-gray-100 hover:bg-gray-200 focus:outline-none flex justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-blue-600 hover:text-blue-800 font-semibold">
+        <span className="text-primary hover:text-primary-dark font-semibold">
           {title}
         </span>
 

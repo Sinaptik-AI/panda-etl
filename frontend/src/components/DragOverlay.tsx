@@ -66,8 +66,8 @@ const DragOverlay: React.FC<DragOverlayProps> = ({ onFileDrop, accept }) => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="bg-gray-800 p-8 rounded-lg text-center border-2 border-dashed border-blue-500">
-        <Upload className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+      <div className="bg-gray-800 p-8 rounded-lg text-center border-2 border-dashed border-primary">
+        <Upload className="w-16 h-16 mx-auto text-primary mb-4" />
         <p className="text-xl font-semibold mb-2 text-gray-200">
           Drop your files here
         </p>

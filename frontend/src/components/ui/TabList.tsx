@@ -38,7 +38,7 @@ const TabList: React.FC<TabListProps> = ({
               onClick={() => handleTabClick(tab.id)}
               className={`py-4 mr-6 font-medium text-md ${
                 activeTab === tab.id
-                  ? "border-b-2 border-blue-500 text-blue-600"
+                  ? "border-b-2 border-primary text-primary"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >

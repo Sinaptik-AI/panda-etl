@@ -39,7 +39,8 @@ const columns: Column<ProcessDetailsResponse>[] = [
   { header: "ID", accessor: (row: ProcessDetailsResponse) => row.id },
   {
     header: "File name",
-    accessor: (row: ProcessDetailsResponse) => truncateTextFromCenter(row.asset.filename, 50),
+    accessor: (row: ProcessDetailsResponse) =>
+      truncateTextFromCenter(row.asset.filename, 50),
   },
   {
     header: "Status",
@@ -74,7 +75,7 @@ const columns: Column<ProcessDetailsResponse>[] = [
         step.output?.highlighted_pdf && (
           <Link
             href={downloadUrl}
-            className="text-blue-600 hover:underline block"
+            className="text-primary hover:underline block"
             target="_blank"
           >
             <Tooltip content="Download highlighted PDF">
@@ -100,8 +101,8 @@ export default function Process() {
     queryFn: () => GetProcessSteps(processId),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    staleTime: 0, 
-  })
+    staleTime: 0,
+  });
 
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedProcess, setSelectedProcess] =
@@ -192,7 +193,7 @@ export default function Process() {
             <div>
               {isLoadingProcessStep ? (
                 <div className="flex justify-center items-center h-40">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
               ) : isErrorProcessStep ? (
                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
