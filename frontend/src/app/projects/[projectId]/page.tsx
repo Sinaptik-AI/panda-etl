@@ -54,7 +54,9 @@ export default function Project() {
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
-  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | Blob | null>(null);
+  const [currentAssetPreview, setCurrentAssetPreview] = useState<
+    AssetData | Blob | null
+  >(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [deletedId, setDeletedId] = useState("");
@@ -62,7 +64,7 @@ export default function Project() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<[string, Date][]>([]);
-  const [openUploadModal, setOpenUploadModal] = useState<boolean>(false); 
+  const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -111,6 +113,7 @@ export default function Project() {
   const projectTabs = [
     { id: "assets", label: "Docs" },
     { id: "processes", label: "Processes" },
+    { id: "chat", label: "Chat", badge: "beta" },
   ];
 
   const breadcrumbItems = [
@@ -121,16 +124,20 @@ export default function Project() {
   const handleFileClick = async (asset: AssetData) => {
     if (project) {
       if (typeof asset.id == "string") {
-        const file_obj = uploadingFiles.find((value) => value.name === asset.id);
+        const file_obj = uploadingFiles.find(
+          (value) => value.name === asset.id
+        );
         if (file_obj) {
           const file_blob = new Blob([file_obj], { type: file_obj.type });
-          setCurrentAssetPreview(file_blob)
+          setCurrentAssetPreview(file_blob);
         } else {
           console.error("File not found in uploadingFiles.");
         }
       } else {
-        const assetExtracted = assets.find((value: AssetData) => value.id == asset.id)
-        setCurrentAssetPreview(assetExtracted) 
+        const assetExtracted = assets.find(
+          (value: AssetData) => value.id == asset.id
+        );
+        setCurrentAssetPreview(assetExtracted);
       }
     }
   };
@@ -209,21 +216,23 @@ export default function Project() {
     );
   };
 
-  const onUploadSubmit = async (type: string, data: string[] | FileList | null) => {
+  const onUploadSubmit = async (
+    type: string,
+    data: string[] | FileList | null
+  ) => {
     if (type == "file") {
       handleFileUpload(data as FileList);
     } else if (type == "url") {
-      const response = await AddProjectURLAsset(id, data as string[])
+      const response = await AddProjectURLAsset(id, data as string[]);
       if (!response.data) {
         return false;
       }
       refetchProjectAssets();
     }
 
-    setOpenUploadModal(false)
+    setOpenUploadModal(false);
     return true;
-  }
-
+  };
 
   return (
     <>
@@ -257,16 +266,21 @@ export default function Project() {
                     Add Docs
                   </Button>
                 )}
-                { ( assets && assets.length == 0 || assets == undefined) ? (
+                {(assets && assets.length == 0) || assets == undefined ? (
                   <Tooltip content="Add docs to the project before running a process">
-                  <Button onClick={newProcess} icon={PlusIcon} disabled={true}>
+                    <Button
+                      onClick={newProcess}
+                      icon={PlusIcon}
+                      disabled={true}
+                    >
+                      New process
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Button onClick={newProcess} icon={PlusIcon}>
                     New process
                   </Button>
-                  </Tooltip>):(<Button onClick={newProcess} icon={PlusIcon} >
-                    New process
-                  </Button>)
-                }
-                
+                )}
               </div>
             }
           />
@@ -350,9 +364,12 @@ export default function Project() {
             onClose={() => setCurrentAssetPreview(null)}
             title={"Preview"}
           >
-            {
-              currentAssetPreview && project && <AssetViewer project_id={project.id} asset={currentAssetPreview}/>
-            }
+            {currentAssetPreview && project && (
+              <AssetViewer
+                project_id={project.id}
+                asset={currentAssetPreview}
+              />
+            )}
           </Drawer>
         </>
       )}
@@ -368,13 +385,14 @@ export default function Project() {
         />
       )}
 
-      {openUploadModal && <AssetUploadModal
-        isOpen={openUploadModal}
-        project_id={project?.id}
-        onSubmit={onUploadSubmit}
-        onCancel={() => setOpenUploadModal(false)}
-      />}
-  
+      {openUploadModal && (
+        <AssetUploadModal
+          isOpen={openUploadModal}
+          project_id={project?.id}
+          onSubmit={onUploadSubmit}
+          onCancel={() => setOpenUploadModal(false)}
+        />
+      )}
     </>
   );
 }
