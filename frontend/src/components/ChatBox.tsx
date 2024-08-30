@@ -5,7 +5,9 @@ import { chat, chatStatus } from '@/services/chat';
 import LogoDark from '@/icons/LogoDark';
 import ChatLoader from './ChatLoader';
 import { useQuery } from '@tanstack/react-query';
-
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 
 export const NoChatPlaceHolder = () => {
@@ -38,6 +40,7 @@ const ChatBox = ({ project_id, messages, setMessages, chatEnabled, setChatEnable
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState<boolean>(false);
+    const messagesEndRef = useRef<HTMLInputElement | null>(null);
 
     const {
         data: statusData,
@@ -71,7 +74,15 @@ const ChatBox = ({ project_id, messages, setMessages, chatEnabled, setChatEnable
 
         setMessages((prevMessages) => [...prevMessages, bot_response]);
         setConversationId(response.conversation_id);
+       
     };
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+    const markify_text = (text: string) => {
+        return text.replace(/\n/g, '<br>');
+    }
 
     return (
         <div className="flex flex-col h-full p-4 bg-gray-100" style={{ minHeight: 'calc(100vh - 16rem)' }}>
@@ -83,13 +94,19 @@ const ChatBox = ({ project_id, messages, setMessages, chatEnabled, setChatEnable
                         className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         {message.sender === 'bot' && <LogoDark color="black" width="80" />}
+                        
                         <div
                             className={`p-3 rounded-lg max-w-xl ${message.sender === 'user'
                                 ? 'bg-primary text-white'
                                 : 'bg-gray-300 text-black'
                             }`}
                         >
-                            {message.text}
+                            <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw]}
+                                >
+                                {markify_text(message.text)}
+                            </ReactMarkdown>
                         </div>
                     </div>
                 ))}
@@ -109,6 +126,7 @@ const ChatBox = ({ project_id, messages, setMessages, chatEnabled, setChatEnable
                         </div>
                     </div>
                 )}
+                <div ref={messagesEndRef} />
             </div>
             <div className="mt-4 flex gap-4 items-top">
                 <div className="flex flex-grow">
