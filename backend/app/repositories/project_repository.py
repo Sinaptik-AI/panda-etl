@@ -1,4 +1,5 @@
 from typing import Union
+from app.models.asset_content import AssetProcessingStatus
 from sqlalchemy.orm import Session, joinedload, defer, aliased
 from sqlalchemy import asc, desc, func
 
@@ -117,10 +118,44 @@ def get_processes(db: Session, project_id: int):
 
 
 def add_asset_content(db: Session, asset_id: int, content: dict):
-    asset_content = models.AssetContent(
-        asset_id=asset_id, content=content, language=content["lang"]
-    )
+    if content:
+        asset_content = models.AssetContent(
+            asset_id=asset_id, content=content, language=content["lang"]
+        )
+    else:
+        asset_content = models.AssetContent(asset_id=asset_id)
     db.add(asset_content)
+    db.commit()
+    return asset_content
+
+
+def update_or_add_asset_content(db: Session, asset_id: int, content: dict):
+    asset_content = (
+        db.query(models.AssetContent)
+        .filter(models.AssetContent.asset_id == asset_id)
+        .first()
+    )
+
+    if asset_content:
+        asset_content.content = content
+        asset_content.language = content.get("lang", asset_content.language)
+    else:
+        asset_content = models.AssetContent(
+            asset_id=asset_id, content=content, language=content["lang"]
+        )
+        db.add(asset_content)
+
+    db.commit()
+    db.refresh(asset_content)
+    return asset_content
+
+
+def update_asset_content_status(
+    db: Session, asset_id: int, status: AssetProcessingStatus
+):
+    db.query(models.AssetContent).filter(models.AssetContent.id == asset_id).update(
+        {models.AssetContent.processing: status}
+    )
     db.commit()
 
 
@@ -150,3 +185,21 @@ def delete_processes_and_steps(db: Session, project_id: int):
         )
 
     db.commit()
+
+
+def get_assets_without_content(db: Session, project_id: int):
+    return (
+        db.query(models.Asset)
+        .filter(models.Asset.project_id == project_id)
+        .outerjoin(models.AssetContent, models.Asset.id == models.AssetContent.asset_id)
+        .filter(models.AssetContent.id.is_(None))
+        .all()
+    )
+
+
+def get_assets_content_pending(db: Session, project_id: int):
+    return (
+        db.query(models.Asset)
+        .filter(models.AssetContent.processing == AssetProcessingStatus.IN_PROGRESS)
+        .all()
+    )

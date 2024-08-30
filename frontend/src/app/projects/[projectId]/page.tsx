@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -43,6 +43,8 @@ import AssetUploadModal from "@/components/AssetUploadModal";
 import { AssetData } from "@/interfaces/assets";
 import AssetViewer from "@/components/AssetViewer";
 import Tooltip from "@/components/ui/Tooltip";
+import ChatBox from "@/components/ChatBox";
+
 
 export default function Project() {
   const params = useParams();
@@ -65,6 +67,10 @@ export default function Project() {
   const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<[string, Date][]>([]);
   const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Array<{ sender: string; text: string }>>([]);
+  const [chatEnabled, setChatEnabled] = useState<boolean>(false);
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -250,7 +256,7 @@ export default function Project() {
       {isLoading || isAssetsLoading ? (
         <Loader2 className="w-8 h-8 animate-spin" />
       ) : (
-        <>
+        <div ref={scrollRef}>
           <TabList
             tabs={projectTabs}
             onTabChange={(tabId) => setActiveTab(tabId)}
@@ -358,6 +364,11 @@ export default function Project() {
           {activeTab === "processes" && (
             <ProcessesList projectId={project?.id} />
           )}
+          {
+            activeTab == "chat" && (
+              <ChatBox project_id={project?.id} messages={messages} setMessages={setMessages} chatEnabled={chatEnabled} setChatEnabled={setChatEnabled}/>
+            )
+          }
 
           <Drawer
             isOpen={currentAssetPreview !== null}
@@ -371,7 +382,7 @@ export default function Project() {
               />
             )}
           </Drawer>
-        </>
+        </div>
       )}
 
       {isDeleteModalOpen && (

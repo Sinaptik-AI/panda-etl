@@ -8,6 +8,9 @@ load_dotenv()
 
 class Settings(BaseSettings):
     sqlalchemy_database_url: str
+    chromadb_url: str = os.path.join(
+        os.path.dirname(__file__), "..", "instance", "chromadb"
+    )
     upload_dir: str = os.path.join(os.path.dirname(__file__), "..", "uploads")
     process_dir: str = os.path.join(os.path.dirname(__file__), "..", "processed")
     api_server_url: str = "https://api.domer.ai"

@@ -1,6 +1,13 @@
-from sqlalchemy import JSON, Column, Integer, ForeignKey, String, Text
+from enum import Enum
+from sqlalchemy import JSON, Column, Integer, ForeignKey, String, Enum as SQLAlchemyEnum
 from .base import Base
 from sqlalchemy.orm import relationship
+
+
+class AssetProcessingStatus(Enum):
+    IN_PROGRESS = 1
+    COMPLETED = 2
+    FAILED = 3
 
 
 class AssetContent(Base):
@@ -12,6 +19,11 @@ class AssetContent(Base):
     )
     content = Column(JSON, nullable=True)
     language = Column(String(10), nullable=True, default="en")
+    processing = Column(
+        SQLAlchemyEnum(AssetProcessingStatus),
+        nullable=False,
+        default=AssetProcessingStatus.IN_PROGRESS,
+    )
 
     asset = relationship("Asset", back_populates="content")
 

@@ -1,10 +1,10 @@
 import React from "react";
 
-const LogoDark = ({ color }: { color: string }) => {
+const LogoDark = ({ color, width="165", height="57" }: { color: string, width?: string, height?: string }) => {
   return (
     <svg
-      width="165"
-      height="57"
+      width={width}
+      height={height}
       viewBox="0 0 196 162"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

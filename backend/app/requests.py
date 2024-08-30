@@ -197,3 +197,58 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
         raise Exception(
             f"Unable to process file! Status code: {response.status_code}, Response: {response.text}"
         )
+
+
+def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
+
+    # Prepare the headers with the Bearer token
+    headers = {"Authorization": f"Bearer {api_token}"}
+
+    # Prepare the data and files dictionaries
+    data = {}
+    files = {}
+
+    if file_path:
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"The file at {file_path} does not exist.")
+
+        file = open(file_path, "rb")
+        files["file"] = (os.path.basename(file_path), file)
+
+    elif pdf_content:
+        data["pdf_content"] = json.dumps(pdf_content)
+
+    # Send the request
+    response = requests.post(
+        f"{settings.bambooetl_server_url}/v1/extract/file/segment",
+        files=files if files else None,
+        data=data,
+        headers=headers,
+        timeout=3600,
+    )
+    # Check the response status code
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Unable to process file!")
+
+
+def chat_query(api_token, query, docs):
+
+    # Prepare the headers with the Bearer token
+    headers = {"Authorization": f"Bearer {api_token}"}
+
+    # Prepare the data and files dictionaries
+    data = {"query": query, "docs": docs}
+    # Send the request
+    response = requests.post(
+        f"{settings.bambooetl_server_url}/v1/chat",
+        json=data,
+        headers=headers,
+        timeout=3600,
+    )
+    # Check the response status code
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Unable to process user query!")

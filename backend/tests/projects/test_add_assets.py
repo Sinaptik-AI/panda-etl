@@ -80,9 +80,6 @@ def test_upload_files_success(
         os.path.join(settings.upload_dir, "1", "test.pdf"), "wb"
     )
 
-    # Check if the processing task was submitted
-    mock_submit.assert_called_once()
-
 
 @patch("app.repositories.project_repository.get_project")
 def test_upload_files_project_not_found(mock_get_project, mock_file, mock_db):

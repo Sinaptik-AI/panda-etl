@@ -4,11 +4,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   noMargin?: boolean;
+  containerStyle?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ label, id, error, noMargin, ...props }) => {
+export const Input: React.FC<InputProps> = ({ label, id, error, noMargin, containerStyle, ...props }) => {
   return (
-    <div className={!noMargin ? "mb-4" : ""}>
+    <div className={!noMargin ? "mb-4" : containerStyle? containerStyle: ""}>
       {label && (
         <label
           htmlFor={id}

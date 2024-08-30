@@ -15,6 +15,7 @@ pydantic-settings = "^2.3.4"
 starlette = "^0.37.2"
 dateparser = "^1.2.0"
 requests = "^2.32.3"
+chromadb = "^0.5.5"
 
 
 [tool.poetry.group.dev.dependencies]

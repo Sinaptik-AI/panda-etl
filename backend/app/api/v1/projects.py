@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 import os
 import traceback
 from typing import List
+from app.models.asset_content import AssetProcessingStatus
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile, Query
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -14,10 +15,11 @@ from app.models.asset import Asset
 from datetime import datetime, timezone
 
 from app.repositories import user_repository
-from app.requests import extract_text_from_file
+from app.requests import extract_file_segmentation, extract_text_from_file
 from app.logger import Logger
 from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
 from app.schemas.asset import UrlAssetCreate
+from app.vectorstore.chroma import ChromaDB
 
 
 # Thread pool executor for background tasks
@@ -175,9 +177,11 @@ async def upload_files(
             file_processing_tasks.append(new_asset)
 
         db.commit()
-        # Post-commit processing
-        for asset in file_processing_tasks:
-            print("Starting asset id", asset.id)
+
+        # Add missing Asset Content
+        assets = project_repository.get_assets_without_content(db=db, project_id=id)
+        for asset in assets:
+            project_repository.add_asset_content(db, asset.id, None)
             file_preprocessor.submit(preprocess_file, asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
@@ -228,9 +232,11 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
 
         db.commit()
 
-        for url_asset in url_assets:
-            logger.log("Starting Preprocess Asset ID:", url_asset.id)
-            file_preprocessor.submit(preprocess_file, url_asset.id)
+        # Add missing Asset Content
+        assets = project_repository.get_assets_without_content(db=db, project_id=id)
+        for asset in assets:
+            project_repository.add_asset_content(db, asset.id)
+            file_preprocessor.submit(preprocess_file, asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
@@ -366,10 +372,27 @@ def preprocess_file(asset_id: int):
         asset = project_repository.get_asset(db=db, asset_id=asset_id)
         api_key = user_repository.get_user_api_key(db)
         pdf_content = extract_text_from_file(api_key.key, asset.path, asset.type)
-        project_repository.add_asset_content(db, asset_id, pdf_content)
+        asset_content = project_repository.update_or_add_asset_content(
+            db, asset_id, pdf_content
+        )
+        segmentation = extract_file_segmentation(
+            api_token=api_key.key, pdf_content=pdf_content
+        )
+        vectorstore = ChromaDB(f"bamboo-etl-{asset.project_id}")
+        vectorstore.add_docs(
+            docs=segmentation["segments"],
+            metadatas=[
+                {"doc_id": asset.id, "project_id": asset.project_id}
+                for _ in segmentation["segments"]
+            ],
+        )
+
+        project_repository.update_asset_content_status(
+            db, asset_id=asset_content.id, status=AssetProcessingStatus.COMPLETED
+        )
 
     except Exception as e:
-        print(e)
-        logger.error(
-            f"failed to preprocess asset {asset_id}: {traceback.print_exception()}"
+        project_repository.update_asset_content_status(
+            db, asset_id=asset_content.id, status=AssetProcessingStatus.FAILED
         )
+        logger.error(f"failed to preprocess asset {asset_id}: {e}")

@@ -54,3 +54,89 @@ body {
   max-height: 1000px;
   transition: max-height 0.5s ease-in;
 }
+
+
+/* chat loader css */
+
+#bubble {
+  top: 45vh;
+  margin-left: auto;
+  margin-right: auto;
+  width: 70px;
+  height: 40px;
+  border-top-right-radius: 35%;
+  border-top-left-radius: 35%;
+  border-bottom-left-radius: 35%;
+  border-bottom-right-radius: 35%;
+  background: white;
+}
+#circleWrapper {
+  width: 50px;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+}
+.circle {
+  position: relative;
+  height: 10px;
+  width: 10px;
+  margin-left: 2px;
+  margin-right: 2px;
+  top: 15px;
+  background: white;
+  display: inline-block;
+  border-radius: 50%;
+}
+.circle {
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+#circle1 {
+  animation-name: circle1;
+  background: #f43c86;
+}
+#circle2 {
+  animation-name: circle2;
+  background: rgba(244, 60, 134, 0.5);
+}
+#circle3 {
+  animation-name: circle3;
+  background: rgba(244, 60, 134, 0.21);
+}
+@keyframes circle1 {
+  0% {
+    top: 15px;
+  }
+  15% {
+    top: 5px;
+  }
+  25% {
+    top: 15px;
+  }
+}
+@keyframes circle2 {
+  10% {
+    top: 15px;
+  }
+  25% {
+    top: 5px;
+  }
+  35% {
+    top: 15px;
+  }
+}
+
+@keyframes circle3 {
+  15% {
+    top: 15px;
+  }
+  30% {
+    top: 5px;
+  }
+  40% {
+    top: 15px;
+  }
+}
+
+/* toggle mode css */
