@@ -234,7 +234,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           type="button"
           icon={LayoutTemplate}
           onClick={handleProcessSuggestion}
-          variant="secondary"
+          variant="light"
           className="flex items-center text-md"
           iconStyles="w-4 h-4 mr-2"
         >

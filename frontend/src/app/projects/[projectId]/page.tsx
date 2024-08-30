@@ -267,7 +267,7 @@ export default function Project() {
                   <Button
                     onClick={() => setOpenUploadModal(true)}
                     icon={UploadIcon}
-                    variant="secondary"
+                    variant="light"
                   >
                     Add docs
                   </Button>

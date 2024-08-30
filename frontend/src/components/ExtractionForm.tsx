@@ -177,7 +177,7 @@ export default function ExtractionForm({
             type="button"
             icon={Sparkles}
             onClick={handleAIFieldsBtn}
-            variant="secondary"
+            variant="light"
             className="flex items-center text-md"
             iconStyles="w-4 h-4 mr-2"
           >
@@ -188,7 +188,7 @@ export default function ExtractionForm({
             type="button"
             icon={LayoutTemplate}
             onClick={handleProcessSuggestion}
-            variant="secondary"
+            variant="light"
             className="flex items-center text-md"
             iconStyles="w-4 h-4 mr-2"
           >
@@ -294,7 +294,7 @@ export default function ExtractionForm({
           isLoading={isLoading}
           disabled={is_fields_empty()}
           icon={ScanEye}
-          variant="secondary"
+          variant="light"
         >
           Preview
         </Button>
