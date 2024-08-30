@@ -378,7 +378,7 @@ def preprocess_file(asset_id: int):
         segmentation = extract_file_segmentation(
             api_token=api_key.key, pdf_content=pdf_content
         )
-        vectorstore = ChromaDB(f"bamboo-etl-{asset.project_id}")
+        vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
         vectorstore.add_docs(
             docs=segmentation["segments"],
             metadatas=[

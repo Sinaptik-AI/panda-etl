@@ -11,34 +11,31 @@ import "@/app/style/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BambooETL",
+  title: "PandaETL",
   description:
-    "BambooETL is a modern ETL tool for data engineers and non-engineers alike.",
+    "PandaETL is a modern ETL tool for data engineers and non-engineers alike.",
 };
-
-
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <ReactQueryClientProvider>
       <html lang="en">
         <body className={inter.className}>
           <SidebarProvider>
             <ScrollProvider>
-            <div className="flex h-screen bg-gray-100 text-black">
-              <Sidebar />
-              <div className="flex-1 flex flex-col overflow-hidden md:ml-64">
-                <Navbar />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 px-10 py-6">
-                {children}
-                </main>
+              <div className="flex h-screen bg-gray-100 text-black">
+                <Sidebar />
+                <div className="flex-1 flex flex-col overflow-hidden md:ml-64">
+                  <Navbar />
+                  <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 px-10 py-6">
+                    {children}
+                  </main>
+                </div>
               </div>
-            </div>
             </ScrollProvider>
           </SidebarProvider>
         </body>

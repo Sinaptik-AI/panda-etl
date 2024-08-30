@@ -32,7 +32,7 @@ class Logger:
             try:
                 filename = settings.log_file_path
             except ValueError:
-                filename = "bambooetl.log"
+                filename = "pandaetl.log"
             handlers = [logging.FileHandler(filename)]
         else:
             handlers = []

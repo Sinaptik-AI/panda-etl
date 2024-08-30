@@ -28,7 +28,9 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [deletedProject, setDeletedProject] = useState<ProjectData | null>(null);
+  const [deletedProject, setDeletedProject] = useState<ProjectData | null>(
+    null
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { mutateAsync: deleteProject, isPending: deleteLoading } =
     useDeleteProject();
@@ -101,7 +103,6 @@ export default function Projects() {
   };
 
   const handleDelete = () => {
-
     if (deletedProject) {
       deleteProject(
         { id: deletedProject.id },
@@ -115,13 +116,12 @@ export default function Projects() {
         }
       );
     }
-    
   };
 
   return (
     <>
       <Head>
-        <title>BambooETL - Projects</title>
+        <title>PandaETL - Projects</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
@@ -173,7 +173,7 @@ export default function Projects() {
               columns={columns}
               onRowClick={(project) => handleProjectClick(project.id)}
               onDelete={(id: string) => {
-                const project = projects.find(obj => obj.id === id);
+                const project = projects.find((obj) => obj.id === id);
                 setDeletedProject(project !== undefined ? project : null);
                 setIsDeleteModalOpen(true);
               }}

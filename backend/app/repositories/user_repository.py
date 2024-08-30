@@ -7,7 +7,7 @@ from app.schemas.user import APIKeyRequest, UpdateAPIKeyRequest, UserUpdateReque
 
 
 def create_user(db: Session, user: APIKeyRequest) -> models.User:
-    new_user = models.User(username="BambooETL", email=user.email)
+    new_user = models.User(username="PandaETL", email=user.email)
     db.add(new_user)
     db.commit()
     return new_user

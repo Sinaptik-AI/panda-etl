@@ -56,7 +56,7 @@ export default function NewProject() {
   return (
     <>
       <Head>
-        <title>BambooETL - Create New Project</title>
+        <title>PandaETL - Create New Project</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

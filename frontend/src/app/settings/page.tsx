@@ -101,7 +101,7 @@ export default function SettingsPage() {
   return (
     <>
       <Head>
-        <title>BambooETL - Settings</title>
+        <title>PandaETL - Settings</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

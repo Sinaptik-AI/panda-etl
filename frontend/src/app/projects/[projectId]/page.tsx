@@ -45,7 +45,6 @@ import AssetViewer from "@/components/AssetViewer";
 import Tooltip from "@/components/ui/Tooltip";
 import ChatBox from "@/components/ChatBox";
 
-
 export default function Project() {
   const params = useParams();
   const router = useRouter();
@@ -68,7 +67,9 @@ export default function Project() {
   const [uploadedFiles, setUploadedFiles] = useState<[string, Date][]>([]);
   const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Array<{ sender: string; text: string }>>([]);
+  const [messages, setMessages] = useState<
+    Array<{ sender: string; text: string }>
+  >([]);
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
@@ -243,7 +244,7 @@ export default function Project() {
   return (
     <>
       <Head>
-        <title>{`BambooETL - ${project?.name}`}</title>
+        <title>{`PandaETL - ${project?.name}`}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -364,11 +365,15 @@ export default function Project() {
           {activeTab === "processes" && (
             <ProcessesList projectId={project?.id} />
           )}
-          {
-            activeTab == "chat" && (
-              <ChatBox project_id={project?.id} messages={messages} setMessages={setMessages} chatEnabled={chatEnabled} setChatEnabled={setChatEnabled}/>
-            )
-          }
+          {activeTab == "chat" && (
+            <ChatBox
+              project_id={project?.id}
+              messages={messages}
+              setMessages={setMessages}
+              chatEnabled={chatEnabled}
+              setChatEnabled={setChatEnabled}
+            />
+          )}
 
           <Drawer
             isOpen={currentAssetPreview !== null}

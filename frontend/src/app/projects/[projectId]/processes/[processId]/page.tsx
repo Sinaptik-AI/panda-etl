@@ -148,7 +148,7 @@ export default function Process() {
   return (
     <>
       <Head>
-        <title>{`BambooETL - Process 1`}</title>
+        <title>{`PandaETL - Process 1`}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

@@ -15,7 +15,7 @@ jobs:
     env:
       SQLALCHEMY_DATABASE_URL: "sqlite:///instance/test.db"
       OPENAI_API_KEY: "dump"
-      BAMBOOETL_SERVER_URL: "http://127.0.0.1:9000"
+      PANDAETL_SERVER_URL: "http://127.0.0.1:9000"
 
     strategy:
       matrix:

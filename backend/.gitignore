@@ -6,4 +6,4 @@ venv
 !/instance/
 uploads/
 processed/
-bambooetl.log
+pandaetl.log

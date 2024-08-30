@@ -83,7 +83,7 @@ export default function NewProcess() {
   return (
     <>
       <Head>
-        <title>{`BambooETL - New process`}</title>
+        <title>{`PandaETL - New process`}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

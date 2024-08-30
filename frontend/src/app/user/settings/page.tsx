@@ -63,7 +63,7 @@ export default function UserSettings() {
   return (
     <>
       <Head>
-        <title>BambooETL - User Settings</title>
+        <title>PandaETL - User Settings</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

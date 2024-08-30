@@ -25,7 +25,7 @@ logger = Logger()
 @chat_router.post("/project/{project_id}", status_code=200)
 def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
-        vectorstore = ChromaDB(f"bamboo-etl-{project_id}")
+        vectorstore = ChromaDB(f"panda-etl-{project_id}")
         docs = vectorstore.get_relevant_docs(chat_request.query, 5)
         extracted_documents = docs["documents"][0]
         api_key = user_repository.get_user_api_key(db)

@@ -20,7 +20,7 @@ class ChromaDB(VectorStore):
 
     def __init__(
         self,
-        collection_name: str = "bamboo-etl",
+        collection_name: str = "panda-etl",
         embedding_function: Optional[Callable[[List[str]], List[float]]] = None,
         persist_path: Optional[str] = None,
         client_settings: Optional[config.Settings] = None,

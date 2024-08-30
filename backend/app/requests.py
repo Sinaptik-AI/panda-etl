@@ -6,7 +6,7 @@ from app.config import settings
 
 
 def request_api_key(email: str):
-    url = f"{settings.api_server_url}/api/auth/register-bambooetl"
+    url = f"{settings.api_server_url}/api/auth/register-pandaetl"
 
     headers = {"Content-Type": "application/json"}
 
@@ -33,7 +33,7 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
     files["file"] = (os.path.basename(file_path), file)
 
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/file/content",
+        f"{settings.pandaetl_server_url}/v1/extract/file/content",
         files=files,
         headers=headers,
         timeout=3600,
@@ -68,7 +68,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract",
+        f"{settings.pandaetl_server_url}/v1/extract",
         files=files if files else None,
         data=data,
         headers=headers,
@@ -91,7 +91,7 @@ def extract_field_descriptions(api_token, fields):
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/field-descriptions",
+        f"{settings.pandaetl_server_url}/v1/extract/field-descriptions",
         json=data,
         headers=headers,
         timeout=3600,
@@ -128,7 +128,7 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/summary",
+        f"{settings.pandaetl_server_url}/v1/extract/summary",
         files=files if files else None,
         data=data,
         headers=headers,
@@ -151,7 +151,7 @@ def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: s
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/summary-of-summaries",
+        f"{settings.pandaetl_server_url}/v1/extract/summary-of-summaries",
         json=data,
         headers=headers,
         timeout=3600,
@@ -180,7 +180,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/highlight-pdf",
+        f"{settings.pandaetl_server_url}/v1/extract/highlight-pdf",
         files=files,
         data=data,
         headers=headers,
@@ -220,7 +220,7 @@ def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
 
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/extract/file/segment",
+        f"{settings.pandaetl_server_url}/v1/extract/file/segment",
         files=files if files else None,
         data=data,
         headers=headers,
@@ -242,7 +242,7 @@ def chat_query(api_token, query, docs):
     data = {"query": query, "docs": docs}
     # Send the request
     response = requests.post(
-        f"{settings.bambooetl_server_url}/v1/chat",
+        f"{settings.pandaetl_server_url}/v1/chat",
         json=data,
         headers=headers,
         timeout=3600,
