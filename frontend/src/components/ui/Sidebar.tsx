@@ -36,8 +36,8 @@ const Sidebar: React.FC = () => {
             className="flex justify-center items-center cursor-pointer w-[170px] pt-3"
           >
             <LogoDark color="black" />
-            <h2 className="text-xl font-semibold">
-              Panda{"{"}·{"}"}etl
+            <h2 className="text-lg font-semibold mb-2">
+              panda{"{"}·{"}"}etl
             </h2>
           </Link>
           <button
