@@ -263,7 +263,7 @@ export default function Project() {
                     icon={UploadIcon}
                     variant="secondary"
                   >
-                    Add Docs
+                    Add docs
                   </Button>
                 )}
                 {(assets && assets.length == 0) || assets == undefined ? (
