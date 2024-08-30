@@ -16,6 +16,7 @@
     "@tippyjs/react": "^4.2.6",
     "axios": "^1.7.2",
     "date-fns": "^3.6.0",
+    "framer-motion": "^11.3.31",
     "lucide-react": "^0.408.0",
     "marked": "^13.0.2",
     "next": "14.2.4",
