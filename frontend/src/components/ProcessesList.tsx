@@ -38,10 +38,42 @@ import "react-quill/dist/quill.snow.css";
 import "@/app/style/editor.css";
 import { ProcessSelectionDrawer } from "./ProjectSelectionDrawer";
 import { ProjectData } from "@/interfaces/projects";
+import Image from "next/image";
 
 interface ProcessesProps {
   projectId?: string;
 }
+
+const NoProcessesPlaceholder = ({ projectId }: { projectId?: string }) => {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center py-12">
+      <Image
+        src="/build_chat.svg"
+        className="mb-6"
+        alt="No processes"
+        width={384}
+        height={384}
+      />
+      <div className="text-center max-w-lg">
+        <p>There are no processes available at the moment.</p>
+        <p>
+          {projectId && (
+            <>
+              To get started,{" "}
+              <Link
+                href={`/projects/${projectId}/processes/new`}
+                className="text-primary font-medium"
+              >
+                create a new process
+              </Link>
+              .
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const router = useRouter();
@@ -370,7 +402,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
 
   return (
     <>
-      {processes && (
+      {processes && processes.length > 0 ? (
         <Table
           data={processes}
           columns={columns}
@@ -378,6 +410,8 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             router.push(`/projects/${row.project_id}/processes/${row.id}`);
           }}
         />
+      ) : (
+        <NoProcessesPlaceholder projectId={projectId} />
       )}
       <Drawer
         isOpen={currentFile !== null}
