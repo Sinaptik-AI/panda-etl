@@ -1,7 +1,7 @@
-from typing import Union
+from typing import List, Union
 from app.models.asset_content import AssetProcessingStatus
 from sqlalchemy.orm import Session, joinedload, defer, aliased
-from sqlalchemy import asc, desc, func
+from sqlalchemy import and_, asc, desc, func
 
 from app import models
 from app.schemas.project import ProjectCreate
@@ -200,6 +200,19 @@ def get_assets_without_content(db: Session, project_id: int):
 def get_assets_content_pending(db: Session, project_id: int):
     return (
         db.query(models.Asset)
-        .filter(models.AssetContent.processing == AssetProcessingStatus.IN_PROGRESS)
+        .join(models.AssetContent)  # Join AssetContent to Asset
+        .filter(
+            and_(
+                models.Asset.project_id == project_id,
+                models.AssetContent.processing == AssetProcessingStatus.IN_PROGRESS,
+            )
+        )
         .all()
     )
+
+
+def get_assets_filename(db: Session, asset_ids: List[int]):
+    return [
+        asset.filename
+        for asset in db.query(models.Asset).filter(models.Asset.id.in_(asset_ids)).all()
+    ]

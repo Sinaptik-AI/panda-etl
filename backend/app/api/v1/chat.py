@@ -9,6 +9,7 @@ from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from app.config import settings
 
 
 chat_router = APIRouter()
@@ -26,14 +27,28 @@ logger = Logger()
 def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
-        docs = vectorstore.get_relevant_docs(chat_request.query, 5)
+        docs = vectorstore.get_relevant_docs(
+            chat_request.query, settings.max_relevant_docs
+        )
+
+        file_names = project_repository.get_assets_filename(
+            db, [metadata["doc_id"] for metadata in docs["metadatas"][0]]
+        )
         extracted_documents = docs["documents"][0]
+
+        docs_formatted = [
+            {"filename": filename, "quote": quote}
+            for filename, quote in zip(file_names, extracted_documents)
+        ]
+
         api_key = user_repository.get_user_api_key(db)
 
         response = chat_query(
-            api_token=api_key.key, query=chat_request.query, docs=extracted_documents
+            api_token=api_key.key, query=chat_request.query, docs=docs_formatted
         )
+
         conversation_id = chat_request.conversation_id
+
         if conversation_id is None:
 
             user = user_repository.get_users(db)[
@@ -72,7 +87,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
 
 @chat_router.get("/project/{project_id}/status", status_code=200)
-def chat(project_id: int, db: Session = Depends(get_db)):
+def chat_status(project_id: int, db: Session = Depends(get_db)):
     try:
 
         asset_contents = project_repository.get_assets_without_content(

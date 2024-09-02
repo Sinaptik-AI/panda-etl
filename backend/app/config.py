@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     openai_api_key: str
     ai_model: str = "gpt-4o-mini"
     max_retries: int = 3
+    max_relevant_docs: int = 10
 
     class Config:
         env_file = ".env"

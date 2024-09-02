@@ -68,7 +68,7 @@ export default function Project() {
   const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<
-    Array<{ sender: string; text: string }>
+    Array<{ sender: string; text: string;timestamp: Date; }>
   >([]);
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
 
