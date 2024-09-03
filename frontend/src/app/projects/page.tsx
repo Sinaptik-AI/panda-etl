@@ -184,7 +184,7 @@ export default function Projects() {
               actions={[
                 {
                   label: "Delete",
-                  icon: <TrashIcon className="mr-2 h-4 w-4" />,
+                  icon: <TrashIcon className="mx-1 h-4 w-4" />,
                   onClick: (id: string) => {
                     const project = projects.find((obj) => obj.id === id);
                     setDeletedProject(project !== undefined ? project : null);

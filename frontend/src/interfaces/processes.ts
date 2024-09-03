@@ -6,7 +6,7 @@ export enum ProcessStatus {
   IN_PROGRESS = 2,
   COMPLETED = 3,
   FAILED = 4,
-  STOPPED = 5
+  STOPPED = 5,
 }
 
 export interface ProcessData {
@@ -77,7 +77,7 @@ export interface ProcessDetailsResponse {
       }>;
     };
   };
-  asset: AssetData
+  asset: AssetData;
 }
 
 export interface ProcessSuggestionRequest {

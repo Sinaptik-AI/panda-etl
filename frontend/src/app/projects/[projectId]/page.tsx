@@ -184,11 +184,11 @@ export default function Project() {
       accessor: "filename",
       label: (process: ProjectData) => (
         <div className="flex items-center">
-          {process.type.includes("pdf") ? (
-            <Tooltip content="PDF">
+          {process.type?.includes("pdf") ? (
+            <Tooltip content="PDF" delay={1000}>
               <FileIcon className="mr-2 h-4 w-4" />
             </Tooltip>
-          ) : process.type.includes("html") ? (
+          ) : process.type?.includes("html") ? (
             <Tooltip content="Website">
               <LinkIcon className="mr-2 h-4 w-4" />
             </Tooltip>
@@ -316,19 +316,19 @@ export default function Project() {
                   actions={[
                     {
                       label: "Preview",
-                      icon: <SearchIcon className="mr-2 h-4 w-4" />,
+                      icon: <SearchIcon className="mx-1 h-4 w-4" />,
                       onClick: (row) => openPreview(row),
                     },
                     {
                       label: "Download",
-                      icon: <DownloadIcon className="mr-2 h-4 w-4" />,
+                      icon: <DownloadIcon className="mx-1 h-4 w-4" />,
                       onClick: (row) => {
                         startDownload(row);
                       },
                     },
                     {
                       label: "Delete",
-                      icon: <TrashIcon className="mr-2 h-4 w-4" />,
+                      icon: <TrashIcon className="mx-1 h-4 w-4" />,
                       onClick: (row) => {
                         setDeletedId(row.id);
                         setIsDeleteModalOpen(true);

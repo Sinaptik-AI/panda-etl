@@ -66,27 +66,6 @@ const columns: Column<ProcessDetailsResponse>[] = [
         "-"
       ),
   },
-  {
-    header: "Actions",
-    accessor: "id",
-    label: (step: ProcessDetailsResponse) => {
-      const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${step.process_id}/steps/${step.id}/download`;
-
-      return (
-        step.output?.highlighted_pdf && (
-          <Link
-            href={downloadUrl}
-            className="text-primary hover:underline block"
-            target="_blank"
-          >
-            <Tooltip content="Download highlighted PDF">
-              <Download className="w-4 h-4 mr-2 inline-block" />
-            </Tooltip>
-          </Link>
-        )
-      );
-    },
-  },
 ];
 
 export default function Process() {
@@ -177,6 +156,16 @@ export default function Process() {
               setSelectedProcess(row);
               setSelectedStepId(row.id);
             }}
+            actions={[
+              {
+                label: "Download",
+                icon: <Download className="mx-1 h-4 w-4" />,
+                onClick: (row) => {
+                  const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${row.process_id}/steps/${row.id}/download`;
+                  window.open(downloadUrl, "_blank");
+                },
+              },
+            ]}
           />
         </>
       )}

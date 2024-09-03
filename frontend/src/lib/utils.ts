@@ -5,7 +5,6 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
-
 export const formatFileSize = (sizeInBytes: number): string => {
   if (sizeInBytes >= 1024 * 1024) {
     return (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
@@ -16,20 +15,19 @@ export const formatFileSize = (sizeInBytes: number): string => {
   }
 };
 
-
 export const isValidURL = (url: string): boolean => {
   try {
-      new URL(url);
-      return true;
+    new URL(url);
+    return true;
   } catch {
-      return false;
+    return false;
   }
-}
+};
 
 export const truncateTextFromCenter = (text: string, maxLength: number) => {
-  if (!text) {
+  if (!text || typeof text !== "string") {
     return text;
-  } 
+  }
   if (text.length <= maxLength) {
     return text;
   }

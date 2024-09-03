@@ -47,25 +47,23 @@ const Sidebar: React.FC = () => {
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
-        <div className="p-4">
-          <ul className="mt-9">
-            {routes.map((route) => (
-              <li className="mb-2" key={route.path}>
-                <Link
-                  href={route.path}
-                  className={`flex items-center hover:text-primary-dark ${
-                    route.path === path
-                      ? "text-black font-semibold"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {route.Icon}
-                  {route.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="mt-12 px-5">
+          {routes.map((route) => (
+            <li className="mb-2" key={route.path}>
+              <Link
+                href={route.path}
+                className={`flex items-center hover:text-primary-dark ${
+                  route.path === path
+                    ? "text-black font-semibold"
+                    : "text-gray-700"
+                }`}
+              >
+                {route.Icon}
+                {route.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="absolute bottom-0 left-0 w-full p-4 border-t">

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/ContextMenu";
 import { Loader2 } from "lucide-react";
 import { formatFileSize, truncateTextFromCenter } from "@/lib/utils";
+import TooltipWrapper from "./Tooltip";
 
 export interface Column<T> {
   header: string;
@@ -17,7 +18,8 @@ export interface Column<T> {
 type ActionType = {
   label: string;
   onClick: (rowData: any) => void;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | ((rowData: any) => React.ReactNode);
+  hidden?: (rowData: any) => boolean;
 };
 
 interface TableProps<T> {
@@ -145,34 +147,51 @@ export function Table<T>({
                   <td className="py-2 px-4 border-b relative">
                     {actions.length > 0 && (
                       <div className="flex items-center gap-2 action-icons">
-                        {actions.map((item, index) => (
-                          <span
-                            key={index}
-                            className="cursor-pointer inline-block transition-all duration-100 hover:scale-110"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              item.onClick(row);
-                            }}
-                          >
-                            {item.icon}
-                          </span>
-                        ))}
+                        {actions.map(
+                          (item, index) =>
+                            (!item.hidden || !item.hidden(row)) && (
+                              <span
+                                key={index}
+                                className="cursor-pointer inline-block transition-all duration-100 hover:scale-110"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  item.onClick(row);
+                                }}
+                              >
+                                <TooltipWrapper
+                                  content={item.label}
+                                  delay={1000}
+                                >
+                                  {typeof item.icon === "function"
+                                    ? item.icon(row)
+                                    : item.icon}
+                                </TooltipWrapper>
+                              </span>
+                            )
+                        )}
                       </div>
                     )}
                   </td>
                 </tr>
               </ContextMenuTrigger>
               <ContextMenuContent className="bg-white">
-                {actions.map((item, index) => (
-                  <ContextMenuItem
-                    key={index}
-                    className="flex items-center gap-2"
-                    onClick={() => item.onClick(row)}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </ContextMenuItem>
-                ))}
+                {actions.map((item, index) => {
+                  if (item.hidden && item.hidden(row)) {
+                    return null;
+                  }
+                  return (
+                    <ContextMenuItem
+                      key={index}
+                      className="flex items-center gap-2"
+                      onClick={() => item.onClick(row)}
+                    >
+                      {typeof item.icon === "function"
+                        ? item.icon(row)
+                        : item.icon}
+                      {item.label}
+                    </ContextMenuItem>
+                  );
+                })}
               </ContextMenuContent>
             </ContextMenu>
           ) : (

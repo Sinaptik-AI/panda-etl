@@ -190,7 +190,6 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const columns: Column<ProcessData>[] = [
     { header: "ID", accessor: "id" },
     { header: "Name", accessor: "name" },
-    { header: "Type", accessor: "type" },
     ...(projectId
       ? []
       : ([
@@ -228,146 +227,6 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
         ) : (
           "-"
         ),
-    },
-    {
-      header: "Actions",
-      accessor: "id",
-      label: (process: ProcessData) => {
-        const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
-        const downloadPdfZipUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-highlighted-pdf-zip`;
-
-        return (
-          <div className="flex items-center space-x-1">
-            {process.status == ProcessStatus.IN_PROGRESS && (
-              <Link
-                href="#"
-                className="text-primary hover:underline"
-                target="_blank"
-                onClick={(e) => {
-                  e.preventDefault();
-                  stop_process(process);
-                }}
-              >
-                <Tooltip content="Stop">
-                  <StopCircle size={16} />
-                </Tooltip>
-              </Link>
-            )}
-
-            {process.status == ProcessStatus.STOPPED && (
-              <Link
-                href="#"
-                className="text-primary hover:underline"
-                target="_blank"
-                onClick={(e) => {
-                  e.preventDefault();
-                  resume_process(process);
-                }}
-              >
-                <Tooltip content="Start">
-                  <PlayCircle size={16} />
-                </Tooltip>
-              </Link>
-            )}
-
-            {process.status == ProcessStatus.FAILED && (
-              <Link
-                href="#"
-                className="text-primary hover:underline"
-                target="_blank"
-                onClick={(e) => {
-                  e.preventDefault();
-                  resume_process(process);
-                }}
-              >
-                <Tooltip content="Retry">
-                  <RefreshCcw size={16} />
-                </Tooltip>
-              </Link>
-            )}
-
-            {process.status == ProcessStatus.IN_PROGRESS ||
-            process.completed_step_count == 0 ? (
-              <span
-                className="text-gray-400 cursor-not-allowed"
-                title="Download not available"
-              >
-                <Tooltip content="Download CSV">
-                  <Download size={16} />
-                </Tooltip>
-              </span>
-            ) : (
-              <Link
-                href={downloadUrl}
-                className="text-primary hover:underline"
-                target="_blank"
-              >
-                <Tooltip content="Download CSV">
-                  <Download size={16} />
-                </Tooltip>
-              </Link>
-            )}
-
-            {process.type === "extractive_summary" ? (
-              process.status == ProcessStatus.IN_PROGRESS ||
-              process.completed_step_count == 0 ? (
-                <span
-                  className="text-gray-400 cursor-not-allowed"
-                  title="Download not available"
-                >
-                  <Tooltip content="Download highlighted pdfs">
-                    <FileArchive size={16} />
-                  </Tooltip>
-                </span>
-              ) : (
-                <Link
-                  href={downloadPdfZipUrl}
-                  className="text-primary hover:underline"
-                  target="_blank"
-                >
-                  <Tooltip content="Download highlighted pdfs">
-                    <FileArchive size={16} />
-                  </Tooltip>
-                </Link>
-              )
-            ) : (
-              ""
-            )}
-
-            {process.type === "extractive_summary" &&
-              process.details.transformation_prompt && (
-                <Link
-                  href="#"
-                  className="text-primary hover:underline"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentFile(process);
-                  }}
-                >
-                  <Tooltip content="View summary">
-                    <FileText size={16} />
-                  </Tooltip>
-                </Link>
-              )}
-            {(process.type === "extractive_summary" ||
-              process.type === "extract") && (
-              <Link
-                href="#"
-                className="text-primary hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setSelectedTemplate(process);
-                  setOpenProjectSelection(true);
-                }}
-              >
-                <Tooltip content="Use as template">
-                  <Copy size={16} />
-                </Tooltip>
-              </Link>
-            )}
-          </div>
-        );
-      },
     },
   ];
 
@@ -409,6 +268,121 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
           onRowClick={(row) => {
             router.push(`/projects/${row.project_id}/processes/${row.id}`);
           }}
+          actions={[
+            {
+              label: "Stop",
+              icon: <StopCircle className="mx-1 h-4 w-4" />,
+              onClick: (process: ProcessData) => {
+                if (process.status === ProcessStatus.IN_PROGRESS) {
+                  stop_process(process);
+                }
+              },
+              hidden: (process: ProcessData) =>
+                process.status !== ProcessStatus.IN_PROGRESS,
+            },
+            {
+              label: "Start",
+              icon: <PlayCircle className="mx-1 h-4 w-4" />,
+              onClick: (process: ProcessData) => {
+                if (process.status === ProcessStatus.STOPPED) {
+                  resume_process(process);
+                }
+              },
+              hidden: (process: ProcessData) =>
+                process.status !== ProcessStatus.STOPPED,
+            },
+            {
+              label: "Retry",
+              icon: <RefreshCcw className="mx-1 h-4 w-4" />,
+              onClick: (process: ProcessData) => {
+                if (process.status === ProcessStatus.FAILED) {
+                  resume_process(process);
+                }
+              },
+              hidden: (process: ProcessData) =>
+                process.status !== ProcessStatus.FAILED,
+            },
+            {
+              label: "Download CSV",
+              icon: (process: ProcessData) => {
+                if (
+                  process.status === ProcessStatus.IN_PROGRESS ||
+                  process.completed_step_count == 0
+                ) {
+                  return (
+                    <span className="text-gray-400 cursor-not-allowed">
+                      <Download className="mx-1 h-4 w-4" />
+                    </span>
+                  );
+                }
+                return <Download className="mx-1 h-4 w-4" />;
+              },
+              onClick: (process: ProcessData) => {
+                if (
+                  process.status === ProcessStatus.IN_PROGRESS ||
+                  process.completed_step_count == 0
+                ) {
+                  return;
+                }
+
+                const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
+                window.open(downloadUrl, "_blank");
+              },
+              hidden: (process: ProcessData) =>
+                process.status === ProcessStatus.IN_PROGRESS ||
+                process.completed_step_count == 0,
+            },
+            {
+              label: "Download Highlighted PDFs",
+              icon: (process: ProcessData) => {
+                if (
+                  process.status === ProcessStatus.IN_PROGRESS ||
+                  process.completed_step_count == 0
+                ) {
+                  return (
+                    <span className="text-gray-400 cursor-not-allowed">
+                      <FileArchive className="mx-1 h-4 w-4" />
+                    </span>
+                  );
+                }
+                return <FileArchive className="mx-1 h-4 w-4" />;
+              },
+              onClick: (process: ProcessData) => {
+                if (
+                  process.status === ProcessStatus.IN_PROGRESS ||
+                  process.completed_step_count == 0
+                ) {
+                  return;
+                }
+
+                const downloadPdfZipUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-highlighted-pdf-zip`;
+                window.open(downloadPdfZipUrl, "_blank");
+              },
+              hidden: (process: ProcessData) =>
+                process.status === ProcessStatus.IN_PROGRESS ||
+                process.completed_step_count == 0,
+            },
+            {
+              label: "View Summary",
+              icon: <FileText className="mx-1 h-4 w-4" />,
+              onClick: (process: ProcessData) => {
+                setCurrentFile(process);
+              },
+              hidden: (process: ProcessData) =>
+                process.type !== "extractive_summary" || !process.details,
+            },
+            {
+              label: "Use as Template",
+              icon: <Copy className="mx-1 h-4 w-4" />,
+              onClick: (process: ProcessData) => {
+                setSelectedTemplate(process);
+                setOpenProjectSelection(true);
+              },
+              hidden: (process: ProcessData) =>
+                process.type !== "extractive_summary" &&
+                process.type !== "extract",
+            },
+          ]}
         />
       ) : (
         <NoProcessesPlaceholder projectId={projectId} />

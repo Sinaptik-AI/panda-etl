@@ -18,7 +18,7 @@ const FinderIconCard: React.FC<FinderIconCardProps> = ({
       onClick={onClick}
       className="cursor-pointer w-full max-w-48 h-auto aspect-square flex flex-col justify-center bg-white border rounded shadow hover:bg-gray-100 overflow-hidden"
     >
-      <Tooltip content={name}>
+      <Tooltip content={name} delay={1000}>
         <div className="flex flex-col items-center px-2">
           {icon}
           <div className="w-full truncate">
