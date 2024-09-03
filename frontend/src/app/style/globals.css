@@ -133,3 +133,14 @@ body {
 }
 
 /* toggle mode css */
+
+/* Table actions */
+tr .action-icons {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  justify-content: flex-end;
+}
+tr:hover .action-icons {
+  opacity: 1;
+}

@@ -19,7 +19,7 @@ interface IProps {
 
 const projectTabs = [
   { id: "files", label: "Files" },
-  { id: "url", label: "URL" },
+  { id: "url", label: "Websites" },
 ];
 
 const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
@@ -84,7 +84,7 @@ const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
 
       {activeTab === "url" && (
         <>
-          <div className="mt-4 text-black mb-4">Website URL</div>
+          <div className="mt-4 text-black mb-4">Website URLs</div>
 
           <div className="flex w-full gap-2 justify-start">
             <div className="flex-grow text-black">
@@ -92,7 +92,7 @@ const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
                 onChange={onInputChange}
                 value={textAreaInput}
                 className="w-full p-2 border border-gray-300 rounded"
-                placeholder="Paste each URL on a new line"
+                placeholder="Paste one or multiple URLs, each on a new line"
               />
             </div>
             {inputError && (

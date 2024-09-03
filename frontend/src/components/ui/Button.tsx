@@ -21,12 +21,12 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md tranition-all duration-300 ease-in-out";
 
   const variantStyles = {
     primary: outlined
-      ? "border-2 border-primary bg-primary text-primary hover:bg-blue-200 focus:ring-primary"
-      : "bg-primary hover:bg-primary-dark text-white focus:ring-primary",
+      ? "border-2 border-primary bg-primary text-white hover:bg-primary-dark focus:ring-primary"
+      : "bg-primary text-white hover:bg-primary-dark focus:ring-primary",
     secondary: outlined
       ? "border-2 border-black bg-black text-white hover:bg-gray-800 focus:ring-gray-500"
       : "bg-black text-white hover:bg-gray-800 focus:ring-gray-500",

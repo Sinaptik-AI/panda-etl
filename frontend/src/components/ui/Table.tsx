@@ -1,27 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
-import { TrashIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { formatFileSize, truncateTextFromCenter } from "@/lib/utils";
+
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((data: T) => React.ReactNode);
   label?: (data: T) => React.ReactNode;
 }
 
+type ActionType = {
+  label: string;
+  onClick: (rowData: any) => void;
+  icon?: React.ReactNode;
+};
+
 interface TableProps<T> {
   data: T[];
   columns: Column<T>[];
   className?: string;
   onRowClick?: (data: any) => void;
-  onDelete?: (id: string) => void;
   uploadingFiles?: File[];
   uploadedFiles?: [string, Date][];
   isAssetsLoading?: boolean;
+  actions?: ActionType[];
 }
 
 export function Table<T>({
@@ -29,29 +36,34 @@ export function Table<T>({
   columns,
   onRowClick,
   className = "",
-  onDelete,
   uploadingFiles = [],
-  uploadedFiles=[],
+  uploadedFiles = [],
   isAssetsLoading,
+  actions = [],
 }: TableProps<T>) {
-
-  const getUploadedFileElements = (uploadedFiles: [string, Date][], fileName: string): [string, Date][] => {
+  const [highlightedRowIndex, setHighlightedRowIndex] = useState<number | null>(
+    null
+  );
+  const getUploadedFileElements = (
+    uploadedFiles: [string, Date][],
+    fileName: string
+  ): [string, Date][] => {
     return uploadedFiles.filter(([name, _timestamp]) => name === fileName);
   };
 
-
   const combinedData = [
     ...uploadingFiles.map((file) => {
-      const uploaded_file = getUploadedFileElements(uploadedFiles, file.name)
+      const uploaded_file = getUploadedFileElements(uploadedFiles, file.name);
       return {
-      id: file.name,
-      filename: file.name,
-      filetype: file.type.replace("application/", "").toUpperCase(),
-      size: formatFileSize(file.size),
-      created_at: uploaded_file.length == 0 ? "Uploading": uploaded_file[0][1],
-      isUploading: uploaded_file.length == 0,
-    }
-  }),
+        id: file.name,
+        filename: file.name,
+        filetype: file.type.replace("application/", "").toUpperCase(),
+        size: formatFileSize(file.size),
+        created_at:
+          uploaded_file.length == 0 ? "Uploading" : uploaded_file[0][1],
+        isUploading: uploaded_file.length == 0,
+      };
+    }),
     ...data,
   ];
 
@@ -60,21 +72,34 @@ export function Table<T>({
       <thead>
         <tr>
           {columns.map((column, index) => (
-            <th key={index} className="py-2 px-4 border-b text-left">
+            <th
+              key={index}
+              className="py-2 px-4 border-b text-left font-semibold"
+            >
               {column.header}
             </th>
           ))}
+          {actions.length > 0 && <th className="py-2 px-4 border-b"></th>}
         </tr>
       </thead>
       <tbody>
         {combinedData.map((row: any, rowIndex) =>
-          onDelete ? (
-            <ContextMenu key={rowIndex}>
+          actions.length > 0 ? (
+            <ContextMenu
+              key={rowIndex}
+              onOpenChange={(open) => {
+                if (open) {
+                  setHighlightedRowIndex(rowIndex);
+                } else {
+                  setHighlightedRowIndex(null);
+                }
+              }}
+            >
               <ContextMenuTrigger asChild>
                 <tr
                   className={`hover:bg-gray-100 transition-colors duration-200 ${
                     row.isUploading || isAssetsLoading ? "opacity-50" : ""
-                  }`}
+                  } ${highlightedRowIndex === rowIndex ? "bg-blue-100" : ""}`}
                   onClick={(e) => {
                     if (
                       onRowClick &&
@@ -86,14 +111,12 @@ export function Table<T>({
                   }}
                 >
                   {columns.map((column, colIndex) => (
-                  
                     <td
                       key={colIndex}
                       className={`py-2 px-4 border-b ${
                         onRowClick && "cursor-pointer"
                       }`}
                     >
-
                       {row.isUploading || isAssetsLoading ? (
                         colIndex === 0 ? (
                           <div className="flex items-center gap-2">
@@ -110,17 +133,46 @@ export function Table<T>({
                       ) : typeof column.accessor === "function" ? (
                         column.accessor(row)
                       ) : (
-                        (row.type == "url" && column.accessor == "filename"? truncateTextFromCenter(row.details.url, 80): truncateTextFromCenter(row[column.accessor], 80) as React.ReactNode) ?? "-"
+                        (row.type == "url" && column.accessor == "filename"
+                          ? truncateTextFromCenter(row.details.url, 80)
+                          : (truncateTextFromCenter(
+                              row[column.accessor],
+                              80
+                            ) as React.ReactNode)) ?? "-"
                       )}
                     </td>
                   ))}
+                  <td className="py-2 px-4 border-b relative">
+                    {actions.length > 0 && (
+                      <div className="flex items-center gap-2 action-icons">
+                        {actions.map((item, index) => (
+                          <span
+                            key={index}
+                            className="cursor-pointer inline-block transition-all duration-100 hover:scale-110"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              item.onClick(row);
+                            }}
+                          >
+                            {item.icon}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
                 </tr>
               </ContextMenuTrigger>
               <ContextMenuContent className="bg-white">
-                <ContextMenuItem onClick={() => onDelete(row.id)}>
-                  <TrashIcon className="mr-2 h-4 w-4" />
-                  Delete
-                </ContextMenuItem>
+                {actions.map((item, index) => (
+                  <ContextMenuItem
+                    key={index}
+                    className="flex items-center gap-2"
+                    onClick={() => item.onClick(row)}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </ContextMenuItem>
+                ))}
               </ContextMenuContent>
             </ContextMenu>
           ) : (

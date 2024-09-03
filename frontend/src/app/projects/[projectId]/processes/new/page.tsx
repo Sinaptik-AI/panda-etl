@@ -15,6 +15,7 @@ import { ExtractionStep } from "./custom-steps/Extraction";
 import { ExtractiveSummary } from "./custom-steps/ExtractiveSummary";
 import { useSearchParams } from "next/navigation";
 import { GetProcess } from "@/services/processes";
+import PageLoader from "@/components/ui/PageLoader";
 
 export default function NewProcess() {
   const params = useParams();
@@ -94,7 +95,7 @@ export default function NewProcess() {
       <Title>New process</Title>
 
       {isLoading ? (
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <PageLoader />
       ) : step === 1 ? (
         <Step1
           project={project}

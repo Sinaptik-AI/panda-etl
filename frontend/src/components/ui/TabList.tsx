@@ -37,10 +37,10 @@ const TabList: React.FC<TabListProps> = ({
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`py-4 mr-6 font-medium text-md flex items-start ${
+              className={`py-4 mr-6 font-medium text-md transition-all border-b-2 flex items-start ${
                 activeTab === tab.id
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               {tab.label}

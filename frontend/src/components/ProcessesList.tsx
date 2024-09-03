@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import {
   Download,
   FileText,
-  Loader2,
   Edit,
   Save,
   Copy,
@@ -39,6 +38,7 @@ import "@/app/style/editor.css";
 import { ProcessSelectionDrawer } from "./ProjectSelectionDrawer";
 import { ProjectData } from "@/interfaces/projects";
 import Image from "next/image";
+import PageLoader from "./ui/PageLoader";
 
 interface ProcessesProps {
   projectId?: string;
@@ -454,7 +454,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
             )}
           </div>
         ) : (
-          <Loader2 className="animate-spin" />
+          <PageLoader />
         )}
       </Drawer>
 

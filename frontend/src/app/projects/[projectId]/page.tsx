@@ -3,14 +3,14 @@ import React, { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import File from "@/components/FileIconCard";
 import {
-  Loader2,
-  GridIcon,
-  ListIcon,
   TrashIcon,
   PlusIcon,
   UploadIcon,
+  FileIcon,
+  LinkIcon,
+  SearchIcon,
+  DownloadIcon,
 } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
@@ -24,7 +24,6 @@ import {
 } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import FileUploadCard from "@/components/FileUploadCard";
 import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
@@ -32,29 +31,25 @@ import Pagination from "@/components/ui/Pagination";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useDeleteAssets } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/ContextMenu";
 import { Button } from "@/components/ui/Button";
 import AssetUploadModal from "@/components/AssetUploadModal";
 import { AssetData } from "@/interfaces/assets";
 import AssetViewer from "@/components/AssetViewer";
 import Tooltip from "@/components/ui/Tooltip";
 import ChatBox from "@/components/ChatBox";
+import { BASE_STORAGE_URL } from "@/constants";
+import PageLoader from "@/components/ui/PageLoader";
 
 export default function Project() {
   const params = useParams();
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
   const isProcesses = searchParams.get("processes");
   const id = params.projectId as string;
   const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
+  const [currentAsset, setCurrentAsset] = useState<AssetData | null>(null);
   const [currentAssetPreview, setCurrentAssetPreview] = useState<
     AssetData | Blob | null
   >(null);
@@ -68,28 +63,11 @@ export default function Project() {
   const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<
-    Array<{ sender: string; text: string;timestamp: Date; }>
+    Array<{ sender: string; text: string; timestamp: Date }>
   >([]);
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const storedViewMode = localStorage.getItem("assetsViewMode") as
-      | "grid"
-      | "table"
-      | null;
-    if (storedViewMode) {
-      setViewMode(storedViewMode);
-    } else {
-      setViewMode("table");
-    }
-  }, []);
-
-  const updateViewMode = (mode: "grid" | "table") => {
-    setViewMode(mode);
-    localStorage.setItem("assetsViewMode", mode);
-  };
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -128,8 +106,9 @@ export default function Project() {
     { label: project?.name || "", href: `/projects/${project?.id}` },
   ];
 
-  const handleFileClick = async (asset: AssetData) => {
+  const openPreview = async (asset: AssetData) => {
     if (project) {
+      setCurrentAsset(asset);
       if (typeof asset.id == "string") {
         const file_obj = uploadingFiles.find(
           (value) => value.name === asset.id
@@ -146,6 +125,25 @@ export default function Project() {
         );
         setCurrentAssetPreview(assetExtracted);
       }
+    }
+  };
+
+  const startDownload = async (row: AssetData) => {
+    try {
+      const response = await fetch(
+        `${BASE_STORAGE_URL}/${project?.id}/${row.filename}`
+      );
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = row.filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
     }
   };
 
@@ -180,18 +178,29 @@ export default function Project() {
     }
   };
 
-  const viewOptions = [
-    { value: "grid", label: "Grid", icon: GridIcon },
-    { value: "table", label: "Table", icon: ListIcon },
-  ];
-
   const columns: Column<(typeof assets)[0]>[] = [
-    { header: "File name", accessor: "filename" },
-    { header: "Content type", accessor: "type" },
+    {
+      header: "File name",
+      accessor: "filename",
+      label: (process: ProjectData) => (
+        <div className="flex items-center">
+          {process.type.includes("pdf") ? (
+            <Tooltip content="PDF">
+              <FileIcon className="mr-2 h-4 w-4" />
+            </Tooltip>
+          ) : process.type.includes("html") ? (
+            <Tooltip content="Website">
+              <LinkIcon className="mr-2 h-4 w-4" />
+            </Tooltip>
+          ) : null}
+          {process.filename}
+        </div>
+      ),
+    },
     { header: "Size", accessor: "size" },
     {
-      header: "Uploaded at",
-      accessor: "created_at",
+      header: "Last modified",
+      accessor: "updated_at",
       label: (process: ProjectData) => (
         <DateLabel dateString={process.created_at} />
       ),
@@ -255,7 +264,7 @@ export default function Project() {
       </div>
 
       {isLoading || isAssetsLoading ? (
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <PageLoader />
       ) : (
         <div ref={scrollRef}>
           <TabList
@@ -299,47 +308,33 @@ export default function Project() {
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
                 />
-              ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                  {assets &&
-                    assets.map((asset: any) => (
-                      <ContextMenu key={asset.id}>
-                        <ContextMenuTrigger>
-                          <File
-                            key={asset.id}
-                            name={asset.filename}
-                            onClick={() => handleFileClick(asset)}
-                          />
-                        </ContextMenuTrigger>
-
-                        <ContextMenuContent className="bg-white">
-                          <ContextMenuItem
-                            onClick={() => {
-                              setDeletedId(asset.id);
-                              setIsDeleteModalOpen(true);
-                            }}
-                          >
-                            <TrashIcon className="mr-2 h-4 w-4" />
-                            Delete
-                          </ContextMenuItem>
-                        </ContextMenuContent>
-                      </ContextMenu>
-                    ))}
-
-                  <FileUploadCard
-                    onFileSelect={handleFileUpload}
-                    isLoading={uploadingFile}
-                  />
-                </div>
               ) : (
                 <Table
                   data={assets || []}
                   columns={columns}
-                  onRowClick={(row) => handleFileClick(row)}
-                  onDelete={(id: string) => {
-                    setDeletedId(id);
-                    setIsDeleteModalOpen(true);
-                  }}
+                  onRowClick={(row) => openPreview(row)}
+                  actions={[
+                    {
+                      label: "Preview",
+                      icon: <SearchIcon className="mr-2 h-4 w-4" />,
+                      onClick: (row) => openPreview(row),
+                    },
+                    {
+                      label: "Download",
+                      icon: <DownloadIcon className="mr-2 h-4 w-4" />,
+                      onClick: (row) => {
+                        startDownload(row);
+                      },
+                    },
+                    {
+                      label: "Delete",
+                      icon: <TrashIcon className="mr-2 h-4 w-4" />,
+                      onClick: (row) => {
+                        setDeletedId(row.id);
+                        setIsDeleteModalOpen(true);
+                      },
+                    },
+                  ]}
                   uploadingFiles={uploadingFiles}
                   uploadedFiles={uploadedFiles}
                   isAssetsLoading={isAssetsLoading}
@@ -378,7 +373,7 @@ export default function Project() {
           <Drawer
             isOpen={currentAssetPreview !== null}
             onClose={() => setCurrentAssetPreview(null)}
-            title={"Preview"}
+            title={currentAsset?.filename}
           >
             {currentAssetPreview && project && (
               <AssetViewer

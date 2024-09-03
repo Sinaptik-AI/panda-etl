@@ -19,6 +19,7 @@ import { GetProcessSteps, processApiUrl } from "@/services/processes";
 import Tooltip from "@/components/ui/Tooltip";
 import { truncateTextFromCenter } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import PageLoader from "@/components/ui/PageLoader";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -164,7 +165,7 @@ export default function Process() {
       )}
 
       {isLoading ? (
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <PageLoader />
       ) : errorMessage ? (
         <div>{errorMessage}</div>
       ) : (
@@ -192,9 +193,7 @@ export default function Process() {
           <div className="space-y-6">
             <div>
               {isLoadingProcessStep ? (
-                <div className="flex justify-center items-center h-40">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <PageLoader />
               ) : isErrorProcessStep ? (
                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
                   <p className="font-bold">

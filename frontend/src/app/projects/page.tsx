@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Title from "@/components/ui/Title";
 import { Button } from "@/components/ui/Button";
-import { Loader2, PlusIcon, GridIcon, ListIcon, TrashIcon } from "lucide-react";
+import {
+  PlusIcon,
+  GridIcon,
+  ListIcon,
+  TrashIcon,
+  FolderIcon,
+} from "lucide-react";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProjects } from "@/services/projects";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +28,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
+import PageLoader from "@/components/ui/PageLoader";
 
 export default function Projects() {
   const router = useRouter();
@@ -76,21 +83,23 @@ export default function Projects() {
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 
   const viewOptions = [
-    { value: "grid", label: "Grid", icon: GridIcon },
-    { value: "table", label: "Table", icon: ListIcon },
+    { value: "grid", icon: GridIcon },
+    { value: "table", icon: ListIcon },
   ];
 
   const columns: Column<ProjectData>[] = [
-    { header: "Project name", accessor: "name" },
     {
-      header: "Created at",
-      accessor: "created_at",
+      header: "Project name",
+      accessor: "name",
       label: (value: ProjectData) => (
-        <DateLabel dateString={value.created_at} />
+        <div className="flex items-center">
+          <FolderIcon className="mr-2 h-4 w-4" />
+          <span>{value.name}</span>
+        </div>
       ),
     },
     {
-      header: "Updated at",
+      header: "Last modified",
       accessor: "updated_at",
       label: (value: ProjectData) => (
         <DateLabel dateString={value.updated_at} />
@@ -138,7 +147,7 @@ export default function Projects() {
           </Button>
         </div>
       </div>
-      {isLoading && <Loader2 className="w-8 h-8 animate-spin" />}
+      {isLoading && <PageLoader />}
       {projects.length > 0 && (
         <>
           {viewMode === "grid" ? (
@@ -172,11 +181,17 @@ export default function Projects() {
               data={projects}
               columns={columns}
               onRowClick={(project) => handleProjectClick(project.id)}
-              onDelete={(id: string) => {
-                const project = projects.find((obj) => obj.id === id);
-                setDeletedProject(project !== undefined ? project : null);
-                setIsDeleteModalOpen(true);
-              }}
+              actions={[
+                {
+                  label: "Delete",
+                  icon: <TrashIcon className="mr-2 h-4 w-4" />,
+                  onClick: (id: string) => {
+                    const project = projects.find((obj) => obj.id === id);
+                    setDeletedProject(project !== undefined ? project : null);
+                    setIsDeleteModalOpen(true);
+                  },
+                },
+              ]}
             />
           )}
           {totalPages > 1 && (

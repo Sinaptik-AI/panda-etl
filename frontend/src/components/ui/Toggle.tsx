@@ -3,7 +3,7 @@ import { LucideIcon } from "lucide-react";
 
 interface ToggleOption {
   value: string;
-  label: string;
+  label?: string;
   icon?: LucideIcon;
 }
 
@@ -32,8 +32,8 @@ const Toggle: React.FC<ToggleProps> = ({
           }`}
           onClick={() => onChange(option.value)}
         >
-          {option.icon && <option.icon className="w-5 h-5 mr-2" />}
-          {option.label}
+          {option.icon && <option.icon className="w-5 h-5" />}
+          {option.label && <span className="ml-2">{option.label}</span>}
         </button>
       ))}
     </div>

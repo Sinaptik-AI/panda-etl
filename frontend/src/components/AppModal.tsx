@@ -3,7 +3,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import { Button } from "./ui/Button";
-import { Loader } from "./ui/Loader";
+import { Loader2 } from "lucide-react";
 
 interface IProps {
   closeModal?: () => void;
@@ -24,7 +24,7 @@ export const AppModal = ({
   actionButtonText,
   isLoading,
   isFooter = true,
-  title = ""
+  title = "",
 }: IProps) => {
   return (
     <>
@@ -38,8 +38,7 @@ export const AppModal = ({
         >
           <div
             className={`rounded-[5px] relative bg-white md:px-4 px-2 py-4  shadow-lg border dark:bg-darkMain dark:text-white ${modalWidth}`}
-          > 
-
+          >
             <div className="flex  justify-between mb-4">
               <div className="text-lg text-black font-semibold">{title}</div>
 
@@ -74,12 +73,11 @@ export const AppModal = ({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader height="h-6" width="w-10" />
+                    <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
                     actionButtonText
                   )}
                 </Button>
-                
               </div>
             )}
           </div>

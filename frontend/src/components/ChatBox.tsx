@@ -6,10 +6,8 @@ import { chat, chatStatus } from "@/services/chat";
 import LogoDark from "@/icons/LogoDark";
 import ChatLoader from "./ChatLoader";
 import { useQuery } from "@tanstack/react-query";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
 import { motion } from "framer-motion";
+import ChatBubble from "@/components/ui/ChatBubble";
 
 export const NoChatPlaceholder = () => {
   return (
@@ -94,10 +92,6 @@ const ChatBox = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const markify_text = (text: string) => {
-    return text.replace(/\n/g, "<br>");
-  };
-
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 18rem)" }}>
       {isLoading || !chatEnabled ? (
@@ -123,17 +117,11 @@ const ChatBox = ({
                     <LogoDark color="black" width="100%" />
                   </div>
                 )}
-                <div className="p-3 rounded-lg max-w-xl bg-white text-black">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw]}
-                  >
-                    {markify_text(message.text)}
-                  </ReactMarkdown>
-                  <div className="text-xs text-gray-500 mt-2 text-right">
-                    {message.timestamp.toLocaleTimeString()}
-                  </div>
-                </div>
+                <ChatBubble
+                  message={message.text}
+                  timestamp={message.timestamp}
+                  sender={message.sender as "user" | "bot"}
+                />
               </motion.div>
             ))}
             {messages.length === 0 && (
@@ -142,9 +130,11 @@ const ChatBox = ({
                   <LogoDark color="black" width="100%" />
                 </div>
 
-                <div className="p-3 rounded-lg max-w-xl bg-white text-black">
-                  How can I help you today?
-                </div>
+                <ChatBubble
+                  message="Hi! How can I help you today?"
+                  timestamp={new Date()}
+                  sender="bot"
+                />
               </div>
             )}
             {loading && (
