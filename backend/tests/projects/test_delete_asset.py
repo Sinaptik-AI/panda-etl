@@ -34,7 +34,8 @@ def override_get_db(mock_db):
 
 @patch("app.repositories.project_repository.get_project")
 @patch("app.repositories.project_repository.get_asset")
-def test_delete_asset_success(mock_get_asset, mock_get_project, mock_db):
+@patch("app.api.v1.projects.ChromaDB")
+def test_delete_asset_success(mock_chroma, mock_get_asset, mock_get_project, mock_db):
     """Test successful deletion of an asset"""
     mock_project = MagicMock(id=1, deleted_at=None)
     mock_get_project.return_value = mock_project
@@ -90,7 +91,8 @@ def test_delete_asset_not_found(mock_get_asset, mock_get_project, mock_db):
 
 @patch("app.repositories.project_repository.get_project")
 @patch("app.repositories.project_repository.get_asset")
-def test_delete_asset_db_error(mock_get_asset, mock_get_project, mock_db):
+@patch("app.api.v1.projects.ChromaDB")
+def test_delete_asset_db_error(mock_chroma, mock_get_asset, mock_get_project, mock_db):
     """Test deletion when a database error occurs"""
     mock_project = MagicMock(id=1, deleted_at=None)
     mock_get_project.return_value = mock_project

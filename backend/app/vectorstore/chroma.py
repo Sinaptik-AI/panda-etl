@@ -102,7 +102,7 @@ class ChromaDB(VectorStore):
 
         if ids is None and metadata_criteria is not None:
             records_to_delete = self._docs_collection.get(where=metadata_criteria)
-            ids = [record["id"] for record in records_to_delete]
+            ids = records_to_delete["ids"]
 
         self._docs_collection.delete(ids=ids)
         return True

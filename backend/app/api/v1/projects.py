@@ -354,6 +354,8 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
                 status_code=404, detail="File not found in the database"
             )
         asset.deleted_at = datetime.now(tz=timezone.utc)
+        vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
+        vectorstore.delete_docs(metadata_criteria={"doc_id": asset.id})
         db.commit()
         return {"message": "Asset deleted successfully"}
 
