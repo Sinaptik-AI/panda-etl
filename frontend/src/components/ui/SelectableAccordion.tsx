@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { RadioGroupItem } from "./RadioGroup";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface AccordionProps {
   title: string;
@@ -21,15 +21,12 @@ const SelectableAccordion: React.FC<AccordionProps> = ({
   disabledWarning = "Not selectable",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
 
-  return (
+  const accordionContent = (
     <div
-      className={`relative border rounded-lg overflow-hidden ${
+      className={`border rounded-lg overflow-hidden ${
         disabled ? "opacity-50 cursor-not-allowed" : ""
       }`}
-      onMouseEnter={() => disabled && setShowWarning(true)}
-      onMouseLeave={() => setShowWarning(false)}
     >
       <div
         className={`flex items-center justify-between p-4 ${
@@ -64,17 +61,18 @@ const SelectableAccordion: React.FC<AccordionProps> = ({
       </div>
 
       {isOpen && !disabled && <div className="p-4">{children}</div>}
+    </div>
+  );
 
-      {/* Warning Tooltip */}
-      {disabled && showWarning && (
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 mt-2 px-4 py-2 bg-red-500 text-white rounded-md shadow-lg z-10 text-sm">
-          {disabledWarning}
-        </div>
+  return (
+    <div className="relative">
+      {disabled ? (
+        <Tooltip content={disabledWarning}>{accordionContent}</Tooltip>
+      ) : (
+        accordionContent
       )}
     </div>
   );
 };
-
-
 
 export default SelectableAccordion;

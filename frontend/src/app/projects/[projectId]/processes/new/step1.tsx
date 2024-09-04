@@ -1,17 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  FileText,
-  Highlighter,
-  FileInput,
-  Key,
-  ArrowRight,
-  FileSearch,
-} from "lucide-react";
+import { FileText, ArrowRight, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { ProjectData } from "@/interfaces/projects";
 import Tooltip from "@/components/ui/Tooltip";
+import { Input } from "@/components/ui/Input";
 
 type ProcessOption = {
   id: string;
@@ -105,7 +99,7 @@ export const Step1: React.FC<Step1Props> = ({
     <div className="max-w-2xl">
       <div className="mb-6">
         <h4 className="text-lg font-bold mb-2">Process name</h4>
-        <input
+        <Input
           ref={processNameInputRef}
           type="text"
           value={processName}
@@ -117,6 +111,7 @@ export const Step1: React.FC<Step1Props> = ({
           className={`w-full p-2 border rounded ${
             nameError ? "border-red-500" : ""
           }`}
+          autofocus={true}
         />
         {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
       </div>
