@@ -6,6 +6,7 @@ import { Button } from "./ui/Button";
 import { isValidURL } from "@/lib/utils";
 import Drawer from "./ui/Drawer";
 import TabList from "./ui/TabList";
+import { Textarea } from "@/components/ui/Textarea";
 
 interface IProps {
   project_id: string | undefined;
@@ -19,13 +20,13 @@ interface IProps {
 
 const projectTabs = [
   { id: "files", label: "Files" },
-  { id: "url", label: "Websites" },
+  { id: "url", label: "Webpages" },
 ];
 
 const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [textAreaInput, setTextAreaInput] = useState<string>("");
-  const [inputError, setInputError] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("files");
 
   const handleFileSubmit = (fileList: FileList | null) => {
@@ -34,7 +35,7 @@ const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
 
   const handleUrlSubmit = async () => {
     setIsLoading(true);
-    setInputError(null);
+    setInputError("");
 
     const urls = textAreaInput
       .split("\n")
@@ -64,6 +65,10 @@ const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
 
   const onInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaInput(e.target.value);
+
+    if (inputError) {
+      setInputError("");
+    }
   };
 
   return (
@@ -83,28 +88,37 @@ const AssetUploadModal = ({ onSubmit, onCancel, isOpen = true }: IProps) => {
       )}
 
       {activeTab === "url" && (
-        <>
-          <div className="mt-4 text-black mb-4">Website URLs</div>
+        <div className="flex flex-col space-y-6 mt-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              Add webpages to your project
+            </h2>
+            <p className="text-sm text-gray-600">
+              Enter one webpage URL per line in the text area below.
+            </p>
+          </div>
 
-          <div className="flex w-full gap-2 justify-start">
-            <div className="flex-grow text-black">
-              <textarea
-                onChange={onInputChange}
-                value={textAreaInput}
-                className="w-full p-2 border border-gray-300 rounded"
-                placeholder="Paste one or multiple URLs, each on a new line"
-              />
-            </div>
-            {inputError && (
-              <p className="mt-1 text-sm text-red-600">{inputError}</p>
-            )}
-            <div>
+          <div>
+            <Textarea
+              onChange={onInputChange}
+              value={textAreaInput}
+              noMargin={true}
+              placeholder="https://example.com"
+              counter={`
+                  ${
+                    textAreaInput.split("\n").filter((url) => url.trim() !== "")
+                      .length
+                  } URLs`}
+              error={inputError}
+            />
+
+            <div className="flex justify-end">
               <Button onClick={handleUrlSubmit} isLoading={isLoading}>
-                Submit
+                Add webpages
               </Button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </Drawer>
   );
