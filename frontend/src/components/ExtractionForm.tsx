@@ -309,16 +309,15 @@ export default function ExtractionForm({
             Start Process
           </Button>
         </div>
-
-        {displayPsModel && (
-          <ProcessSelectionDrawer
-            isOpen={displayPsModel}
-            processData={processData}
-            onCancel={onCancel}
-            onSubmit={handleProcessTemplate}
-          />
-        )}
       </form>
+      {displayPsModel && (
+        <ProcessSelectionDrawer
+          isOpen={displayPsModel}
+          processData={processData}
+          onCancel={onCancel}
+          onSubmit={handleProcessTemplate}
+        />
+      )}
       {displayAIFieldsModel && (
         <AddFieldsAIDrawer
           isOpen={displayAIFieldsModel}

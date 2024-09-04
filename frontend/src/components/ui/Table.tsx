@@ -77,17 +77,22 @@ export function Table<T>({
     let content: React.ReactNode;
     if (column.label) {
       if (typeof column.label === "function") {
-        content = React.cloneElement(column.label(row) as React.ReactElement, {
-          children: React.Children.map(
-            (column.label(row) as React.ReactElement).props.children,
-            (child) => {
-              if (typeof child === "string") {
-                return truncateTextFromCenter(child);
+        const labelResult = column.label(row);
+        if (React.isValidElement(labelResult)) {
+          content = React.cloneElement(labelResult as React.ReactElement<any>, {
+            children: React.Children.map(
+              (labelResult as React.ReactElement<any>).props.children,
+              (child) => {
+                if (typeof child === "string") {
+                  return truncateTextFromCenter(child);
+                }
+                return child;
               }
-              return child;
-            }
-          ),
-        });
+            ),
+          });
+        } else {
+          content = labelResult;
+        }
       } else {
         content = column.label;
       }
