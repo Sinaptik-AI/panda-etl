@@ -43,6 +43,25 @@ body {
   z-index: 999;
 }
 
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content.expanded {
+  max-height: 1000px;
+  transition: max-height 0.5s ease-in;
+}
+
+.chevron-icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.chevron-icon.up {
+  transform: rotate(180deg);
+}
+
 /* chat loader css */
 
 .chat-bubble {

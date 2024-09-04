@@ -2,7 +2,6 @@
 import { useState, FormEvent, useRef } from "react";
 import {
   ChevronDown,
-  ChevronUp,
   Loader2,
   Play,
   Plus,
@@ -73,7 +72,7 @@ export default function ExtractionForm({
 
     setTimeout(() => {
       fieldRefs.current[newIndex]?.focus();
-    }, 0);
+    }, 300);
   };
 
   const removeField = (index: number) => {
@@ -111,7 +110,7 @@ export default function ExtractionForm({
   const onStartBtnClick = async () => {
     try {
       setStartingProcess(true);
-      await await onStartProcess(fields);
+      await onStartProcess(fields);
       setStartingProcess(false);
     } catch (error) {
       console.error("Error start process:", error);
@@ -172,7 +171,7 @@ export default function ExtractionForm({
       if (newState[index]) {
         setTimeout(() => {
           fieldRefs.current[index]?.focus();
-        }, 0);
+        }, 300);
       }
       return newState;
     });
@@ -184,6 +183,28 @@ export default function ExtractionForm({
 
   return (
     <>
+      <style jsx>{`
+        .collapsible-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+          opacity: 0;
+        }
+
+        .collapsible-content.expanded {
+          max-height: 1000px;
+          opacity: 1;
+          transition: max-height 0.5s ease-in, opacity 0.5s ease-in;
+        }
+
+        .chevron-icon {
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .chevron-icon.up {
+          transform: rotate(180deg);
+        }
+      `}</style>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="mb-8">
           <div className="flex gap-4">
@@ -221,13 +242,19 @@ export default function ExtractionForm({
                 <span className="font-semibold text-lg">
                   {field.key || `Field ${index + 1}`}
                 </span>
-                {expandedFields[index] ? (
-                  <ChevronUp size={24} className="text-gray-600" />
-                ) : (
+                <div
+                  className={`chevron-icon ${
+                    expandedFields[index] ? "up" : ""
+                  }`}
+                >
                   <ChevronDown size={24} className="text-gray-600" />
-                )}
+                </div>
               </div>
-              {expandedFields[index] && (
+              <div
+                className={`collapsible-content ${
+                  expandedFields[index] ? "expanded" : ""
+                }`}
+              >
                 <div className="p-6 space-y-4">
                   <Input
                     id={`field-key-${index}`}
@@ -286,7 +313,7 @@ export default function ExtractionForm({
                     </Button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
           <div
@@ -307,7 +334,7 @@ export default function ExtractionForm({
             isLoading={isLoading}
             disabled={is_fields_empty()}
             icon={ScanEye}
-            variant="light"
+            variant="secondary"
             className="px-6 py-2"
           >
             Preview
