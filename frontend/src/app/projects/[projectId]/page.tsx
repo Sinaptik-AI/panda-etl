@@ -188,7 +188,7 @@ export default function Project() {
             <Tooltip content="PDF" delay={1000}>
               <FileIcon className="mr-2 h-4 w-4" />
             </Tooltip>
-          ) : process.type?.includes("html") ? (
+          ) : process.type?.includes("url") ? (
             <Tooltip content="Website">
               <LinkIcon className="mr-2 h-4 w-4" />
             </Tooltip>

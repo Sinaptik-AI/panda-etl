@@ -69,6 +69,41 @@ export function Table<T>({
     ...data,
   ];
 
+  const renderCellContent = (row: any, column: Column<T>) => {
+    if (row.isUploading || isAssetsLoading) {
+      return "-";
+    }
+
+    let content: React.ReactNode;
+    if (column.label) {
+      if (typeof column.label === "function") {
+        content = React.cloneElement(column.label(row) as React.ReactElement, {
+          children: React.Children.map(
+            (column.label(row) as React.ReactElement).props.children,
+            (child) => {
+              if (typeof child === "string") {
+                return truncateTextFromCenter(child);
+              }
+              return child;
+            }
+          ),
+        });
+      } else {
+        content = column.label;
+      }
+    } else if (typeof column.accessor === "function") {
+      content = column.accessor(row);
+    } else {
+      content = row[column.accessor] ?? "-";
+    }
+
+    if (typeof content === "string") {
+      return truncateTextFromCenter(content);
+    }
+
+    return content;
+  };
+
   return (
     <table className={`min-w-full bg-white ${className} shadow rounded`}>
       <thead>
@@ -122,7 +157,7 @@ export function Table<T>({
                       {row.isUploading || isAssetsLoading ? (
                         colIndex === 0 ? (
                           <div className="flex items-center gap-2">
-                            {row.filename}
+                            {truncateTextFromCenter(row.filename)}
                             <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                           </div>
                         ) : colIndex === columns.length - 1 ? (
@@ -130,17 +165,8 @@ export function Table<T>({
                         ) : (
                           "-"
                         )
-                      ) : column.label ? (
-                        column.label(row)
-                      ) : typeof column.accessor === "function" ? (
-                        column.accessor(row)
                       ) : (
-                        (row.type == "url" && column.accessor == "filename"
-                          ? truncateTextFromCenter(row.details.url, 80)
-                          : (truncateTextFromCenter(
-                              row[column.accessor],
-                              80
-                            ) as React.ReactNode)) ?? "-"
+                        renderCellContent(row, column)
                       )}
                     </td>
                   ))}
@@ -218,7 +244,7 @@ export function Table<T>({
                   {row.isUploading || isAssetsLoading ? (
                     colIndex === 0 ? (
                       <div className="flex items-center gap-2">
-                        {row.filename}
+                        {truncateTextFromCenter(row.filename)}
                         <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                       </div>
                     ) : colIndex === columns.length - 1 ? (
@@ -226,12 +252,8 @@ export function Table<T>({
                     ) : (
                       "-"
                     )
-                  ) : column.label ? (
-                    column.label(row)
-                  ) : typeof column.accessor === "function" ? (
-                    column.accessor(row)
                   ) : (
-                    (row[column.accessor] as React.ReactNode) ?? "-"
+                    renderCellContent(row, column)
                   )}
                 </td>
               ))}

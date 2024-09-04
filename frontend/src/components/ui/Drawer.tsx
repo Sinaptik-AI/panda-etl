@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { truncateTextFromCenter } from "@/lib/utils";
 import { X } from "lucide-react";
 
 interface DrawerProps {
@@ -69,7 +70,7 @@ const Drawer: React.FC<DrawerProps> = ({
                   id="slide-over-heading"
                   className="text-lg font-medium text-gray-900"
                 >
-                  {title}
+                  {truncateTextFromCenter(title, 40)}
                 </h2>
                 <div className="ml-3 h-7 flex items-center">
                   <button

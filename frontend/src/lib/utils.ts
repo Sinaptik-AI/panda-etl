@@ -24,7 +24,10 @@ export const isValidURL = (url: string): boolean => {
   }
 };
 
-export const truncateTextFromCenter = (text: string, maxLength: number) => {
+export const truncateTextFromCenter = (
+  text?: string,
+  maxLength: number = 50
+): string | undefined => {
   if (!text || typeof text !== "string") {
     return text;
   }
@@ -32,9 +35,9 @@ export const truncateTextFromCenter = (text: string, maxLength: number) => {
     return text;
   }
 
-  const partLength = Math.floor((maxLength - 3) / 2);
-  const start = text.slice(0, partLength);
-  const end = text.slice(text.length - partLength);
+  const breakPoint = Math.floor((maxLength - 3) * (3 / 4));
+  const start = text.slice(0, breakPoint);
+  const end = text.slice(text.length - (maxLength - 3 - breakPoint));
 
   return `${start}...${end}`;
 };
