@@ -27,7 +27,8 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   processName,
 }) => {
   const router = useRouter();
-  const [currentAssetPreview, setCurrentAssetPreview] = useState<AssetData | null>(null);
+  const [currentAssetPreview, setCurrentAssetPreview] =
+    useState<AssetData | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
 
   const [fields, setFields] = useState<ExtractionField[]>(
@@ -57,14 +58,17 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   const handleSubmit = async (fields: ExtractionField[]) => {
     setExtractionFields(fields);
     if (assets && assets.length !== 0) {
-      const { data } = await Extract(project.id, assets[currentFileIndex].id, fields);
+      const { data } = await Extract(
+        project.id,
+        assets[currentFileIndex].id,
+        fields
+      );
       if (Array.isArray(data.data)) {
         setExtractionResult(data.data[0]);
       } else {
-          setExtractionResult(data.data);
+        setExtractionResult(data.data);
       }
     }
-    
   };
 
   const handleProcessStart = async (fields: ExtractionField[]) => {
@@ -73,20 +77,20 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
       type: "extract",
       data: {
         fields: fields,
-        output_type: outputType
+        output_type: outputType,
       },
-      project_id: project.id
+      project_id: project.id,
     });
     router.push(`/projects/${project.id}?tab=processes`);
   };
 
   const handlePageChange = (index: number) => {
-    setCurrentFileIndex(index)
-  }
+    setCurrentFileIndex(index);
+  };
 
   useEffect(() => {
     if (assets?.length && project) {
-      setCurrentAssetPreview(assets?.[currentFileIndex])
+      setCurrentAssetPreview(assets?.[currentFileIndex]);
     }
   }, [assets, project, currentFileIndex]);
 
@@ -125,10 +129,15 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
               </div>
             </>
           )}
-          
-          <h2 className="text-2xl font-bold mb-5">Preview</h2>
-          <CustomViewsPaginator totalElements={assets? assets.length: 0} currentIndex={currentFileIndex} onChange={handlePageChange}/>
-          { currentAssetPreview && <AssetViewer project_id={project.id} asset={currentAssetPreview}/> }
+
+          <CustomViewsPaginator
+            totalElements={assets ? assets.length : 0}
+            currentIndex={currentFileIndex}
+            onChange={handlePageChange}
+          />
+          {currentAssetPreview && (
+            <AssetViewer project_id={project.id} asset={currentAssetPreview} />
+          )}
         </div>
       </div>
     </>

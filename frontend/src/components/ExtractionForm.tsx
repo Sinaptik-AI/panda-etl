@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useRef } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -9,6 +9,8 @@ import {
   ScanEye,
   LayoutTemplate,
   Sparkles,
+  Trash2,
+  Save,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -52,22 +54,26 @@ export default function ExtractionForm({
   const [displayAIFieldsModel, setDisplayAIFieldsModel] =
     useState<boolean>(false);
   const [startingProcess, setStartingProcess] = useState<boolean>(false);
+  const fieldRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const addField = () => {
     const newField: Field = { key: "", description: "", type: "text" };
-    setFields([...fields, newField]);
+    const newIndex = fields.length;
 
-    if (fields.length > 0 && expandedFields[fields.length - 1]) {
-      setExpandedFields((prev) => ({
-        ...prev,
-        [fields.length - 1]: false,
-      }));
-    }
+    setFields((prevFields) => [...prevFields, newField]);
 
-    setExpandedFields((prev) => ({
-      ...prev,
-      [fields.length]: true,
-    }));
+    setExpandedFields((prev) => {
+      const newState = { ...prev };
+      Object.keys(newState).forEach((key) => {
+        newState[Number(key)] = false;
+      });
+      newState[newIndex] = true;
+      return newState;
+    });
+
+    setTimeout(() => {
+      fieldRefs.current[newIndex]?.focus();
+    }, 0);
   };
 
   const removeField = (index: number) => {
@@ -161,7 +167,15 @@ export default function ExtractionForm({
   };
 
   const toggleField = (index: number) => {
-    setExpandedFields({ ...expandedFields, [index]: !expandedFields[index] });
+    setExpandedFields((prev) => {
+      const newState = { ...prev, [index]: !prev[index] };
+      if (newState[index]) {
+        setTimeout(() => {
+          fieldRefs.current[index]?.focus();
+        }, 0);
+      }
+      return newState;
+    });
   };
 
   const validateKey = (key: string) => {
@@ -170,19 +184,17 @@ export default function ExtractionForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Fields</h2>
-          <div className="flex gap-2">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="mb-8">
+          <div className="flex gap-4">
             <Button
               type="button"
               icon={Sparkles}
               onClick={handleAIFieldsBtn}
               variant="light"
-              className="flex items-center text-md"
-              iconStyles="w-4 h-4 mr-2"
+              iconStyles="w-5 h-5 mr-2"
             >
-              Add fields with AI
+              Generate Fields with AI
             </Button>
 
             <Button
@@ -190,51 +202,51 @@ export default function ExtractionForm({
               icon={LayoutTemplate}
               onClick={handleProcessSuggestion}
               variant="light"
-              className="flex items-center text-md"
-              iconStyles="w-4 h-4 mr-2"
+              iconStyles="w-5 h-5 mr-2"
             >
-              Use process as templates
+              Use Process Templates
             </Button>
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {fields?.map((field, index) => (
             <div
               key={index}
-              className="bg-gray-50 rounded shadow-lg overflow-hidden"
+              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg"
             >
               <div
-                className="flex justify-between items-center px-5 py-3 cursor-pointer"
+                className="flex justify-between items-center px-6 py-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
                 onClick={() => toggleField(index)}
               >
-                <span>{field.key || `Field ${index + 1}`}</span>
+                <span className="font-semibold text-lg">
+                  {field.key || `Field ${index + 1}`}
+                </span>
                 {expandedFields[index] ? (
-                  <ChevronUp size={20} />
+                  <ChevronUp size={24} className="text-gray-600" />
                 ) : (
-                  <ChevronDown size={20} />
+                  <ChevronDown size={24} className="text-gray-600" />
                 )}
               </div>
-              <div
-                className={`field-content ${
-                  expandedFields[index] ? "expanded" : ""
-                }`}
-              >
-                <div className="p-4">
+              {expandedFields[index] && (
+                <div className="p-6 space-y-4">
                   <Input
                     id={`field-key-${index}`}
-                    label="Field Key"
+                    ref={(el: HTMLInputElement | null) => {
+                      fieldRefs.current[index] = el;
+                    }}
+                    label="Field key"
                     value={field.key}
                     onChange={(e) => updateField(index, "key", e.target.value)}
                     required
+                    error={
+                      field.key && !validateKey(field.key)
+                        ? "Key can only contain letters, numbers, and underscores"
+                        : ""
+                    }
                   />
-                  {field.key && !validateKey(field.key) && (
-                    <p className="text-red-500 text-sm">
-                      Key can only contain letters, numbers, and underscores.
-                    </p>
-                  )}
                   <Textarea
                     id={`field-description-${index}`}
-                    label="Field Description"
+                    label="Field description"
                     value={field.description}
                     onChange={(e) =>
                       updateField(index, "description", e.target.value)
@@ -243,23 +255,23 @@ export default function ExtractionForm({
                   />
                   <Select
                     id={`field-type-${index}`}
-                    label="Field Type"
+                    label="Field type"
                     value={field.type}
                     onChange={(e) =>
                       updateField(index, "type", e.target.value as FieldType)
                     }
                     options={FIELD_TYPES.map((type) => ({
                       value: type,
-                      label: type,
+                      label: type.charAt(0).toUpperCase() + type.slice(1),
                     }))}
                   />
-                  <div className="flex justify-end space-x-2 mt-2">
+                  <div className="flex justify-end space-x-3 mt-4">
                     <Button
                       type="button"
                       onClick={() => removeField(index)}
-                      variant="danger"
-                      outlined={true}
+                      variant="light"
                       className="text-sm"
+                      icon={Trash2}
                     >
                       Remove
                     </Button>
@@ -268,34 +280,35 @@ export default function ExtractionForm({
                       onClick={() => toggleField(index)}
                       variant="primary"
                       className="text-sm"
+                      icon={Save}
                     >
                       Save
                     </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
-
-          <div className="bg-blue-50 rounded-lg shadow-lg border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300">
-            <div
-              className="flex justify-between items-center px-5 py-4 cursor-pointer"
-              onClick={addField}
-            >
-              <span className="text-[16px] font-semibold text-primary">
+          <div
+            className="bg-blue-50 rounded-lg shadow-md border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300 cursor-pointer"
+            onClick={addField}
+          >
+            <div className="flex justify-between items-center px-6 py-4">
+              <span className="text-lg font-semibold text-blue-600">
                 Add new field
               </span>
-              <Plus className="text-primary" size={24} />
+              <Plus className="text-blue-600" size={24} />
             </div>
           </div>
         </div>
-        <div className="text-right space-x-4">
+        <div className="flex justify-end space-x-4 mt-8">
           <Button
             type="submit"
             isLoading={isLoading}
             disabled={is_fields_empty()}
             icon={ScanEye}
             variant="light"
+            className="px-6 py-2"
           >
             Preview
           </Button>
@@ -305,6 +318,7 @@ export default function ExtractionForm({
             icon={startingProcess ? Loader2 : Play}
             disabled={is_fields_empty()}
             variant="primary"
+            className="px-6 py-2"
           >
             Start Process
           </Button>
