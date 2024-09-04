@@ -169,155 +169,156 @@ export default function ExtractionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2">Fields</h2>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            icon={Sparkles}
-            onClick={handleAIFieldsBtn}
-            variant="light"
-            className="flex items-center text-md"
-            iconStyles="w-4 h-4 mr-2"
-          >
-            Add fields with AI
-          </Button>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Fields</h2>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              icon={Sparkles}
+              onClick={handleAIFieldsBtn}
+              variant="light"
+              className="flex items-center text-md"
+              iconStyles="w-4 h-4 mr-2"
+            >
+              Add fields with AI
+            </Button>
 
-          <Button
-            type="button"
-            icon={LayoutTemplate}
-            onClick={handleProcessSuggestion}
-            variant="light"
-            className="flex items-center text-md"
-            iconStyles="w-4 h-4 mr-2"
-          >
-            Use process as templates
-          </Button>
+            <Button
+              type="button"
+              icon={LayoutTemplate}
+              onClick={handleProcessSuggestion}
+              variant="light"
+              className="flex items-center text-md"
+              iconStyles="w-4 h-4 mr-2"
+            >
+              Use process as templates
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="space-y-4">
-        {fields?.map((field, index) => (
-          <div
-            key={index}
-            className="bg-gray-50 rounded shadow-lg overflow-hidden"
-          >
+        <div className="space-y-4">
+          {fields?.map((field, index) => (
             <div
-              className="flex justify-between items-center px-5 py-3 cursor-pointer"
-              onClick={() => toggleField(index)}
+              key={index}
+              className="bg-gray-50 rounded shadow-lg overflow-hidden"
             >
-              <span>{field.key || `Field ${index + 1}`}</span>
-              {expandedFields[index] ? (
-                <ChevronUp size={20} />
-              ) : (
-                <ChevronDown size={20} />
-              )}
-            </div>
-            <div
-              className={`field-content ${
-                expandedFields[index] ? "expanded" : ""
-              }`}
-            >
-              <div className="p-4">
-                <Input
-                  id={`field-key-${index}`}
-                  label="Field Key"
-                  value={field.key}
-                  onChange={(e) => updateField(index, "key", e.target.value)}
-                  required
-                />
-                {field.key && !validateKey(field.key) && (
-                  <p className="text-red-500 text-sm">
-                    Key can only contain letters, numbers, and underscores.
-                  </p>
+              <div
+                className="flex justify-between items-center px-5 py-3 cursor-pointer"
+                onClick={() => toggleField(index)}
+              >
+                <span>{field.key || `Field ${index + 1}`}</span>
+                {expandedFields[index] ? (
+                  <ChevronUp size={20} />
+                ) : (
+                  <ChevronDown size={20} />
                 )}
-                <Textarea
-                  id={`field-description-${index}`}
-                  label="Field Description"
-                  value={field.description}
-                  onChange={(e) =>
-                    updateField(index, "description", e.target.value)
-                  }
-                  rows={3}
-                />
-                <Select
-                  id={`field-type-${index}`}
-                  label="Field Type"
-                  value={field.type}
-                  onChange={(e) =>
-                    updateField(index, "type", e.target.value as FieldType)
-                  }
-                  options={FIELD_TYPES.map((type) => ({
-                    value: type,
-                    label: type,
-                  }))}
-                />
-                <div className="flex justify-end space-x-2 mt-2">
-                  <Button
-                    type="button"
-                    onClick={() => removeField(index)}
-                    variant="danger"
-                    outlined={true}
-                    className="text-sm"
-                  >
-                    Remove
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => toggleField(index)}
-                    variant="primary"
-                    className="text-sm"
-                  >
-                    Save
-                  </Button>
+              </div>
+              <div
+                className={`field-content ${
+                  expandedFields[index] ? "expanded" : ""
+                }`}
+              >
+                <div className="p-4">
+                  <Input
+                    id={`field-key-${index}`}
+                    label="Field Key"
+                    value={field.key}
+                    onChange={(e) => updateField(index, "key", e.target.value)}
+                    required
+                  />
+                  {field.key && !validateKey(field.key) && (
+                    <p className="text-red-500 text-sm">
+                      Key can only contain letters, numbers, and underscores.
+                    </p>
+                  )}
+                  <Textarea
+                    id={`field-description-${index}`}
+                    label="Field Description"
+                    value={field.description}
+                    onChange={(e) =>
+                      updateField(index, "description", e.target.value)
+                    }
+                    rows={3}
+                  />
+                  <Select
+                    id={`field-type-${index}`}
+                    label="Field Type"
+                    value={field.type}
+                    onChange={(e) =>
+                      updateField(index, "type", e.target.value as FieldType)
+                    }
+                    options={FIELD_TYPES.map((type) => ({
+                      value: type,
+                      label: type,
+                    }))}
+                  />
+                  <div className="flex justify-end space-x-2 mt-2">
+                    <Button
+                      type="button"
+                      onClick={() => removeField(index)}
+                      variant="danger"
+                      outlined={true}
+                      className="text-sm"
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => toggleField(index)}
+                      variant="primary"
+                      className="text-sm"
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <div className="bg-blue-50 rounded-lg shadow-lg border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300">
-          <div
-            className="flex justify-between items-center px-5 py-4 cursor-pointer"
-            onClick={addField}
-          >
-            <span className="text-[16px] font-semibold text-primary">
-              Add new field
-            </span>
-            <Plus className="text-primary" size={24} />
+          <div className="bg-blue-50 rounded-lg shadow-lg border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300">
+            <div
+              className="flex justify-between items-center px-5 py-4 cursor-pointer"
+              onClick={addField}
+            >
+              <span className="text-[16px] font-semibold text-primary">
+                Add new field
+              </span>
+              <Plus className="text-primary" size={24} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="text-right space-x-4">
-        <Button
-          type="submit"
-          isLoading={isLoading}
-          disabled={is_fields_empty()}
-          icon={ScanEye}
-          variant="light"
-        >
-          Preview
-        </Button>
-        <Button
-          type="button"
-          onClick={onStartBtnClick}
-          icon={startingProcess ? Loader2 : Play}
-          disabled={is_fields_empty()}
-          variant="primary"
-        >
-          Start Process
-        </Button>
-      </div>
+        <div className="text-right space-x-4">
+          <Button
+            type="submit"
+            isLoading={isLoading}
+            disabled={is_fields_empty()}
+            icon={ScanEye}
+            variant="light"
+          >
+            Preview
+          </Button>
+          <Button
+            type="button"
+            onClick={onStartBtnClick}
+            icon={startingProcess ? Loader2 : Play}
+            disabled={is_fields_empty()}
+            variant="primary"
+          >
+            Start Process
+          </Button>
+        </div>
 
-      {displayPsModel && (
-        <ProcessSelectionDrawer
-          isOpen={displayPsModel}
-          processData={processData}
-          onCancel={onCancel}
-          onSubmit={handleProcessTemplate}
-        />
-      )}
-
+        {displayPsModel && (
+          <ProcessSelectionDrawer
+            isOpen={displayPsModel}
+            processData={processData}
+            onCancel={onCancel}
+            onSubmit={handleProcessTemplate}
+          />
+        )}
+      </form>
       {displayAIFieldsModel && (
         <AddFieldsAIDrawer
           isOpen={displayAIFieldsModel}
@@ -326,6 +327,6 @@ export default function ExtractionForm({
           onCancel={onAIFieldBtnClose}
         />
       )}
-    </form>
+    </>
   );
 }

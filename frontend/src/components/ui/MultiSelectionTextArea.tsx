@@ -1,10 +1,11 @@
-import React, { useState, ChangeEvent, KeyboardEvent } from 'react';
-import Chip from './Chip';
+import React, { useState, ChangeEvent, KeyboardEvent } from "react";
+import Chip from "@/components/ui/Chip";
+import { Textarea } from "@/components/ui/Textarea";
 
 interface TextInputProps {
   placeholder?: string;
   onUpdate: (items: string[]) => void;
-  validate_text?: (value: string) => string|null;
+  validate_text?: (value: string) => string | null;
 }
 
 interface TextInputState {
@@ -13,11 +14,15 @@ interface TextInputState {
   error: string;
 }
 
-const MultiSelectionTextArea: React.FC<TextInputProps> = ({ placeholder = 'Type here...', onUpdate, validate_text }) => {
+const MultiSelectionTextArea: React.FC<TextInputProps> = ({
+  placeholder = "Type here...",
+  onUpdate,
+  validate_text,
+}) => {
   const [state, setState] = useState<TextInputState>({
-    inputValue: '',
+    inputValue: "",
     items: [],
-    error: '',
+    error: "",
   });
 
   const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -25,14 +30,17 @@ const MultiSelectionTextArea: React.FC<TextInputProps> = ({ placeholder = 'Type 
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' || event.key === ',') {
+    if (event.key === "Enter" || event.key === ",") {
       event.preventDefault(); // Prevent default behavior
 
       const { inputValue, items } = state;
-      const values = inputValue.split(',').map(value => value.trim()).filter(value => value !== '');
+      const values = inputValue
+        .split(",")
+        .map((value) => value.trim())
+        .filter((value) => value !== "");
 
       let newItems = [...items];
-      let error = '';
+      let error = "";
 
       for (const value of values) {
         // Validate the input value if validate_text function is provided
@@ -53,42 +61,41 @@ const MultiSelectionTextArea: React.FC<TextInputProps> = ({ placeholder = 'Type 
 
       // Clear the error message and add the input values to items if they pass validation
       setState({
-        inputValue: '',
+        inputValue: "",
         items: newItems,
-        error: '', // Clear error if validation is successful
+        error: "",
       });
-      onUpdate(newItems); // Call the onUpdate callback with the updated list
+      onUpdate(newItems);
     }
   };
 
   const handleDelete = (index: number) => {
     const newItems = state.items.filter((_, i) => i !== index);
     setState({ ...state, items: newItems });
-    onUpdate(newItems); // Call the onUpdate callback with the updated list
+    onUpdate(newItems);
   };
 
   return (
     <div>
-      <textarea
+      {state.items.length > 0 && (
+        <div className="mb-3">
+          {state.items.map((item, index) => (
+            <Chip
+              key={index}
+              label={item}
+              onDelete={() => handleDelete(index)}
+            />
+          ))}
+        </div>
+      )}
+      <Textarea
         value={state.inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        rows={3}
-        className="border rounded p-2 w-full text-black"
+        error={state.error}
+        noMargin={true}
       />
-      {state.error && (
-        <div className="text-red-500 mt-2">{state.error}</div> // Error message below the text area
-      )}
-      <div className="mt-3">
-        {state.items.map((item, index) => (
-          <Chip
-            key={index}
-            label={item}
-            onDelete={() => handleDelete(index)}
-          />
-        ))}
-      </div>
     </div>
   );
 };
