@@ -18,20 +18,18 @@ const ConfirmationDialog = ({
   onSubmit,
   isLoading,
   actionButtonText = "Yes",
-  acceptanceString = null 
+  acceptanceString = null,
 }: IProps) => {
-
   const [typedData, setTypedData] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const handleSubmit = ()  => {
-
+  const handleSubmit = () => {
     if (acceptanceString && acceptanceString !== typedData) {
-      setError("Type the requested string to confirm")
-      return
+      setError("Type the requested string to confirm");
+      return;
     }
-    onSubmit && onSubmit()
-  }
+    onSubmit && onSubmit();
+  };
 
   return (
     <AppModal
@@ -39,23 +37,20 @@ const ConfirmationDialog = ({
       actionButtonText={actionButtonText}
       handleSubmit={handleSubmit}
       isLoading={isLoading}
-      modalWidth="w-[600px]"
+      size="lg"
+      title="Confirmation"
     >
-      
-      <h4 className="my-4 sm:text-sm md:text-lg text-center text-black">
-        {text}
-      </h4>
-      {
-        acceptanceString && <div className="text-black"><Input
-        value={typedData}
-        onChange={(e) => setTypedData(e.target.value)}
-        placeholder="Type to confirm"
-      />
-      </div>
-      }
-      {
-        acceptanceString && error && <p className="mt-1 text-sm text-red-600">{error}</p>
-      }
+      <p className="text-lg text-gray-700 mb-4">{text}</p>
+      {acceptanceString && (
+        <div className="mb-4">
+          <Input
+            value={typedData}
+            onChange={(e) => setTypedData(e.target.value)}
+            placeholder="Type to confirm"
+          />
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        </div>
+      )}
     </AppModal>
   );
 };

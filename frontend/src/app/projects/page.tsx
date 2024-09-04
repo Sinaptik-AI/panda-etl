@@ -206,7 +206,7 @@ export default function Projects() {
 
       {isDeleteModalOpen && (
         <ConfirmationDialog
-          text={`All related files and processes will be permanently removed. To confirm the deletion of this project and its associated data, please type 'delete ${deletedProject?.name}'.`}
+          text={`This action will permanently remove all associated files and processes. To confirm the deletion of '${deletedProject?.name}' and its data, please type 'delete ${deletedProject?.name}'.`}
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}

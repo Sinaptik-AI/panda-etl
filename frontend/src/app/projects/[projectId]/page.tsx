@@ -387,7 +387,7 @@ export default function Project() {
 
       {isDeleteModalOpen && (
         <ConfirmationDialog
-          text={`Are you sure you want to delete this Asset?`}
+          text="Are you sure you want to delete this asset?"
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}

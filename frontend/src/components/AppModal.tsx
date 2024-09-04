@@ -1,69 +1,64 @@
 "use client";
 import React from "react";
 import { createPortal } from "react-dom";
-import { AiOutlineClose } from "react-icons/ai";
+import { X, Loader2 } from "lucide-react";
 import { Button } from "./ui/Button";
-import { Loader2 } from "lucide-react";
 
 interface IProps {
   closeModal?: () => void;
   handleSubmit?: () => void;
   children: React.ReactNode;
-  modalWidth?: string;
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   actionButtonText?: string;
   isLoading?: boolean;
   isFooter?: boolean;
   title?: string;
 }
 
+const modalSizes = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  full: "max-w-full",
+};
+
 export const AppModal = ({
   closeModal,
   children,
-  modalWidth,
+  size = "md",
   handleSubmit,
   actionButtonText,
   isLoading,
   isFooter = true,
   title = "",
 }: IProps) => {
+  const modalWidth = modalSizes[size] || modalSizes.md;
+
   return (
     <>
       {createPortal(
-        <div
-          className="modal-container"
-          // onClick={(e: any) => {
-          //   if (e.target.className === "modal-container")
-          //     closeModal && closeModal();
-          // }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
           <div
-            className={`rounded-[5px] relative bg-white md:px-4 px-2 py-4  shadow-lg border dark:bg-darkMain dark:text-white ${modalWidth}`}
+            className={`relative rounded-lg bg-white p-6 shadow-xl transition-all ${modalWidth}`}
           >
-            <div className="flex  justify-between mb-4">
-              <div className="text-lg text-black font-semibold">{title}</div>
-
-              <span
-                className=" cursor-pointer "
-                onClick={() => {
-                  closeModal && closeModal();
-                }}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
               >
-                <AiOutlineClose
-                  className="text-gray-500 hover:text-black"
-                  size="1.5em"
-                />
-              </span>
+                <X size={24} />
+              </button>
             </div>
-
-            <div className="mb-7 w-full">{children}</div>
+            <div className="mb-6">{children}</div>
             {isFooter && (
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex justify-end space-x-2">
                 <Button
                   type="button"
                   disabled={isLoading}
                   onClick={closeModal}
-                  variant="danger"
-                  outlined
+                  variant="light"
                 >
                   Cancel
                 </Button>
@@ -73,10 +68,9 @@ export const AppModal = ({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    actionButtonText
-                  )}
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  ) : null}
+                  {actionButtonText}
                 </Button>
               </div>
             )}

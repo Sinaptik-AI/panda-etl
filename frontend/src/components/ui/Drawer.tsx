@@ -44,7 +44,7 @@ const Drawer: React.FC<DrawerProps> = ({
     >
       <div className="absolute inset-0 overflow-hidden">
         <div
-          className={`absolute inset-0 bg-black transition-opacity duration-300 ease-in-out ${
+          className={`absolute inset-0 bg-black transition-opacity duration-300 ease-in-out backdrop-blur-sm ${
             isAnimating ? "bg-opacity-50" : "bg-opacity-0"
           }`}
           onClick={onClose}
