@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { ProcessDetailsResponse, ProcessStatus } from "@/interfaces/processes";
 import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
@@ -13,10 +13,8 @@ import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { useProcessStep } from "@/hooks/useProcessStep";
 import Accordion from "@/components/ui/Accordion";
-import Link from "next/link";
 import { BASE_API_URL } from "@/constants";
 import { GetProcessSteps, processApiUrl } from "@/services/processes";
-import Tooltip from "@/components/ui/Tooltip";
 import { truncateTextFromCenter } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import PageLoader from "@/components/ui/PageLoader";
@@ -116,11 +114,7 @@ export default function Process() {
       href: `/projects/${projectId}?processes=true`,
     },
     {
-      label:
-        process &&
-        `${process?.type} - ${
-          process?.started_at && format(process?.started_at, "yyyy-MM-dd HH:mm")
-        }`,
+      label: process && process?.name,
       href: `/projects/${projectId}/processes/${processId}`,
     },
   ];
@@ -136,10 +130,7 @@ export default function Process() {
 
       {process && (
         <div className="flex justify-between items-center mb-8">
-          <Title margin={false}>{`${process?.type} - ${
-            process?.started_at &&
-            format(process?.started_at, "yyyy-MM-dd HH:mm")
-          }`}</Title>
+          <Title margin={false}>{process?.name}</Title>
         </div>
       )}
 
