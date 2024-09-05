@@ -29,6 +29,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/ContextMenu";
 import PageLoader from "@/components/ui/PageLoader";
+import toast from "react-hot-toast";
 
 export default function Projects() {
   const router = useRouter();
@@ -118,9 +119,13 @@ export default function Projects() {
         {
           onSuccess() {
             setIsDeleteModalOpen(false);
+            toast.success(
+              `Project "${deletedProject.name}" has been deleted successfully.`
+            );
           },
           onError(error) {
             console.log(error);
+            toast.error("Failed to delete the project. Please try again.");
           },
         }
       );
@@ -206,14 +211,14 @@ export default function Projects() {
 
       {isDeleteModalOpen && (
         <ConfirmationDialog
-          text={`This action will permanently remove all associated files and processes. To confirm the deletion of '${deletedProject?.name}' and its data, please type 'delete ${deletedProject?.name}'.`}
+          text={`This action will permanently remove all associated files and processes. To confirm the deletion of '${deletedProject?.name}' and its data, please type '${deletedProject?.name}'.`}
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}
           actionButtonText="Confirm"
           isLoading={deleteLoading}
           onSubmit={handleDelete}
-          acceptanceString={`delete ${deletedProject?.name}`}
+          acceptanceString={deletedProject?.name}
         />
       )}
     </>

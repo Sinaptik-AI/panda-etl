@@ -6,6 +6,7 @@ import { ScrollProvider } from "@/context/ScrollContext";
 import Sidebar from "@/components/ui/Sidebar";
 import Navbar from "@/components/ui/Navbar";
 import { ReactQueryClientProvider } from "@/components/ReactQueryClientProvider";
+import { Toaster } from "react-hot-toast";
 import "@/app/style/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,6 +26,7 @@ export default function RootLayout({
     <ReactQueryClientProvider>
       <html lang="en">
         <body className={inter.className}>
+          <Toaster position="top-right" />
           <SidebarProvider>
             <ScrollProvider>
               <div className="flex h-screen bg-gray-50 text-black">
