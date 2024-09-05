@@ -30,7 +30,7 @@ export const Textarea: React.FC<TextareaProps> = ({
       <div className="relative">
         <textarea
           id={id}
-          className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-40 text-sm ${
+          className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none h-40 text-sm ${
             error ? "border-red-500 bg-red-50" : "border-gray-300"
           }`}
           {...props}

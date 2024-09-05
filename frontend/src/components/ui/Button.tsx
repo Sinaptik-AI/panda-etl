@@ -21,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md tranition-all duration-300 ease-in-out";
+    "px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md tranition-all duration-300 ease-in-out font-bold";
 
   const variantStyles = {
     primary: outlined

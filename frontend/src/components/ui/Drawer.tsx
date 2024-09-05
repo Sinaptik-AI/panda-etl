@@ -75,7 +75,7 @@ const Drawer: React.FC<DrawerProps> = ({
                 <div className="ml-3 h-7 flex items-center">
                   <button
                     onClick={onClose}
-                    className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <span className="sr-only">Close panel</span>
                     <X className="h-6 w-6" aria-hidden="true" />

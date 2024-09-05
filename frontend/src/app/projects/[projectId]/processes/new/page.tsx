@@ -4,7 +4,6 @@ import Head from "next/head";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { Loader2 } from "lucide-react";
 import Title from "@/components/ui/Title";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProject } from "@/services/projects";

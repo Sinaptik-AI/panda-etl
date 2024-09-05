@@ -19,6 +19,7 @@ import { ProcessData, ProcessSuggestionRequest } from "@/interfaces/processes";
 import { ProcessSelectionDrawer } from "./ProcessSelectionDrawer";
 import { ExtractionField } from "@/interfaces/extract";
 import AddFieldsAIDrawer from "./AddFieldsAIDrawer";
+import { Card } from "@/components/ui/Card";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -231,9 +232,10 @@ export default function ExtractionForm({
         </div>
         <div className="space-y-6">
           {fields?.map((field, index) => (
-            <div
+            <Card
               key={index}
-              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg"
+              size="nopadding"
+              className="overflow-hidden border border-gray-200"
             >
               <div
                 className="flex justify-between items-center px-6 py-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
@@ -314,7 +316,7 @@ export default function ExtractionForm({
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
           <div
             className="bg-blue-50 rounded-lg shadow-md border-2 border-blue-200 hover:bg-blue-100 transition-colors duration-300 cursor-pointer"

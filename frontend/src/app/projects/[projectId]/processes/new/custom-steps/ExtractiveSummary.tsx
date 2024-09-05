@@ -17,6 +17,7 @@ import AssetViewer from "@/components/AssetViewer";
 import CustomViewsPaginator from "@/components/CustomViewsPaginator";
 import Tooltip from "@/components/ui/Tooltip";
 import Chip from "@/components/ui/Chip";
+import { Card } from "@/components/ui/Card";
 
 interface ExtractiveSummaryProps {
   project: ProjectData;
@@ -241,7 +242,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg p-6">
+        <Card className="overflow-hidden border border-gray-200">
           <div>
             <Select
               label="Summary length"
@@ -331,7 +332,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         <div className="flex justify-end">
           <Button type="submit" icon={Play}>

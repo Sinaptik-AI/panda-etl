@@ -47,8 +47,8 @@ const ConfirmationDialog = ({
             value={typedData}
             onChange={(e) => setTypedData(e.target.value)}
             placeholder="Type to confirm"
+            error={error}
           />
-          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         </div>
       )}
     </AppModal>

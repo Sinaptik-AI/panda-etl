@@ -18,6 +18,7 @@ import { GetProcessSteps, processApiUrl } from "@/services/processes";
 import { truncateTextFromCenter } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import PageLoader from "@/components/ui/PageLoader";
+import { Card } from "@/components/ui/Card";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -186,10 +187,7 @@ export default function Process() {
                   ? processStepData.data.output
                   : [processStepData.data.output]
                 ).map((item, index) => (
-                  <div
-                    className="bg-white shadow-md rounded-lg p-6 mb-2"
-                    key={index}
-                  >
+                  <Card className="mb-2" key={index}>
                     {Object.entries(item).map(([key, value]) => (
                       <div key={key} className="mb-4 last:mb-0">
                         <h4 className="text-lg font-semibold text-gray-700 mb-2">
@@ -208,7 +206,7 @@ export default function Process() {
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </Card>
                 ))
               ) : (
                 <p className="text-gray-600">No output data available.</p>

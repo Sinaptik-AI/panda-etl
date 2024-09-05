@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import Title from "@/components/ui/Title";
 import { GetUserData, UpdateUserData } from "@/services/user";
+import { Card } from "@/components/ui/Card";
 
 export interface UserData {
   first_name: string;
@@ -58,62 +59,64 @@ export default function UserSettings() {
     });
   }, []);
 
-  const breadcrumbItems = [{ label: "User Settings", href: "/user-settings" }];
+  const breadcrumbItems = [{ label: "User settings", href: "/user-settings" }];
 
   return (
     <>
       <Head>
-        <title>PandaETL - User Settings</title>
+        <title>PandaETL - User settings</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
 
       <div className="max-w-2xl">
-        <Title>User Settings</Title>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+        <Title>User settings</Title>
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <Input
+                id="first_name"
+                label="First Name"
+                name="first_name"
+                value={userData.first_name}
+                onChange={handleInputChange}
+                required
+              />
+              <Input
+                id="last_name"
+                label="Last Name"
+                name="last_name"
+                value={userData.last_name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
             <Input
-              id="first_name"
-              label="First Name"
-              name="first_name"
-              value={userData.first_name}
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              value={userData.email}
               onChange={handleInputChange}
               required
             />
-            <Input
-              id="last_name"
-              label="Last Name"
-              name="last_name"
-              value={userData.last_name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <Input
-            id="email"
-            name="email"
-            label="Email"
-            type="email"
-            value={userData.email}
-            onChange={handleInputChange}
-            required
-          />
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              "Save Changes"
-            )}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </form>
+        </Card>
       </div>
     </>
   );

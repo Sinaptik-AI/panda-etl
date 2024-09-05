@@ -3,13 +3,11 @@ import { useState, FormEvent } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
-
 interface APIRequestFormProps {
   onSubmit: (email: string) => Promise<void>;
 }
 
 export default function APIRequestForm({ onSubmit }: APIRequestFormProps) {
-
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +15,10 @@ export default function APIRequestForm({ onSubmit }: APIRequestFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateEmail(email)) {
-      setError("Invalid Email Address!")
-      return
+      setError("Invalid Email Address!");
+      return;
     } else {
-      setError("")
+      setError("");
     }
     setIsLoading(true);
     try {
@@ -38,29 +36,25 @@ export default function APIRequestForm({ onSubmit }: APIRequestFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
-      <div className="flex flex-col mt-8 w-96">
+      <div className="flex flex-col mt-8">
         <Input
-            id={`email-field-id`}
-            label="Enter your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        {
-          error.length > 0 && <div className="text-red-700 text-sm font-bold mb-2">{error}</div>
-        }
-        
+          id={`email-field-id`}
+          label="Enter your email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={error}
+          required
+        />
       </div>
 
       <Button
-          type="submit"
-          isLoading={isLoading}
-          disabled={email.length === 0}
-        >
-          Submit
+        type="submit"
+        isLoading={isLoading}
+        disabled={email.length === 0}
+        className="w-full flex items-center justify-center"
+      >
+        Submit
       </Button>
-      
     </form>
   );
 }

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import Title from "@/components/ui/Title";
 import { CreateProject } from "@/services/projects";
 import { useQueryClient } from "@tanstack/react-query";
+import { Card } from "@/components/ui/Card";
 
 export default function NewProject() {
   const queryClient = useQueryClient();
@@ -30,7 +31,10 @@ export default function NewProject() {
     setIsLoading(true);
 
     try {
-      const response = await CreateProject({ name: title, description: description });
+      const response = await CreateProject({
+        name: title,
+        description: description,
+      });
 
       if (!response.data) {
         throw new Error("Failed to create project");
@@ -56,43 +60,44 @@ export default function NewProject() {
   return (
     <>
       <Head>
-        <title>PandaETL - Create New Project</title>
+        <title>PandaETL - Create new project</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
+      <div className="container">
+        <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
 
-      <div className="max-w-2xl">
-        <Title>Create new project</Title>
+        <Title margin={false}>Create new project</Title>
+        <Card className="max-w-2xl bg-white mt-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label="Title"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (e.target.value.trim()) setTitleError("");
+              }}
+              required
+              error={titleError}
+            />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            label="Title"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (e.target.value.trim()) setTitleError("");
-            }}
-            required
-            error={titleError}
-          />
+            <Textarea
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+            />
 
-          <Textarea
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-          />
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            isLoading={isLoading}
-            className="w-full flex items-center justify-center"
-          >
-            Create Project
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              isLoading={isLoading}
+              className="w-full flex items-center justify-center"
+            >
+              {isLoading ? "Creating..." : "Create project"}
+            </Button>
+          </form>
+        </Card>
       </div>
     </>
   );

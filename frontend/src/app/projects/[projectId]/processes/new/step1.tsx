@@ -96,7 +96,7 @@ export const Step1: React.FC<Step1Props> = ({
   const tooltipContent = "This option cannot be changed when using a template.";
 
   return (
-    <div className="max-w-2xl">
+    <Card className="max-w-2xl">
       <div className="mb-6">
         <h4 className="text-lg font-bold mb-2">Process name</h4>
         <Input
@@ -108,12 +108,9 @@ export const Step1: React.FC<Step1Props> = ({
             if (nameError) validateName();
           }}
           placeholder="Enter process name"
-          className={`w-full p-2 border rounded ${
-            nameError ? "border-red-500" : ""
-          }`}
           autofocus={true}
+          error={nameError}
         />
-        {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
       </div>
 
       <p className="text-gray-500">{project?.description}</p>
@@ -132,14 +129,15 @@ export const Step1: React.FC<Step1Props> = ({
                 }
               >
                 <Card
-                  className={`p-4 cursor-pointer ${
+                  size="small"
+                  className={`cursor-pointer ${
                     option.disabled ||
                     (fromTemplate && option.id !== selectedProcess)
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   } ${
                     selectedProcess === option.id
-                      ? "border-primary border-2"
+                      ? "border-indigo-500 border-2"
                       : ""
                   }`}
                   onClick={() => selectProcessType(option)}
@@ -188,6 +186,6 @@ export const Step1: React.FC<Step1Props> = ({
           Proceed <ArrowRight />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };

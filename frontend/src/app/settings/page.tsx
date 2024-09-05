@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import Title from "@/components/ui/Title";
 import { useGetAPIKey, useUpdateAPIKey } from "@/hooks/useUser";
+import { Card } from "@/components/ui/Card";
 
 interface SettingsGroup {
   id: string;
@@ -42,28 +43,30 @@ const ApiKeysSettings: React.FC = () => {
   }, [apiKeyResponse]);
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Input
-        label={"API Key"}
-        type="password"
-        value={apiKey}
-        onChange={(e) => setApiKey(e.target.value)}
-      />
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="mt-6 w-full flex items-center justify-center"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating...
-          </>
-        ) : (
-          "Save Changes"
-        )}
-      </Button>
-    </form>
+    <Card>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Input
+          label={"API key"}
+          type="password"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+        />
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full flex items-center justify-center"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </form>
+    </Card>
   );
 };
 

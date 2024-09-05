@@ -2,7 +2,7 @@ import React, { InputHTMLAttributes, forwardRef } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: string | null;
   noMargin?: boolean;
   containerStyle?: string;
   autofocus?: boolean; // Add autofocus prop
@@ -28,12 +28,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           id={id}
           ref={ref}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none ${
             error
               ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-              : "border-gray-300"
+              : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
           }`}
-          autoFocus={autofocus} // Add autoFocus attribute
+          autoFocus={autofocus}
           {...props}
         />
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

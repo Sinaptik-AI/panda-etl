@@ -2,7 +2,8 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2 } from "lucide-react";
-import { Button } from "./ui/Button";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 
 interface IProps {
   closeModal?: () => void;
@@ -38,10 +39,8 @@ export const AppModal = ({
   return (
     <>
       {createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-          <div
-            className={`relative rounded-lg bg-white p-6 shadow-xl transition-all ${modalWidth}`}
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm text-black">
+          <Card className={`relative ${modalWidth}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
               <button
@@ -74,7 +73,7 @@ export const AppModal = ({
                 </Button>
               </div>
             )}
-          </div>
+          </Card>
         </div>,
         document.body
       )}
