@@ -31,7 +31,7 @@ const TabList: React.FC<TabListProps> = ({
 
   return (
     <div className="mb-4">
-      <div className="flex items-center justify-between border-b border-gray-200">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between border-b border-gray-200">
         <nav className="flex">
           {tabs.map((tab) => (
             <button
@@ -52,7 +52,7 @@ const TabList: React.FC<TabListProps> = ({
             </button>
           ))}
         </nav>
-        {actions}
+        <div className="mb-4 md:mb-0">{actions}</div>
       </div>
     </div>
   );

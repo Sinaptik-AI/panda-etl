@@ -333,7 +333,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                 process.completed_step_count == 0,
             },
             {
-              label: "Download Highlighted PDFs",
+              label: "Download highlighted PDFs",
               icon: (process: ProcessData) => {
                 if (
                   process.status === ProcessStatus.IN_PROGRESS ||
@@ -360,7 +360,8 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
               },
               hidden: (process: ProcessData) =>
                 process.status === ProcessStatus.IN_PROGRESS ||
-                process.completed_step_count == 0,
+                process.completed_step_count == 0 ||
+                process.type !== "extractive_summary",
             },
             {
               label: "View Summary",

@@ -64,7 +64,7 @@ export const ProcessSelectionDrawer: React.FC<ProcessSelectionDrawerProps> = ({
             ))}
           </div>
         </div>
-        <div className="flex sticky bottom-0 bg-white border-t border-gray-200 p-4 gap-4 justify-center">
+        <div className="flex sticky bottom-0 bg-white gap-4 justify-end mt-4">
           <Button onClick={onCancel} variant="light">
             Cancel
           </Button>
