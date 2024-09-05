@@ -10,6 +10,7 @@ import { StartProcess } from "@/services/processes";
 import { useRouter } from "next/navigation";
 import AssetViewer from "@/components/AssetViewer";
 import CustomViewsPaginator from "@/components/CustomViewsPaginator";
+import Drawer from "@/components/ui/Drawer";
 
 interface ExtractionStepProps {
   project: ProjectData;
@@ -30,22 +31,15 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   const [currentAssetPreview, setCurrentAssetPreview] =
     useState<AssetData | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-
   const [fields, setFields] = useState<ExtractionField[]>(
-    templateData ?? [
-      {
-        key: "",
-        description: "",
-        type: "text",
-      },
-    ]
+    templateData ?? [{ key: "", description: "", type: "text" }]
   );
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
     []
   );
   const [extractionResult, setExtractionResult] =
     useState<ExtractionResult | null>(null);
-
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { data: assets, isLoading } = useQuery({
     queryKey: ["project", project.id],
     queryFn: async () => {
@@ -68,6 +62,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
       } else {
         setExtractionResult(data.data);
       }
+      setIsPreviewOpen(true);
     }
   };
 
@@ -110,26 +105,6 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
           }}
         />
         <div className="lg:sticky lg:top-0 lg:self-start">
-          {extractionResult && (
-            <>
-              <h2 className="text-2xl font-bold mb-5">Extraction preview</h2>
-              <div className="bg-white rounded-lg shadow p-4 mb-6">
-                <div className="grid grid-cols-1 gap-4">
-                  {extractionFields.map((field, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded shadow">
-                      <h3 className="font-bold mb-2">{field.key}</h3>
-                      <p>
-                        {Array.isArray(extractionResult[field.key])
-                          ? (extractionResult[field.key] as string[]).join(", ")
-                          : extractionResult[field.key] || "N/A"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
           <CustomViewsPaginator
             totalElements={assets ? assets.length : 0}
             currentIndex={currentFileIndex}
@@ -140,6 +115,29 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
           )}
         </div>
       </div>
+
+      <Drawer
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title="Extraction preview"
+      >
+        {extractionResult && (
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="grid grid-cols-1 gap-4">
+              {extractionFields.map((field, index) => (
+                <div key={index} className="bg-gray-50 p-4 rounded shadow">
+                  <h3 className="font-bold mb-2">{field.key}</h3>
+                  <p>
+                    {Array.isArray(extractionResult[field.key])
+                      ? (extractionResult[field.key] as string[]).join(", ")
+                      : extractionResult[field.key] || "N/A"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Drawer>
     </>
   );
 };
