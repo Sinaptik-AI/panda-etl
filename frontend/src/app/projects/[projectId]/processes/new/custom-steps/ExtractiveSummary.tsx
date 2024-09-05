@@ -16,6 +16,7 @@ import { ProcessSelectionDrawer } from "@/components/ProcessSelectionDrawer";
 import AssetViewer from "@/components/AssetViewer";
 import CustomViewsPaginator from "@/components/CustomViewsPaginator";
 import Tooltip from "@/components/ui/Tooltip";
+import Chip from "@/components/ui/Chip";
 
 interface ExtractiveSummaryProps {
   project: ProjectData;
@@ -226,129 +227,120 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-white p-6 rounded-lg shadow"
-      >
-        <Button
-          type="button"
-          icon={LayoutTemplate}
-          onClick={handleProcessSuggestion}
-          variant="light"
-          className="flex items-center text-md"
-          iconStyles="w-4 h-4 mr-2"
-        >
-          Use process as templates
-        </Button>
-        <Select
-          label="Summary length"
-          id="summary_length"
-          name="summary_length"
-          options={summaryLengthOptions}
-          value={formData.data.summary_length.toString()}
-          onChange={handleSelectChange}
-        />
-
-        <div className="flex items-top space-x-2">
-          <Checkbox
-            name="highlight"
-            label="Highlight key sentences"
-            checked={formData.data.highlight}
-            onChange={handleCheckboxChange}
-          />
-          <Tooltip content="You can only highlight text in standard PDFs. Highlighting isn’t available for scanned documents or websites">
-            <Info className="mb-1 w-4 h-4 inline-block text-primary" />
-          </Tooltip>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="mb-8">
+          <Button
+            type="button"
+            icon={LayoutTemplate}
+            onClick={handleProcessSuggestion}
+            variant="light"
+            className="flex items-center text-md"
+            iconStyles="w-4 h-4 mr-2"
+          >
+            Use process as template
+          </Button>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Focus Topics
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {formData.data.positive_topics.map((topic, index) => (
-              <span
-                key={index}
-                className="bg-blue-100 text-primary text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center"
-              >
-                {topic}
-                <button
-                  type="button"
-                  onClick={() => removeTopic("positive", index)}
-                  className="ml-1 text-primary hover:text-primary-dark"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <Input
-            value={positiveInput}
-            onChange={(e) => setPositiveInput(e.target.value)}
-            onKeyDown={(e) => handleTopicKeyDown(e, "positive")}
-            placeholder="Type and press Enter to add"
-          />
-        </div>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg p-6">
+          <div>
+            <Select
+              label="Summary length"
+              id="summary_length"
+              name="summary_length"
+              options={summaryLengthOptions}
+              value={formData.data.summary_length.toString()}
+              onChange={handleSelectChange}
+            />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Negative Topics
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {formData.data.negative_topics.map((topic, index) => (
-              <span
-                key={index}
-                className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center"
-              >
-                {topic}
-                <button
-                  type="button"
-                  onClick={() => removeTopic("negative", index)}
-                  className="ml-1 text-red-600 hover:text-red-800"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <Input
-            value={negativeInput}
-            onChange={(e) => setNegativeInput(e.target.value)}
-            onKeyDown={(e) => handleTopicKeyDown(e, "negative")}
-            placeholder="Type and press Enter to add"
-          />
-        </div>
-
-        <div>
-          <Checkbox
-            name="show_final_summary"
-            label="Generate comprehensive final summary"
-            checked={formData.data.show_final_summary}
-            onChange={handleCheckboxChange}
-          />
-
-          {formData.data.show_final_summary && (
-            <div>
-              <Textarea
-                name="transformation_prompt"
-                label="Final summary instructions"
-                value={formData.data.transformation_prompt}
-                onChange={handleInputChange}
-                rows={4}
+            <div className="flex items-top space-x-2">
+              <Checkbox
+                name="highlight"
+                label="Highlight key sentences"
+                checked={formData.data.highlight}
+                onChange={handleCheckboxChange}
               />
+              <Tooltip content="You can only highlight text in standard PDFs. Highlighting isn’t available for scanned documents or websites">
+                <Info className="mb-1 w-4 h-4 inline-block text-primary" />
+              </Tooltip>
             </div>
-          )}
+          </div>
+
+          <div className="mt-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Focus topics
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.data.positive_topics.map((topic, index) => (
+                <Chip
+                  key={topic}
+                  label={topic}
+                  onDelete={() => removeTopic("positive", index)}
+                  color="blue"
+                  size="small"
+                />
+              ))}
+            </div>
+            <Input
+              value={positiveInput}
+              onChange={(e) => setPositiveInput(e.target.value)}
+              onKeyDown={(e) => handleTopicKeyDown(e, "positive")}
+              placeholder="Type and press Enter to add"
+            />
+          </div>
+
+          <div className="mt-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Negative topics
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.data.negative_topics.map((topic, index) => (
+                <Chip
+                  key={topic}
+                  label={topic}
+                  onDelete={() => removeTopic("negative", index)}
+                  color="red"
+                  size="small"
+                />
+              ))}
+            </div>
+            <Input
+              value={negativeInput}
+              onChange={(e) => setNegativeInput(e.target.value)}
+              onKeyDown={(e) => handleTopicKeyDown(e, "negative")}
+              placeholder="Type and press Enter to add"
+            />
+          </div>
+
+          <div className="mt-2">
+            <Checkbox
+              name="show_final_summary"
+              label="Generate comprehensive final summary"
+              checked={formData.data.show_final_summary}
+              onChange={handleCheckboxChange}
+            />
+
+            {formData.data.show_final_summary && (
+              <div>
+                <Textarea
+                  name="transformation_prompt"
+                  label="Final summary instructions"
+                  value={formData.data.transformation_prompt}
+                  onChange={handleInputChange}
+                  rows={4}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">
           <Button type="submit" icon={Play}>
-            Start Process
+            Start process
           </Button>
         </div>
       </form>
 
-      <div className="mt-1">
-        <h2 className="text-2xl font-bold mb-5">Preview</h2>
+      <div>
         <CustomViewsPaginator
           totalElements={assets ? assets.length : 0}
           currentIndex={currentFileIndex}

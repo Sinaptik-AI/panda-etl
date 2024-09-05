@@ -81,10 +81,22 @@ export default function NewProcess() {
     }
   };
 
+  const getProcessTitle = () => {
+    if (step > 2) {
+      if (selectedProcess === "extract") {
+        return "New extraction";
+      } else if (selectedProcess === "extractive_summary") {
+        return "New extractive summary";
+      }
+    }
+
+    return "New process";
+  };
+
   return (
     <>
       <Head>
-        <title>{`PandaETL - New process`}</title>
+        <title>{`PandaETL - ${getProcessTitle()}`}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -92,7 +104,7 @@ export default function NewProcess() {
         <Breadcrumb items={breadcrumbItems} />
       </div>
 
-      <Title>New process</Title>
+      <Title>{getProcessTitle()}</Title>
 
       {isLoading ? (
         <PageLoader />

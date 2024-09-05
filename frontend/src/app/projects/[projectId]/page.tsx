@@ -66,6 +66,7 @@ export default function Project() {
     Array<{ sender: string; text: string; timestamp: Date }>
   >([]);
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
+  const [processType, setProcessType] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -74,6 +75,7 @@ export default function Project() {
     queryFn: async () => {
       const response = await GetProject(id);
       const { data: project } = response.data;
+      setProcessType(project.process_type);
       return project as ProjectData;
     },
     refetchInterval: 2000,

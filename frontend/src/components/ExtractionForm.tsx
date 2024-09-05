@@ -225,7 +225,7 @@ export default function ExtractionForm({
               variant="light"
               iconStyles="w-5 h-5 mr-2"
             >
-              Use Process Templates
+              Use process as template
             </Button>
           </div>
         </div>
