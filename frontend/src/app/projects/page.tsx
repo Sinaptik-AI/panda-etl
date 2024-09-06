@@ -190,9 +190,8 @@ export default function Projects() {
                 {
                   label: "Delete",
                   icon: <TrashIcon className="mx-1 h-4 w-4" />,
-                  onClick: (id: string) => {
-                    const project = projects.find((obj) => obj.id === id);
-                    setDeletedProject(project !== undefined ? project : null);
+                  onClick: (project: ProjectData) => {
+                    setDeletedProject(project);
                     setIsDeleteModalOpen(true);
                   },
                 },
@@ -209,16 +208,17 @@ export default function Projects() {
         </>
       )}
 
-      {isDeleteModalOpen && (
+      {isDeleteModalOpen && deletedProject && (
         <ConfirmationDialog
-          text={`This action will permanently remove all associated files and processes. To confirm the deletion of '${deletedProject?.name}' and its data, please type '${deletedProject?.name}'.`}
+          text={`This action will permanently remove all associated files and processes. To confirm the deletion of '${deletedProject.name}' and its data, please type '${deletedProject.name}'.`}
           onCancel={() => {
             setIsDeleteModalOpen(false);
+            setDeletedProject(null);
           }}
           actionButtonText="Confirm"
           isLoading={deleteLoading}
           onSubmit={handleDelete}
-          acceptanceString={deletedProject?.name}
+          acceptanceString={deletedProject.name}
         />
       )}
     </>
