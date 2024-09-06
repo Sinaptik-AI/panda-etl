@@ -146,7 +146,6 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const handleSave = async () => {
     console.log("Saving edited summary:", editedSummary);
     setIsEditing(false);
-    // Implement the actual save logic here
   };
 
   const statusLabel = (process: ProcessData) => {

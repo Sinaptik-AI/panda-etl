@@ -151,3 +151,32 @@ tr .action-icons {
 tr:hover .action-icons {
   opacity: 1;
 }
+
+/* make ag grid withtout border */
+.ag-theme-alpine .ag-root-wrapper {
+  border: none;
+  border-radius: 0;
+}
+
+.ag-theme-alpine .ag-header {
+  border-bottom: none;
+}
+
+.ag-theme-alpine .ag-cell {
+  border-right: none;
+  border-bottom: none;
+}
+
+.ag-theme-alpine .ag-header-cell {
+  border-radius: 0;
+}
+
+.ag-theme-alpine .ag-cell:first-of-type {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.ag-theme-alpine .ag-cell:last-of-type {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}

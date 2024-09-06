@@ -40,6 +40,7 @@ import ChatBox from "@/components/ChatBox";
 import { BASE_STORAGE_URL } from "@/constants";
 import PageLoader from "@/components/ui/PageLoader";
 import toast from "react-hot-toast";
+import RecentTransformations from "@/components/RecentTransformations";
 
 export default function Project() {
   const params = useParams();
@@ -271,6 +272,7 @@ export default function Project() {
         <PageLoader />
       ) : (
         <div ref={scrollRef}>
+          <RecentTransformations projectId={project?.id} />
           <TabList
             tabs={projectTabs}
             onTabChange={(tabId) => setActiveTab(tabId)}
