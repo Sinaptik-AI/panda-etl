@@ -24,6 +24,7 @@ def create_mock_asset(
     updated_at: datetime,
     type: str,
     details: dict,
+    size: int,
 ) -> Asset:
     """Helper function to create a mock Asset object"""
     asset = MagicMock(spec=Asset)
@@ -33,6 +34,7 @@ def create_mock_asset(
     asset.updated_at = updated_at
     asset.type = type
     asset.details = details
+    asset.size = size
     return asset
 
 
@@ -48,6 +50,7 @@ def test_get_assets_success(mock_get_assets, mock_db):
             updated_at=datetime(2023, 8, 10, 12, 0, 0),
             type="pdf",
             details={},
+            size=1,
         ),
         create_mock_asset(
             id=2,
@@ -56,6 +59,7 @@ def test_get_assets_success(mock_get_assets, mock_db):
             updated_at=datetime(2023, 8, 11, 13, 0, 0),
             type="pdf",
             details={},
+            size=1,
         ),
     ]
     total_count = 2
@@ -77,6 +81,7 @@ def test_get_assets_success(mock_get_assets, mock_db):
                 "updated_at": "2023-08-10T12:00:00",
                 "type": "pdf",
                 "details": {},
+                "size": 1,
             },
             {
                 "id": 2,
@@ -85,6 +90,7 @@ def test_get_assets_success(mock_get_assets, mock_db):
                 "updated_at": "2023-08-11T13:00:00",
                 "type": "pdf",
                 "details": {},
+                "size": 1,
             },
         ],
         "total_count": total_count,

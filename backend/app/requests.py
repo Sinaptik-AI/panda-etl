@@ -27,7 +27,7 @@ def request_api_key(email: str):
 
 def extract_text_from_file(api_token: str, file_path: str, type: str):
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
     files = {}
     file = open(file_path, "rb")
     files["file"] = (os.path.basename(file_path), file)
@@ -50,7 +50,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
     fields_data = fields if isinstance(fields, str) else json.dumps(fields)
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"fields": fields_data}
@@ -74,6 +74,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         headers=headers,
         timeout=3600,
     )
+
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
@@ -84,7 +85,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
 def extract_field_descriptions(api_token, fields):
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"fields": fields}
@@ -110,7 +111,7 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
     )
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"config": config_data}
@@ -144,7 +145,7 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
 def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: str):
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"summaries": summaries, "prompt": prompt}
@@ -165,7 +166,7 @@ def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: s
 
 def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"sentences": json.dumps(sentences)}
@@ -202,7 +203,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
 def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {}
@@ -236,7 +237,7 @@ def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
 def chat_query(api_token, query, docs):
 
     # Prepare the headers with the Bearer token
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"x-authorization": f"Bearer {api_token}"}
 
     # Prepare the data and files dictionaries
     data = {"query": query, "docs": docs}

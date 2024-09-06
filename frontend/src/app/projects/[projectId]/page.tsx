@@ -40,6 +40,7 @@ import ChatBox from "@/components/ChatBox";
 import { BASE_STORAGE_URL } from "@/constants";
 import PageLoader from "@/components/ui/PageLoader";
 import toast from "react-hot-toast";
+import { formatFileSize } from "@/lib/utils";
 
 export default function Project() {
   const params = useParams();
@@ -94,7 +95,15 @@ export default function Project() {
   const { mutateAsync: deleteAsset, isPending: isDeleteAssetPending } =
     useDeleteAssets();
 
-  const assets = projectAssetsResponse?.data?.data || [];
+
+  const assets = projectAssetsResponse?.data?.data? projectAssetsResponse?.data?.data.map((asset: AssetData) => {
+    return {
+      ...asset,
+      size: formatFileSize(asset.size)
+    }
+  }): [];
+
+
   const totalAssets = projectAssetsResponse?.data?.total_count || 0;
   const totalPages = Math.ceil(totalAssets / pageSize);
 

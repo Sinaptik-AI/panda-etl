@@ -124,6 +124,7 @@ def get_assets(
                     "updated_at": asset.updated_at.isoformat(),
                     "type": asset.type,
                     "details": asset.details,
+                    "size": asset.size,
                 }
                 for asset in assets
             ],
@@ -164,11 +165,11 @@ async def upload_files(
             with open(filepath, "wb") as buffer:
                 buffer.write(await file.read())
 
+            file_size = os.path.getsize(filepath)
+
             # Save the file info in the database
             new_asset = Asset(
-                filename=filename,
-                path=filepath,
-                project_id=id,
+                filename=filename, path=filepath, project_id=id, size=file_size
             )
 
             db.add(new_asset)

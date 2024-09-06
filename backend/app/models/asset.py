@@ -12,6 +12,7 @@ class Asset(Base):
     path = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     details = Column(JSON, nullable=True, default={})
+    size = Column(Integer, nullable=True)
 
     process_steps = relationship("ProcessStep", back_populates="asset")
     content = relationship("AssetContent", back_populates="asset", uselist=False)
