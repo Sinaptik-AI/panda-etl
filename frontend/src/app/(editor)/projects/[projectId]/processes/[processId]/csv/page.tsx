@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import DataGrid, { Column, TextEditor } from "react-data-grid";
 import Papa from "papaparse";
 import { BASE_API_URL } from "@/constants";
 import { GetProcess, processApiUrl } from "@/services/processes";
 import { useQuery } from "@tanstack/react-query";
 import LogoDark from "@/icons/LogoDark";
-import { Button } from "@/components/ui/Button";
+import { X } from "lucide-react";
+
+const MIN_ROWS = 50;
 
 const ProcessPage = () => {
   const router = useRouter();
@@ -17,9 +17,10 @@ const ProcessPage = () => {
     projectId: string;
     processId: string;
   }>();
-
-  const [gridData, setGridData] = useState<any[]>([]);
-  const [columnDefs, setColumnDefs] = useState<any[]>([]);
+  const [rows, setRows] = useState<Record<string, any>[]>([]);
+  const [columns, setColumns] = useState<
+    Column<Record<string, any>, unknown>[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { data: process } = useQuery({
@@ -38,7 +39,7 @@ const ProcessPage = () => {
       } = await response.json();
 
       Papa.parse(csv, {
-        complete: (result: Papa.ParseResult<any>) => {
+        complete: (result: Papa.ParseResult<Record<string, any>>) => {
           if (
             !result.data ||
             !Array.isArray(result.data) ||
@@ -48,13 +49,35 @@ const ProcessPage = () => {
             return;
           }
 
-          const columns = result.meta.fields!.map((col: string) => ({
-            headerName: col,
-            field: col,
+          const cols = result.meta.fields!.map((col: string) => ({
+            key: col,
+            name: col,
+            editor: TextEditor,
             editable: true,
+            resizable: true,
           }));
-          setColumnDefs(columns);
-          setGridData(result.data);
+          setColumns(cols);
+
+          // Add a unique id to each row
+          let rowsWithId = result.data.map((row, index) => ({
+            id: index,
+            ...row,
+          }));
+
+          // Add empty rows if the data has fewer than MIN_ROWS
+          if (rowsWithId.length < MIN_ROWS) {
+            const emptyRowsNeeded = MIN_ROWS - rowsWithId.length;
+            const emptyRows = Array.from(
+              { length: emptyRowsNeeded },
+              (_, i) => ({
+                id: rowsWithId.length + i,
+                ...Object.fromEntries(cols.map((col) => [col.key, ""])),
+              })
+            );
+            rowsWithId = [...rowsWithId, ...emptyRows];
+          }
+
+          setRows(rowsWithId);
           setIsLoading(false);
         },
         header: true,
@@ -69,64 +92,52 @@ const ProcessPage = () => {
     loadCsvData();
   }, [loadCsvData]);
 
-  const onCellValueChanged = (event: any) => {
-    console.log("Cell value changed:", event);
-    // TODO: Implement logic to save changes
-  };
+  const onRowsChange = useCallback((newRows: Record<string, any>[]) => {
+    setRows(newRows);
+  }, []);
 
   const handleClose = () => {
     router.push(`/projects/${projectId}`);
   };
 
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log("Save button clicked");
-  };
-
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
-      <header className="bg-gray-100 px-4 py-4 flex items-center justify-between shadow-sm border-b border-gray-200">
+      <header className="bg-gray-100 px-2 py-2 flex items-center justify-between shadow-sm border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <div className="mt-[2px]">
             <LogoDark color="black" width="48" height="48" />
           </div>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-lg font-semibold text-gray-800">
             {isLoading ? "Loading..." : `${process?.name}.csv` || "CSV Preview"}
           </h1>
         </div>
         <div className="space-x-2">
-          <Button onClick={handleClose} variant="light">
-            Close
-          </Button>
-          <Button onClick={handleSave} variant="primary">
-            Save
-          </Button>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-500"
+          >
+            <span className="sr-only">Close</span>
+            <X className="h-6 w-6" aria-hidden="true" />
+          </button>
         </div>
       </header>
       <main className="flex-grow overflow-hidden">
         <div className="h-full w-full">
-          <div className="h-full w-full ag-theme-alpine">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <p>Loading CSV data...</p>
-              </div>
-            ) : (
-              <AgGridReact
-                columnDefs={columnDefs}
-                rowData={gridData}
-                domLayout="normal"
-                onCellValueChanged={onCellValueChanged}
-                defaultColDef={{
-                  sortable: true,
-                  filter: true,
-                  resizable: true,
-                }}
-                enableRangeSelection={true}
-                rowSelection="multiple"
-                animateRows={true}
-              />
-            )}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p>Loading CSV data...</p>
+            </div>
+          ) : (
+            <DataGrid
+              columns={columns}
+              rows={rows}
+              onRowsChange={onRowsChange}
+              className="rdg-light"
+              style={{
+                height: "100%",
+              }}
+            />
+          )}
         </div>
       </main>
     </div>

@@ -152,31 +152,32 @@ tr:hover .action-icons {
   opacity: 1;
 }
 
-/* make ag grid withtout border */
-.ag-theme-alpine .ag-root-wrapper {
+/* React-Data-Grid styles */
+.rdg {
   border: none;
   border-radius: 0;
 }
 
-.ag-theme-alpine .ag-header {
-  border-bottom: none;
+.rdg-header-row {
+  background-color: #f3f4f6;
 }
 
-.ag-theme-alpine .ag-cell {
+.rdg-cell {
   border-right: none;
-  border-bottom: none;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.ag-theme-alpine .ag-header-cell {
-  border-radius: 0;
+.rdg-header-cell {
+  border-right: none;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
 }
 
-.ag-theme-alpine .ag-cell:first-of-type {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.rdg-row:hover {
+  background-color: #f9fafb;
 }
 
-.ag-theme-alpine .ag-cell:last-of-type {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+.rdg-cell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
 }
