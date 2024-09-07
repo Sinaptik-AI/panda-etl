@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "PandaETL",
   description:
     "PandaETL is a modern ETL tool for data engineers and non-engineers alike.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -21,6 +24,7 @@ export default function RootLayout({
   return (
     <ReactQueryClientProvider>
       <html lang="en">
+        <head />
         <body className={inter.className}>
           <Toaster position="top-right" />
           {children}
