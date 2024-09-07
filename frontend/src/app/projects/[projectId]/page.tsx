@@ -72,7 +72,7 @@ export default function Project() {
 
   const queryClient = useQueryClient();
 
-  const { data: project, isLoading } = useQuery({
+  const { data: project, isLoading, refetch } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
       const response = await GetProject(id);
@@ -80,8 +80,12 @@ export default function Project() {
       setProcessType(project.process_type);
       return project as ProjectData;
     },
-    refetchInterval: 2000,
+    refetchInterval: 15000,
   });
+
+  useEffect(() => {
+    refetch();
+  }, [id, refetch]);
 
   const {
     data: projectAssetsResponse,
