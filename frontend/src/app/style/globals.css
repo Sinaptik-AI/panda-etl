@@ -181,3 +181,24 @@ tr:hover .action-icons {
   outline: 2px solid #3b82f6;
   outline-offset: -2px;
 }
+
+.rdg-line-number-cell {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.rdg-line-number-cell:hover {
+  background-color: #e0e0e0;
+}
+
+.rdg-row-selected {
+  background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+.rdg-row-selected .rdg-cell {
+  background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+.rdg-row .rdg-cell:first-child {
+  cursor: pointer;
+}

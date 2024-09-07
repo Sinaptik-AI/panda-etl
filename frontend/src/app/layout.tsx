@@ -8,9 +8,8 @@ import "@/app/style/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PandaETL",
-  description:
-    "PandaETL is a modern ETL tool for data engineers and non-engineers alike.",
+  title: "Your App Name",
+  description: "Your app description",
   icons: {
     icon: "/favicon.ico",
   },
