@@ -1,54 +1,32 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import DataGrid, { Column, TextEditor } from "react-data-grid";
-import Papa from "papaparse";
-import { BASE_API_URL } from "@/constants";
 import { GetProcess, processApiUrl } from "@/services/processes";
 import { useQuery } from "@tanstack/react-query";
 import LogoDark from "@/icons/LogoDark";
 import { X } from "lucide-react";
-
-function calculateColumnWidth(
-  title: string,
-  data: Record<string, any>[]
-): number {
-  const minWidth = 100;
-  const maxWidth = 250;
-  const charWidth = 9;
-  const padding = 20;
-
-  const sampleSize = Math.min(data.length, 100);
-  const longestContent = data.slice(0, sampleSize).reduce((max, row) => {
-    const cellContent = String(row[title] || "");
-    return cellContent.length > max.length ? cellContent : max;
-  }, title);
-
-  const calculatedWidth = longestContent.length * charWidth + padding;
-  return Math.min(Math.max(calculatedWidth, minWidth), maxWidth);
-}
-
-const MIN_ROWS = 50;
+import DataTable from "@/components/DataTable";
+import Papa from "papaparse";
+import { BASE_API_URL } from "@/constants";
 
 const ProcessPage = () => {
   const router = useRouter();
-  const { projectId, processId } = useParams<{
+  const params = useParams<{
     projectId: string;
     processId: string;
   }>();
-  const [rows, setRows] = useState<Record<string, any>[]>([]);
-  const [columns, setColumns] = useState<
-    Column<Record<string, any>, unknown>[]
-  >([]);
+  const projectId = params?.projectId;
+  const processId = params?.processId;
+  const [csvData, setCsvData] = useState<Record<string, any>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-    new Set()
-  );
-  const gridRef = useRef<HTMLDivElement>(null);
 
   const { data: process } = useQuery({
     queryKey: ["process", processId],
-    queryFn: () => GetProcess(processId).then((response) => response.data.data),
+    queryFn: () =>
+      processId
+        ? GetProcess(processId).then((response) => response.data.data)
+        : Promise.reject("No processId"),
+    enabled: !!processId,
   });
 
   const loadCsvData = useCallback(async () => {
@@ -71,47 +49,7 @@ const ProcessPage = () => {
             console.error("CSV data is empty or not in the expected format");
             return;
           }
-
-          const lineNumberColumn: Column<Record<string, any>, unknown> = {
-            key: "lineNumber",
-            name: "#",
-            width: 30,
-            frozen: true,
-            resizable: false,
-            formatter: ({ rowIdx }) => rowIdx + 1,
-          };
-
-          const dataCols = result.meta.fields!.map((col: string) => ({
-            key: col,
-            name: col,
-            editor: TextEditor,
-            editable: true,
-            resizable: true,
-            width: calculateColumnWidth(col, result.data),
-          }));
-
-          setColumns([lineNumberColumn, ...dataCols]);
-
-          // Add a unique id to each row
-          let rowsWithId = result.data.map((row, index) => ({
-            id: index,
-            ...row,
-          }));
-
-          // Add empty rows if the data has fewer than MIN_ROWS
-          if (rowsWithId.length < MIN_ROWS) {
-            const emptyRowsNeeded = MIN_ROWS - rowsWithId.length;
-            const emptyRows = Array.from(
-              { length: emptyRowsNeeded },
-              (_, i) => ({
-                id: rowsWithId.length + i,
-                ...Object.fromEntries(dataCols.map((col) => [col.key, ""])),
-              })
-            );
-            rowsWithId = [...rowsWithId, ...emptyRows];
-          }
-
-          setRows(rowsWithId);
+          setCsvData(result.data);
           setIsLoading(false);
         },
         header: true,
@@ -122,71 +60,9 @@ const ProcessPage = () => {
     }
   }, [processId]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     loadCsvData();
   }, [loadCsvData]);
-
-  const onRowsChange = useCallback((newRows: Record<string, any>[]) => {
-    setRows(newRows);
-  }, []);
-
-  const handleRowClick = useCallback(
-    (
-      rowIdx: number,
-      row: Record<string, any>,
-      column: Column<Record<string, any>, unknown>
-    ) => {
-      setSelectedRows(new Set());
-
-      if (column.key === "lineNumber") {
-        setSelectedRows((prev) => {
-          const newSelection = new Set(prev);
-          if (newSelection.has(row.id)) {
-            newSelection.delete(row.id);
-          } else {
-            newSelection.add(row.id);
-          }
-          return newSelection;
-        });
-      }
-    },
-    []
-  );
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log(event.key);
-      if (event.key === "Backspace" && selectedRows.size > 0) {
-        event.preventDefault();
-        const newRows = rows.map((row) => {
-          if (selectedRows.has(row.id)) {
-            const updatedRow = { ...row };
-            columns.forEach((col) => {
-              if (col.key !== "lineNumber" && col.key !== "select-row") {
-                updatedRow[col.key] = "";
-              }
-            });
-            return updatedRow;
-          }
-          return row;
-        });
-        setRows(newRows);
-      }
-    },
-    [selectedRows, rows, columns]
-  );
-
-  useEffect(() => {
-    const gridElement = gridRef.current;
-    if (gridElement) {
-      gridElement.addEventListener("keydown", handleKeyDown as any);
-    }
-    return () => {
-      if (gridElement) {
-        gridElement.removeEventListener("keydown", handleKeyDown as any);
-      }
-    };
-  }, [handleKeyDown]);
 
   const handleClose = () => {
     router.push(`/projects/${projectId}`);
@@ -214,33 +90,13 @@ const ProcessPage = () => {
         </div>
       </header>
       <main className="flex-grow overflow-hidden">
-        <div
-          className="h-full w-full overflow-auto"
-          ref={gridRef}
-          tabIndex={0} // Make the div focusable
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <p>Loading CSV data...</p>
-            </div>
-          ) : (
-            <DataGrid
-              columns={columns}
-              rows={rows}
-              onRowsChange={onRowsChange}
-              className="rdg-light"
-              style={{
-                height: "100%",
-                width: "max-content",
-                minWidth: "100%",
-              }}
-              selectedRows={selectedRows}
-              onSelectedRowsChange={setSelectedRows}
-              onRowClick={handleRowClick}
-              rowKeyGetter={(row) => row.id}
-            />
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <p>Loading CSV data...</p>
+          </div>
+        ) : (
+          <DataTable data={csvData} />
+        )}
       </main>
     </div>
   );
