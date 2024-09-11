@@ -4,3 +4,9 @@ export interface APIKeyData {
   key: string;
   user_id: number;
 }
+
+export interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}

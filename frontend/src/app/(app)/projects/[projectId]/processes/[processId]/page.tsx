@@ -68,8 +68,8 @@ const columns: Column<ProcessDetailsResponse>[] = [
 
 export default function Process() {
   const params = useParams();
-  const processId = params.processId as string;
-  const projectId = params.projectId as string;
+  const processId = (params?.processId as string) || "";
+  const projectId = (params?.projectId as string) || "";
   const {
     data: processResponse,
     isLoading,

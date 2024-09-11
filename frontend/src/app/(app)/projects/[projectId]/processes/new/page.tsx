@@ -23,11 +23,11 @@ export default function NewProcess() {
   const [selectedProcess, setSelectedProcess] = useState<string>("extract");
   const [selectedOutput, setSelectedOutput] = useState<string>("csv");
   const [processName, setProcessName] = useState<string>("");
-  const projectId = params.projectId as string;
+  const projectId = params?.projectId as string;
 
-  const templateId = searchParams.get("template");
-  const templateType = searchParams.get("type");
-  const templateOutput = searchParams.get("output");
+  const templateId = searchParams?.get("template");
+  const templateType = searchParams?.get("type");
+  const templateOutput = searchParams?.get("output");
 
   const { data: templateProcess } = useQuery({
     queryKey: ["template-process", templateId],

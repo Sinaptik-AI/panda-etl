@@ -202,3 +202,9 @@ tr:hover .action-icons {
 .rdg-row .rdg-cell:first-child {
   cursor: pointer;
 }
+
+.rdg-row-index-column {
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+  text-align: center;
+}

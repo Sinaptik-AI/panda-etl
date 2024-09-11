@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import DataGrid, { Column, TextEditor } from "react-data-grid";
+import DataGrid, { Column } from "react-data-grid";
+import TextEditor from "@/components/editor/TextEditor";
+import "react-data-grid/lib/styles.css";
 
 function calculateColumnWidth(
   title: string,
@@ -34,27 +36,29 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
     new Set(),
   );
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const lineNumberColumn: Column<Record<string, any>, unknown> = {
+    const lineNumberColumn = {
       key: "lineNumber",
       name: "#",
       width: 30,
       frozen: true,
       resizable: false,
-      formatter: ({ rowIdx }) => rowIdx + 1,
+      cellClass: "rdg-row-index-column",
+      headerCellClass: "rdg-row-index-column",
+      renderCell: (props: { row: Record<string, any> }) => {
+        return <>{props.row.id + 1}</>;
+      },
     };
 
     const dataCols = Object.keys(data[0] || {}).map((col: string) => ({
       key: col,
       name: col,
-      editor: TextEditor,
+      renderEditCell: TextEditor,
       editable: true,
       resizable: true,
       width: calculateColumnWidth(col, data),
-      cellRenderer: () => {},
     }));
 
     setColumns([lineNumberColumn, ...dataCols]);
@@ -80,87 +84,8 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     setRows(newRows);
   }, []);
 
-  const handleSelectedRowsChange = useCallback(
-    (newSelectedRows: ReadonlySet<number>) => {
-      setSelectedRows(newSelectedRows);
-    },
-    [],
-  );
-
-  const handleCellSelection = useCallback(
-    (position: { idx: number; rowIdx: number }) => {
-      if (isShiftPressed) {
-        if (position.idx === 0) {
-          // Highlight the entire row
-          setSelectedRows((prev) => {
-            const newSelection = new Set(prev);
-            newSelection.add(position.rowIdx);
-            return newSelection;
-          });
-        }
-      } else {
-        // Clear previous selections
-        setSelectedRows(new Set());
-
-        if (position.idx === 0) {
-          // Select the entire row
-          setSelectedRows(new Set([position.rowIdx]));
-        }
-      }
-    },
-    [isShiftPressed],
-  );
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Shift") {
-        setIsShiftPressed(true);
-      }
-      if (event.key === "Backspace" && selectedRows.size > 0) {
-        event.preventDefault();
-        const newRows = rows.map((row) => {
-          if (selectedRows.has(row.id)) {
-            const updatedRow = { ...row };
-            columns.forEach((col) => {
-              if (col.key !== "lineNumber" && col.key !== "select-row") {
-                updatedRow[col.key] = "";
-              }
-            });
-            return updatedRow;
-          }
-          return row;
-        });
-        setRows(newRows);
-      }
-    },
-    [selectedRows, rows, columns],
-  );
-
-  const handleKeyUp = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Shift") {
-        setIsShiftPressed(false);
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const gridElement = gridRef.current;
-    if (gridElement) {
-      gridElement.addEventListener("keydown", handleKeyDown as any);
-      gridElement.addEventListener("keyup", handleKeyUp as any);
-    }
-    return () => {
-      if (gridElement) {
-        gridElement.removeEventListener("keydown", handleKeyDown as any);
-        gridElement.removeEventListener("keyup", handleKeyUp as any);
-      }
-    };
-  }, [handleKeyDown, handleKeyUp]);
-
   return (
-    <div className="h-full w-full overflow-auto" ref={gridRef} tabIndex={0}>
+    <div className="h-full w-full overflow-hidden" ref={gridRef} tabIndex={0}>
       <DataGrid
         columns={columns}
         rows={rows}
@@ -168,13 +93,11 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         className="rdg-light"
         style={{
           height: "100%",
-          width: "max-content",
-          minWidth: "100%",
+          width: "100%",
         }}
         selectedRows={selectedRows}
-        onSelectedRowsChange={handleSelectedRowsChange}
-        onSelectedCellChange={handleCellSelection}
         rowKeyGetter={(row) => row.id}
+        enableVirtualization={true}
       />
     </div>
   );

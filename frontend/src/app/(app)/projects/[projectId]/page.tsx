@@ -47,10 +47,10 @@ export default function Project() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab");
-  const isProcesses = searchParams.get("processes");
-  const id = params.projectId as string;
-  const [activeTab, setActiveTab] = useState<string>(tab ? tab : "assets");
+  const tab = searchParams?.get("tab") ?? "assets";
+  const isProcesses = searchParams?.get("processes") ?? null;
+  const id = params?.projectId as string;
+  const [activeTab, setActiveTab] = useState<string>(tab);
   const [uploadingFile, setUploadingFile] = useState<boolean>(false);
   const [currentAsset, setCurrentAsset] = useState<AssetData | null>(null);
   const [currentAssetPreview, setCurrentAssetPreview] = useState<
@@ -236,7 +236,7 @@ export default function Project() {
     if (isProcesses) {
       setActiveTab("processes");
     }
-  }, []);
+  }, [, /* ... other dependencies ... */ isProcesses]); // Add isProcesses to the dependency array
 
   const handleDelete = () => {
     deleteAsset(
