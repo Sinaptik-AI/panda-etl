@@ -26,7 +26,7 @@ export const isValidURL = (url: string): boolean => {
 
 export const truncateTextFromCenter = (
   text?: string,
-  maxLength: number = 50
+  maxLength: number = 50,
 ): string | undefined => {
   if (!text || typeof text !== "string") {
     return text;

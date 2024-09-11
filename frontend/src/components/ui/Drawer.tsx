@@ -66,8 +66,8 @@ const Drawer: React.FC<DrawerProps> = ({
               isAnimating
                 ? "translate-x-0"
                 : position === "left"
-                ? "-translate-x-full"
-                : "translate-x-full"
+                  ? "-translate-x-full"
+                  : "translate-x-full"
             }`}
           >
             <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">

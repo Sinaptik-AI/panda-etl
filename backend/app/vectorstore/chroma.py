@@ -8,6 +8,7 @@ from chromadb.utils import embedding_functions
 
 from app.vectorstore import VectorStore
 from app.config import settings
+import time
 
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
@@ -66,6 +67,7 @@ class ChromaDB(VectorStore):
         docs: Iterable[str],
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
+        batch_size=50,
     ) -> List[str]:
         """
         Add docs to the training set
@@ -81,11 +83,12 @@ class ChromaDB(VectorStore):
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
 
-        self._docs_collection.add(
-            documents=docs,
-            metadatas=metadatas,
-            ids=ids,
-        )
+        for i in range(0, len(docs), batch_size):
+            self._docs_collection.add(
+                documents=docs[i : i + batch_size],
+                metadatas=metadatas[i : i + batch_size],
+                ids=ids[i : i + batch_size],
+            )
 
     def delete_docs(
         self, ids: Optional[List[str]] = None, metadata_criteria: Optional[dict] = None

@@ -32,7 +32,7 @@ const ApiKeysSettings: React.FC = () => {
         onError(error) {
           console.log(error);
         },
-      }
+      },
     );
   };
 

@@ -20,6 +20,7 @@ from app.logger import Logger
 from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
 from app.schemas.asset import UrlAssetCreate
 from app.vectorstore.chroma import ChromaDB
+import time
 
 
 # Thread pool executor for background tasks

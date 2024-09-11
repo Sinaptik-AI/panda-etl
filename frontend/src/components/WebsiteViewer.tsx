@@ -7,7 +7,7 @@ interface IframeViewerProps {
 
 const WebsiteViewer: React.FC<IframeViewerProps> = ({
   url,
-  height = "100vh", 
+  height = "100vh",
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -19,10 +19,10 @@ const WebsiteViewer: React.FC<IframeViewerProps> = ({
     };
 
     handleResize();
-    window.addEventListener("resize", handleResize); 
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("resize", handleResize); 
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 

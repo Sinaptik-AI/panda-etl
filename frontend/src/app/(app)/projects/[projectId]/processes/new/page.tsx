@@ -43,7 +43,7 @@ export default function NewProcess() {
     if (templateProcess) {
       setSelectedProcess(templateType || templateProcess.type);
       setSelectedOutput(
-        templateOutput || templateProcess.output_format || "csv"
+        templateOutput || templateProcess.output_format || "csv",
       );
     }
   }, [templateProcess, templateType, templateOutput]);

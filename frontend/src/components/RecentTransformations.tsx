@@ -33,7 +33,7 @@ const RecentTransformations = ({ projectId }: { projectId?: string }) => {
           processes
             .filter(
               (process: ProcessData) =>
-                process.status === ProcessStatus.COMPLETED
+                process.status === ProcessStatus.COMPLETED,
             )
             .map((process: ProcessData) => (
               <File

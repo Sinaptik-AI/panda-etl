@@ -44,7 +44,7 @@ export const ProcessSelectionDrawer = ({
   onSubmit,
 }: IProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState<ProcessData | null>(
-    null
+    null,
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -157,7 +157,7 @@ export const ProcessSelectionDrawer = ({
                       </pre>
                     </div>
                   </SelectableAccordion>
-                )
+                ),
               )}
             </div>
           )}

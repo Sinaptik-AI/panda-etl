@@ -80,7 +80,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   const [currentFile, setCurrentFile] = useState<ProcessData | null>(null);
   const [isEditing, setIsEditing] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<ProcessData | null>(
-    null
+    null,
   );
   const [openProjectSelection, setOpenProjectSelection] =
     useState<boolean>(false);
@@ -118,7 +118,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     if (processDetails) {
       const setSummary = async () => {
         const parsedSummary = await marked.parse(
-          processDetails.data.output.summary || ""
+          processDetails.data.output.summary || "",
         );
         setEditedSummary(parsedSummary);
       };

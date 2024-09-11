@@ -25,7 +25,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
       setFiles(selectedFiles);
       onFileSelect(selectedFiles);
     },
-    [onFileSelect]
+    [onFileSelect],
   );
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -59,14 +59,14 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         const droppedFiles = e.dataTransfer.files;
         const acceptedTypes = Array.isArray(accept) ? accept : [accept];
         const allFilesAccepted = Array.from(droppedFiles).every((file) =>
-          acceptedTypes.some((type) => file.type.match(type))
+          acceptedTypes.some((type) => file.type.match(type)),
         );
         if (allFilesAccepted) {
           onFilesChange(droppedFiles);
         }
       }
     },
-    [accept, onFilesChange]
+    [accept, onFilesChange],
   );
 
   const removeFiles = useCallback(
@@ -75,7 +75,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
       setFiles(null);
       onFileSelect(null);
     },
-    [onFileSelect]
+    [onFileSelect],
   );
 
   const handleClick = useCallback(() => {
@@ -88,7 +88,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         onFilesChange(e.target.files);
       }
     },
-    [onFilesChange]
+    [onFilesChange],
   );
 
   return (

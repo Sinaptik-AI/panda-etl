@@ -5,11 +5,11 @@ import { GetRequest } from "@/lib/requests";
 export const processStepApiUrl = "/process_steps";
 
 export const GetProcessStep = async (
-  processStepId: number
+  processStepId: number,
 ): Promise<ProcessStepResponse> => {
   try {
     const response = await GetRequest<{ data: ProcessStepData }>(
-      `${processStepApiUrl}/${processStepId}`
+      `${processStepApiUrl}/${processStepId}`,
     );
     return response.data;
   } catch (error) {

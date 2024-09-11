@@ -37,7 +37,7 @@ export default function Projects() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [deletedProject, setDeletedProject] = useState<ProjectData | null>(
-    null
+    null,
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { mutateAsync: deleteProject, isPending: deleteLoading } =
@@ -120,14 +120,14 @@ export default function Projects() {
           onSuccess() {
             setIsDeleteModalOpen(false);
             toast.success(
-              `Project "${deletedProject.name}" has been deleted successfully.`
+              `Project "${deletedProject.name}" has been deleted successfully.`,
             );
           },
           onError(error) {
             console.log(error);
             toast.error("Failed to delete the project. Please try again.");
           },
-        }
+        },
       );
     }
   };

@@ -12,7 +12,7 @@ export const processApiUrl = "/processes";
 export const GetProcess = async (processId: string) => {
   try {
     const response = await GetRequest<{ data: ProcessData }>(
-      `${processApiUrl}/${processId}`
+      `${processApiUrl}/${processId}`,
     );
     return response;
   } catch (error) {
@@ -33,7 +33,7 @@ export const StartProcess = async (data: ProcessRequest) => {
   try {
     const response = await PostRequest<{ data: ProcessExecutionData }>(
       `${processApiUrl}/start`,
-      data
+      data,
     );
     return response;
   } catch (error) {
@@ -41,12 +41,11 @@ export const StartProcess = async (data: ProcessRequest) => {
   }
 };
 
-
-export const StopProcess = async (process_id: number|string) => {
+export const StopProcess = async (process_id: number | string) => {
   try {
     const response = await PostRequest<{ data: ProcessResumeData }>(
       `${processApiUrl}/${process_id}/stop`,
-      null
+      null,
     );
     return response;
   } catch (error) {
@@ -54,23 +53,22 @@ export const StopProcess = async (process_id: number|string) => {
   }
 };
 
-export const ResumeProcess = async (process_id: number|string) => {
+export const ResumeProcess = async (process_id: number | string) => {
   try {
     const response = await PostRequest<{ data: ProcessResumeData }>(
       `${processApiUrl}/${process_id}/resume`,
-      null
+      null,
     );
     return response;
   } catch (error) {
     throw error;
   }
 };
-
 
 export const GetProcessSteps = async (processId: string) => {
   try {
     const response = await GetRequest(
-      `${processApiUrl}/${processId}/get-steps`
+      `${processApiUrl}/${processId}/get-steps`,
     );
     return response;
   } catch (error) {
@@ -78,11 +76,13 @@ export const GetProcessSteps = async (processId: string) => {
   }
 };
 
-export const GetProcessSuggestion = async (processData: ProcessSuggestionRequest) => {
+export const GetProcessSuggestion = async (
+  processData: ProcessSuggestionRequest,
+) => {
   try {
     const response = await PostRequest<{ data: ProcessData[] }>(
       `${processApiUrl}/suggestion`,
-      processData
+      processData,
     );
     return response;
   } catch (error) {

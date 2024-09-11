@@ -3,6 +3,6 @@ export interface AssetData {
   filename: string;
   path: string;
   type: string;
-  details: Record<string, string | number>
+  details: Record<string, string | number>;
   size: number;
 }

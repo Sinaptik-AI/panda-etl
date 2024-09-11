@@ -44,11 +44,11 @@ export function Table<T>({
   actions = [],
 }: TableProps<T>) {
   const [highlightedRowIndex, setHighlightedRowIndex] = useState<number | null>(
-    null
+    null,
   );
   const getUploadedFileElements = (
     uploadedFiles: [string, Date][],
-    fileName: string
+    fileName: string,
   ): [string, Date][] => {
     return uploadedFiles.filter(([name, _timestamp]) => name === fileName);
   };
@@ -87,7 +87,7 @@ export function Table<T>({
                   return truncateTextFromCenter(child);
                 }
                 return child;
-              }
+              },
             ),
           });
         } else {
@@ -198,7 +198,7 @@ export function Table<T>({
                                     : item.icon}
                                 </TooltipWrapper>
                               </span>
-                            )
+                            ),
                         )}
                       </div>
                     )}
@@ -263,7 +263,7 @@ export function Table<T>({
                 </td>
               ))}
             </tr>
-          )
+          ),
         )}
       </tbody>
     </table>

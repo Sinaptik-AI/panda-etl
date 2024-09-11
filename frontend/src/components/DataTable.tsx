@@ -3,7 +3,7 @@ import DataGrid, { Column, TextEditor } from "react-data-grid";
 
 function calculateColumnWidth(
   title: string,
-  data: Record<string, any>[]
+  data: Record<string, any>[],
 ): number {
   const minWidth = 100;
   const maxWidth = 250;
@@ -32,7 +32,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     Column<Record<string, any>, unknown>[]
   >([]);
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-    new Set()
+    new Set(),
   );
   const [isShiftPressed, setIsShiftPressed] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     (newSelectedRows: ReadonlySet<number>) => {
       setSelectedRows(newSelectedRows);
     },
-    []
+    [],
   );
 
   const handleCellSelection = useCallback(
@@ -108,7 +108,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         }
       }
     },
-    [isShiftPressed]
+    [isShiftPressed],
   );
 
   const handleKeyDown = useCallback(
@@ -133,7 +133,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         setRows(newRows);
       }
     },
-    [selectedRows, rows, columns]
+    [selectedRows, rows, columns],
   );
 
   const handleKeyUp = useCallback(
@@ -142,7 +142,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         setIsShiftPressed(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {

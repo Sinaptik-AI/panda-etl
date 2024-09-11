@@ -13,7 +13,6 @@ const DateLabel: React.FC<DateLabelProps> = ({
   let formattedDate = "-";
 
   try {
-    
     let date: Date;
 
     if (dateString instanceof Date) {
@@ -23,10 +22,9 @@ const DateLabel: React.FC<DateLabelProps> = ({
     }
 
     if (isValid(date)) {
-
       if (dateString instanceof Date) {
         formattedDate = formatDistanceToNow(date, { addSuffix });
-      }else {
+      } else {
         const utcDate = subMinutes(date, date.getTimezoneOffset());
         formattedDate = formatDistanceToNow(utcDate, { addSuffix });
       }

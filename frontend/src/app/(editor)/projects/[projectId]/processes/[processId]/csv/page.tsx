@@ -33,7 +33,7 @@ const ProcessPage = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_API_URL}/${processApiUrl}/${processId}/get-csv`
+        `${BASE_API_URL}/${processApiUrl}/${processId}/get-csv`,
       );
       const {
         data: { csv },

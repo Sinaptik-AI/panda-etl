@@ -132,7 +132,7 @@ export default function Project() {
       setCurrentAsset(asset);
       if (typeof asset.id == "string") {
         const file_obj = uploadingFiles.find(
-          (value) => value.name === asset.id
+          (value) => value.name === asset.id,
         );
         if (file_obj) {
           const file_blob = new Blob([file_obj], { type: file_obj.type });
@@ -142,7 +142,7 @@ export default function Project() {
         }
       } else {
         const assetExtracted = assets.find(
-          (value: AssetData) => value.id == asset.id
+          (value: AssetData) => value.id == asset.id,
         );
         setCurrentAssetPreview(assetExtracted);
       }
@@ -152,7 +152,7 @@ export default function Project() {
   const startDownload = async (row: AssetData) => {
     try {
       const response = await fetch(
-        `${BASE_STORAGE_URL}/${project?.id}/${row.filename}`
+        `${BASE_STORAGE_URL}/${project?.id}/${row.filename}`,
       );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -250,13 +250,13 @@ export default function Project() {
         onError(error) {
           console.log(error);
         },
-      }
+      },
     );
   };
 
   const onUploadSubmit = async (
     type: string,
-    data: string[] | FileList | null
+    data: string[] | FileList | null,
   ) => {
     if (type == "file") {
       handleFileUpload(data as FileList);

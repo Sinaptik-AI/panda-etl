@@ -6,12 +6,12 @@ export const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000
+  timeout: 60000,
 });
 
 export async function GetRequest<T>(
   url: string,
-  options?: AxiosRequestConfig
+  options?: AxiosRequestConfig,
 ): Promise<AxiosResponse> {
   try {
     const response = await axiosInstance.get<T>(url, options);
@@ -25,17 +25,17 @@ export async function PostRequest<T>(
   url: string,
   requestData: object | null,
   headers = {},
-  timeout?: number
+  timeout?: number,
 ): Promise<AxiosResponse> {
   try {
     const isFormData = requestData instanceof FormData;
     const defaultHeaders = {
-      'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
+      "Content-Type": isFormData ? "multipart/form-data" : "application/json",
     };
     const updatedHeader = { ...defaultHeaders, ...headers };
     const response = await axiosInstance.post<T>(url, requestData, {
       headers: updatedHeader,
-      timeout
+      timeout,
     });
     return response;
   } catch (error) {
@@ -43,7 +43,10 @@ export async function PostRequest<T>(
   }
 }
 
-export async function PutRequest(url: string, data: object): Promise<AxiosResponse<any, any>> {
+export async function PutRequest(
+  url: string,
+  data: object,
+): Promise<AxiosResponse<any, any>> {
   try {
     const response = await axiosInstance.put(url, data);
     return response;
@@ -52,7 +55,9 @@ export async function PutRequest(url: string, data: object): Promise<AxiosRespon
   }
 }
 
-export async function DeleteRequest(url: string): Promise<AxiosResponse<any, any>> {
+export async function DeleteRequest(
+  url: string,
+): Promise<AxiosResponse<any, any>> {
   try {
     const response = await axiosInstance.delete(url);
     return response;

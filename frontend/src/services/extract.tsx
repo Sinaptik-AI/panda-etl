@@ -4,13 +4,17 @@ import { ExtractionField, ExtractionResult } from "@/interfaces/extract";
 
 const extractApiUrl = "/extract";
 
-export const Extract = async (projectId: string, assetId: string, fields: ExtractionField[]) => {
+export const Extract = async (
+  projectId: string,
+  assetId: string,
+  fields: ExtractionField[],
+) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}`,
-      { fields, assetId }, 
+      { fields, assetId },
       {},
-      300000
+      300000,
     );
     return response;
   } catch (error) {
@@ -22,14 +26,16 @@ export const Extract = async (projectId: string, assetId: string, fields: Extrac
   }
 };
 
-
-export const GetAIFieldDescriptions = async (projectId: string, fields: string[]) => {
+export const GetAIFieldDescriptions = async (
+  projectId: string,
+  fields: string[],
+) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}/field-descriptions`,
-      { fields }, 
+      { fields },
       {},
-      300000
+      300000,
     );
     return response;
   } catch (error) {

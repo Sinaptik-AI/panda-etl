@@ -47,7 +47,7 @@ export default function ExtractionForm({
   processData,
 }: ExtractionFormProps) {
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
-    { 0: true }
+    { 0: true },
   );
   const [isLoading, setIsLoading] = useState(false);
   const [displayPsModel, setDisplayPsModel] = useState<boolean>(false);
@@ -89,7 +89,7 @@ export default function ExtractionForm({
   const updateField = (
     index: number,
     key: keyof Field,
-    value: FieldType | string
+    value: FieldType | string,
   ) => {
     const newFields = [...fields];
     if (key === "key") {
@@ -188,14 +188,18 @@ export default function ExtractionForm({
         .collapsible-content {
           max-height: 0;
           overflow: hidden;
-          transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+          transition:
+            max-height 0.3s ease-out,
+            opacity 0.3s ease-out;
           opacity: 0;
         }
 
         .collapsible-content.expanded {
           max-height: 1000px;
           opacity: 1;
-          transition: max-height 0.5s ease-in, opacity 0.5s ease-in;
+          transition:
+            max-height 0.5s ease-in,
+            opacity 0.5s ease-in;
         }
 
         .chevron-icon {

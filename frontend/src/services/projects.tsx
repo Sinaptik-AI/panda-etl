@@ -10,7 +10,7 @@ const projectsApiUrl = "/projects";
 export const GetProject = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProjectData }>(
-      `${projectsApiUrl}/${projectId}`
+      `${projectsApiUrl}/${projectId}`,
     );
     return response;
   } catch (error) {
@@ -20,16 +20,15 @@ export const GetProject = async (projectId: string) => {
 
 export const GetProjects = async (
   page: number | null = null,
-  pageSize: number|null = null
+  pageSize: number | null = null,
 ) => {
   try {
+    const url =
+      page && pageSize && page != undefined && pageSize != undefined
+        ? `${projectsApiUrl}?page=${page}&page_size=${pageSize}`
+        : `${projectsApiUrl}`;
 
-    const url  = (page && pageSize) && (page!=undefined && pageSize!=undefined) ? `${projectsApiUrl}?page=${page}&page_size=${pageSize}`:
-    `${projectsApiUrl}`  
-
-    const response = await GetRequest<{ data: ProjectData[] }>(
-      url
-    );
+    const response = await GetRequest<{ data: ProjectData[] }>(url);
     return response;
   } catch (error) {
     throw error;
@@ -43,7 +42,7 @@ export const CreateProject = async (data: {
   try {
     const response = await PostRequest<{ data: ProjectData }>(
       projectsApiUrl,
-      data
+      data,
     );
     return response;
   } catch (error) {
@@ -54,15 +53,14 @@ export const CreateProject = async (data: {
 export const GetProjectAssets = async (
   projectId: string,
   page: number | null = null,
-  pageSize: number|null = null
+  pageSize: number | null = null,
 ) => {
   try {
-
-    const uri  = (page && pageSize) && (page!=undefined && pageSize!=undefined) ? `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`:
-    `${projectsApiUrl}/${projectId}/assets`  
-    const response = await GetRequest<{ data: AssetData[] }>(
-      uri
-    );
+    const uri =
+      page && pageSize && page != undefined && pageSize != undefined
+        ? `${projectsApiUrl}/${projectId}/assets?page=${page}&page_size=${pageSize}`
+        : `${projectsApiUrl}/${projectId}/assets`;
+    const response = await GetRequest<{ data: AssetData[] }>(uri);
     return response;
   } catch (error) {
     throw error;
@@ -71,21 +69,21 @@ export const GetProjectAssets = async (
 
 export const GetProjectAssetURL = (
   projectId: string,
-  assetId: string | null
+  assetId: string | null,
 ) => {
   return `${BASE_API_URL}/${projectsApiUrl}/${projectId}/assets/${assetId}`;
 };
 
 export const FetchAssetFile = async (
   projectId: string,
-  assetId: string
+  assetId: string,
 ): Promise<Blob> => {
   try {
     const response: AxiosResponse<Blob> = await GetRequest<Blob>(
       `${projectsApiUrl}/${projectId}/assets/${assetId}`,
       {
         responseType: "blob",
-      }
+      },
     );
     return response.data;
   } catch (error) {
@@ -102,7 +100,7 @@ export const AddProjectAsset = async (projectId: string, file: File) => {
       `${projectsApiUrl}/${projectId}/assets`,
       formData,
       {},
-      300000 // Longer time for uploading big files
+      300000, // Longer time for uploading big files
     );
     return response;
   } catch (error) {
@@ -114,9 +112,9 @@ export const AddProjectURLAsset = async (projectId: string, urls: string[]) => {
   try {
     const response = await PostRequest<{ data: any }>(
       `${projectsApiUrl}/${projectId}/assets/url`,
-      {url: urls},
+      { url: urls },
       {},
-      300000 // Longer time for uploading big files
+      300000, // Longer time for uploading big files
     );
     return response;
   } catch (error) {
@@ -127,7 +125,7 @@ export const AddProjectURLAsset = async (projectId: string, urls: string[]) => {
 export const GetProjectProcesses = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProcessData[] }>(
-      `${projectsApiUrl}/${projectId}/processes`
+      `${projectsApiUrl}/${projectId}/processes`,
     );
     return response;
   } catch (error) {
@@ -147,7 +145,7 @@ export const DeleteProject = async (projectId: string) => {
 export const DeleteAssets = async (projectId: string, assetId: string) => {
   try {
     const response = await DeleteRequest(
-      `${projectsApiUrl}/${projectId}/assets/${assetId}`
+      `${projectsApiUrl}/${projectId}/assets/${assetId}`,
     );
     return response;
   } catch (error) {
