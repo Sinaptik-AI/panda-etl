@@ -41,6 +41,7 @@ import { BASE_STORAGE_URL } from "@/constants";
 import PageLoader from "@/components/ui/PageLoader";
 import toast from "react-hot-toast";
 import { formatFileSize } from "@/lib/utils";
+import RecentTransformations from "@/components/RecentTransformations";
 
 export default function Project() {
   const params = useParams();
@@ -72,7 +73,11 @@ export default function Project() {
 
   const queryClient = useQueryClient();
 
-  const { data: project, isLoading, refetch } = useQuery({
+  const {
+    data: project,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
       const response = await GetProject(id);
@@ -99,14 +104,14 @@ export default function Project() {
   const { mutateAsync: deleteAsset, isPending: isDeleteAssetPending } =
     useDeleteAssets();
 
-
-  const assets = projectAssetsResponse?.data?.data? projectAssetsResponse?.data?.data.map((asset: AssetData) => {
-    return {
-      ...asset,
-      size: formatFileSize(asset.size)
-    }
-  }): [];
-
+  const assets = projectAssetsResponse?.data?.data
+    ? projectAssetsResponse?.data?.data.map((asset: AssetData) => {
+        return {
+          ...asset,
+          size: formatFileSize(asset.size),
+        };
+      })
+    : [];
 
   const totalAssets = projectAssetsResponse?.data?.total_count || 0;
   const totalPages = Math.ceil(totalAssets / pageSize);
@@ -284,6 +289,7 @@ export default function Project() {
         <PageLoader />
       ) : (
         <div ref={scrollRef}>
+          <RecentTransformations projectId={project?.id} />
           <TabList
             tabs={projectTabs}
             onTabChange={(tabId) => setActiveTab(tabId)}

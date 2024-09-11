@@ -1,6 +1,6 @@
 import { GetRequest, PostRequest, PutRequest } from "@/lib/requests";
 import { APIKeyData } from "@/interfaces/user";
-import { UserData } from "@/app/user/settings/page";
+import { UserData } from "@/interfaces/user";
 
 const userApiUrl = "/user";
 

@@ -8,7 +8,6 @@ import { ProcessDetailsResponse, ProcessStatus } from "@/interfaces/processes";
 import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
-import { format } from "date-fns";
 import Title from "@/components/ui/Title";
 import Drawer from "@/components/ui/Drawer";
 import { useProcessStep } from "@/hooks/useProcessStep";

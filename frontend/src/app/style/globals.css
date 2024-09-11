@@ -151,3 +151,54 @@ tr .action-icons {
 tr:hover .action-icons {
   opacity: 1;
 }
+
+/* React-Data-Grid styles */
+.rdg {
+  border: none;
+  border-radius: 0;
+}
+
+.rdg-header-row {
+  background-color: #f3f4f6;
+}
+
+.rdg-cell {
+  border-right: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rdg-header-cell {
+  border-right: none;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+.rdg-row:hover {
+  background-color: #f9fafb;
+}
+
+.rdg-cell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+.rdg-line-number-cell {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.rdg-line-number-cell:hover {
+  background-color: #e0e0e0;
+}
+
+.rdg-row-selected {
+  background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+.rdg-row-selected .rdg-cell {
+  background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+.rdg-row .rdg-cell:first-child {
+  cursor: pointer;
+}

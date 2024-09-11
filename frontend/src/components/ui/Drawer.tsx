@@ -9,6 +9,7 @@ interface DrawerProps {
   title?: string;
   position?: "left" | "right";
   width?: string;
+  size?: "default" | "full";
 }
 
 const Drawer: React.FC<DrawerProps> = ({
@@ -17,7 +18,8 @@ const Drawer: React.FC<DrawerProps> = ({
   children,
   title,
   position = "right",
-  width = "40rem",
+  width = "650px",
+  size = "default",
 }) => {
   const [isRendered, setIsRendered] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -37,6 +39,10 @@ const Drawer: React.FC<DrawerProps> = ({
     return null;
   }
 
+  const drawerStyle = {
+    width: size === "full" ? "100%" : width,
+  };
+
   return (
     <div
       className={`fixed inset-0 overflow-hidden z-50 ${
@@ -55,14 +61,14 @@ const Drawer: React.FC<DrawerProps> = ({
           aria-labelledby="slide-over-heading"
         >
           <div
-            className={`w-screen transform transition-transform duration-300 ease-in-out ${
+            style={drawerStyle}
+            className={`transform transition-transform duration-300 ease-in-out ${
               isAnimating
                 ? "translate-x-0"
                 : position === "left"
                 ? "-translate-x-full"
                 : "translate-x-full"
             }`}
-            style={{ width }}
           >
             <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
               <div className="px-4 sm:px-6 py-6 flex items-start justify-between">
