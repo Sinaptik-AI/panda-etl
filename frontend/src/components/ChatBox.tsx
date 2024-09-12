@@ -9,19 +9,20 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import ChatBubble from "@/components/ui/ChatBubble";
 
-export const NoChatPlaceholder = () => {
+export const NoChatPlaceholder = ({ isLoading }: { isLoading: boolean }) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center">
       <Image
         src="/build_chat.svg"
         className="mb-6"
-        alt="Chat loaing"
+        alt="Chat loading"
         width={384}
         height={384}
       />
       <div className="text-center max-w-lg">
-        Please wait a moment while we process the uploaded documents for chat.
-        This may take a few minutes. Feel free to revisit this page shortly.
+        {isLoading
+          ? "Please wait a moment while we process the uploaded documents for chat. This may take a few minutes. Feel free to revisit this page shortly."
+          : "No documents have been uploaded yet. Please upload some documents to start chatting."}
       </div>
     </div>
   );
@@ -94,8 +95,8 @@ const ChatBox = ({
 
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 18rem)" }}>
-      {isLoading || !chatEnabled ? (
-        <NoChatPlaceholder />
+      {isLoading || !chatEnabled || messages.length === 0 ? (
+        <NoChatPlaceholder isLoading={isLoading || !chatEnabled} />
       ) : (
         <>
           <div className="flex-1 overflow-y-auto" style={{ maxHeight: "60vh" }}>
