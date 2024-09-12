@@ -43,6 +43,7 @@ export default function EditProject() {
       UpdateProject(projectId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success("Project updated successfully");
       router.push(`/projects/${projectId}`);
     },
