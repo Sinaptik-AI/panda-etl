@@ -4,8 +4,8 @@ import traceback
 from typing import List
 from app.models.asset_content import AssetProcessingStatus
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile, Query
-from fastapi.responses import FileResponse, JSONResponse
-from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse, FileResponse  # Add FileResponse here
+from sqlalchemy.orm import Session, exc
 
 from app.database import SessionLocal, get_db
 from app.schemas.project import ProjectCreate, ProjectUpdate
@@ -319,7 +319,6 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
         db_project = project_repository.get_project(db=db, project_id=id)
         if db_project is None:
             raise HTTPException(status_code=404, detail="Project not found")
-
         updated_project = project_repository.update_project(db=db, project_id=id, project=project)
         return {
             "status": "success",

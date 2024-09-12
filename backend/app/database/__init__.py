@@ -1,6 +1,6 @@
 from typing import Generator
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from sqlalchemy.sql import Select
 from app.database.query import SoftDeleteQuery
 from app.config import settings
@@ -13,6 +13,8 @@ engine = create_engine(
     settings.sqlalchemy_database_url, connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, query_cls=SoftDeleteQuery)
+
+Base = declarative_base()
 
 @event.listens_for(Session, "do_orm_execute")
 def _add_filtering_criteria(execute_state):

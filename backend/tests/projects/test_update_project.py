@@ -9,18 +9,13 @@ from app.api.v1.projects import update_project
 from app.schemas.project import ProjectUpdate
 from app.repositories import project_repository
 
-
-# Test client setup
 client = TestClient(app)
-
 
 @pytest.fixture
 def mock_db():
     """Fixture to mock the database session"""
     return MagicMock(spec=Session)
 
-
-# Mock the project_repository.update_project globally
 @patch("app.repositories.project_repository.update_project")
 @patch("app.repositories.project_repository.get_project")
 def test_update_project_success(mock_get_project, mock_update_project, mock_db):
@@ -106,11 +101,12 @@ def test_update_project_api_success(mock_get_project, mock_update_project):
     }
 
 
-def test_update_project_api_not_found():
+@patch("app.repositories.project_repository.get_project")
+def test_update_project_api_not_found(mock_get_project):
     """Test project update when project is not found via API"""
     project_id = 999
+    mock_get_project.return_value = None
     response = client.put(f"/v1/projects/{project_id}", json={"name": "Updated Project"})
-
     assert response.status_code == 404
     assert response.json() == {"detail": "Project not found"}
 
