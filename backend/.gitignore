@@ -7,3 +7,4 @@ venv
 uploads/
 processed/
 pandaetl.log
+*.db
