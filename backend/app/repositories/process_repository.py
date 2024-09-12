@@ -1,4 +1,5 @@
-from sqlalchemy import desc, func
+from app.models.process import ProcessStatus
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session, joinedload, defer, aliased
 
 from app import models
@@ -43,6 +44,15 @@ def get_processes(db: Session):
     )
 
     return processes
+
+
+def get_all_pending_processes(db: Session):
+    return db.query(models.Process).filter(
+        or_(
+            models.Process.status == ProcessStatus.PENDING,
+            models.Process.status == ProcessStatus.IN_PROGRESS,
+        )
+    )
 
 
 def create_process(db: Session, process_data: ProcessData):

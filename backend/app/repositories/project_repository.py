@@ -1,7 +1,7 @@
 from typing import List, Union
 from app.models.asset_content import AssetProcessingStatus
 from sqlalchemy.orm import Session, joinedload, defer, aliased
-from sqlalchemy import and_, asc, desc, func
+from sqlalchemy import and_, asc, desc, func, or_
 
 from app import models
 from app.schemas.project import ProjectCreate, ProjectUpdate
@@ -34,6 +34,10 @@ def get_projects(db: Session, page: int = 1, page_size: int = 20):
         .all()
     )
     return projects, total_count
+
+
+def get_all_projects(db: Session):
+    return db.query(models.Project).all()
 
 
 def get_project(db: Session, project_id: int):
@@ -120,10 +124,16 @@ def get_processes(db: Session, project_id: int):
 def add_asset_content(db: Session, asset_id: int, content: dict):
     if content:
         asset_content = models.AssetContent(
-            asset_id=asset_id, content=content, language=content["lang"]
+            asset_id=asset_id,
+            content=content,
+            language=content["lang"],
+            processing=AssetProcessingStatus.PENDING,
         )
     else:
-        asset_content = models.AssetContent(asset_id=asset_id)
+        asset_content = models.AssetContent(
+            asset_id=asset_id,
+            processing=AssetProcessingStatus.PENDING,
+        )
     db.add(asset_content)
     db.commit()
     return asset_content
@@ -141,7 +151,10 @@ def update_or_add_asset_content(db: Session, asset_id: int, content: dict):
         asset_content.language = content.get("lang", asset_content.language)
     else:
         asset_content = models.AssetContent(
-            asset_id=asset_id, content=content, language=content["lang"]
+            asset_id=asset_id,
+            content=content,
+            language=content["lang"],
+            processing=AssetProcessingStatus.PENDING,
         )
         db.add(asset_content)
 
@@ -204,7 +217,7 @@ def get_assets_content_pending(db: Session, project_id: int):
         .filter(
             and_(
                 models.Asset.project_id == project_id,
-                models.AssetContent.processing == AssetProcessingStatus.IN_PROGRESS,
+                models.AssetContent.processing == AssetProcessingStatus.PENDING,
             )
         )
         .all()
@@ -218,14 +231,31 @@ def get_assets_filename(db: Session, asset_ids: List[int]):
     ]
 
 
+def get_assets_content_incomplete(db: Session, project_id: int):
+    return (
+        db.query(models.Asset)
+        .join(models.AssetContent)  # Join AssetContent to Asset
+        .filter(
+            and_(
+                models.Asset.project_id == project_id,
+                or_(
+                    models.AssetContent.processing == AssetProcessingStatus.IN_PROGRESS,
+                    models.AssetContent.processing == AssetProcessingStatus.PENDING,
+                ),
+            )
+        )
+        .all()
+    )
+
+
 def update_project(db: Session, project_id: int, project: ProjectUpdate):
     db_project = get_project(db, project_id)
     if db_project is None:
         return None
-    
+
     for key, value in project.dict(exclude_unset=True).items():
         setattr(db_project, key, value)
-    
+
     db_project.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_project)

@@ -1,30 +1,23 @@
-from concurrent.futures import ThreadPoolExecutor
 import os
 import traceback
 from typing import List
-from app.models.asset_content import AssetProcessingStatus
+from app.processing.file_preprocessing import process_file
 from fastapi import APIRouter, File, HTTPException, Depends, UploadFile, Query
 from fastapi.responses import JSONResponse, FileResponse  # Add FileResponse here
-from sqlalchemy.orm import Session, exc
+from sqlalchemy.orm import Session
 
-from app.database import SessionLocal, get_db
+from app.database import get_db
 from app.schemas.project import ProjectCreate, ProjectUpdate
 from app.repositories import project_repository
 from app.config import settings
 from app.models.asset import Asset
 from datetime import datetime, timezone
-
-from app.repositories import user_repository
-from app.requests import extract_file_segmentation, extract_text_from_file
 from app.logger import Logger
 from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
 from app.schemas.asset import UrlAssetCreate
 from app.vectorstore.chroma import ChromaDB
 import time
 
-
-# Thread pool executor for background tasks
-file_preprocessor = ThreadPoolExecutor(max_workers=5)
 
 project_router = APIRouter()
 
@@ -184,7 +177,7 @@ async def upload_files(
         assets = project_repository.get_assets_without_content(db=db, project_id=id)
         for asset in assets:
             project_repository.add_asset_content(db, asset.id, None)
-            file_preprocessor.submit(preprocess_file, asset.id)
+            process_file(asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
@@ -238,7 +231,7 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
         assets = project_repository.get_assets_without_content(db=db, project_id=id)
         for asset in assets:
             project_repository.add_asset_content(db, asset.id)
-            file_preprocessor.submit(preprocess_file, asset.id)
+            process_file(asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
@@ -319,7 +312,9 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
         db_project = project_repository.get_project(db=db, project_id=id)
         if db_project is None:
             raise HTTPException(status_code=404, detail="Project not found")
-        updated_project = project_repository.update_project(db=db, project_id=id, project=project)
+        updated_project = project_repository.update_project(
+            db=db, project_id=id, project=project
+        )
         return {
             "status": "success",
             "message": "Project updated successfully",
@@ -386,36 +381,3 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
     except Exception as e:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
-
-
-def preprocess_file(asset_id: int):
-    db = SessionLocal()
-
-    try:
-        asset = project_repository.get_asset(db=db, asset_id=asset_id)
-        api_key = user_repository.get_user_api_key(db)
-        pdf_content = extract_text_from_file(api_key.key, asset.path, asset.type)
-        asset_content = project_repository.update_or_add_asset_content(
-            db, asset_id, pdf_content
-        )
-        segmentation = extract_file_segmentation(
-            api_token=api_key.key, pdf_content=pdf_content
-        )
-        vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
-        vectorstore.add_docs(
-            docs=segmentation["segments"],
-            metadatas=[
-                {"doc_id": asset.id, "project_id": asset.project_id}
-                for _ in segmentation["segments"]
-            ],
-        )
-
-        project_repository.update_asset_content_status(
-            db, asset_id=asset_content.id, status=AssetProcessingStatus.COMPLETED
-        )
-
-    except Exception as e:
-        project_repository.update_asset_content_status(
-            db, asset_id=asset_content.id, status=AssetProcessingStatus.FAILED
-        )
-        logger.error(f"failed to preprocess asset {asset_id}: {e}")

@@ -53,11 +53,9 @@ def override_get_db(mock_db):
 @patch("app.api.v1.projects.open")
 @patch("app.api.v1.projects.os.makedirs")
 @patch("app.api.v1.projects.os.path")
-@patch("app.api.v1.projects.file_preprocessor.submit")
-@patch("app.api.v1.projects.preprocess_file")
+@patch("app.api.v1.projects.process_file")
 def test_upload_files_success(
     mock_preprocess_file,
-    mock_submit,
     mock_os_path,
     mock_makedirs,
     mock_open,

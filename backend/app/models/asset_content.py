@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 
 class AssetProcessingStatus(Enum):
+    PENDING = 0
     IN_PROGRESS = 1
     COMPLETED = 2
     FAILED = 3
@@ -22,7 +23,7 @@ class AssetContent(Base):
     processing = Column(
         SQLAlchemyEnum(AssetProcessingStatus),
         nullable=False,
-        default=AssetProcessingStatus.IN_PROGRESS,
+        default=AssetProcessingStatus.PENDING,
     )
 
     asset = relationship("Asset", back_populates="content")
