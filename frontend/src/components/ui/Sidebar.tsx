@@ -33,9 +33,9 @@ const Sidebar: React.FC = () => {
         <div className="flex justify-between items-center px-4">
           <Link
             href="/projects"
-            className="flex justify-center items-center cursor-pointer w-[170px] pt-3"
+            className="flex justify-start items-center cursor-pointer pt-3 w-full"
           >
-            <LogoDark color="black" />
+            <LogoDark color="black" width="60" height="60" />
             <h2 className="text-lg font-semibold mb-2">
               panda{"{"}·{"}"}etl
             </h2>
