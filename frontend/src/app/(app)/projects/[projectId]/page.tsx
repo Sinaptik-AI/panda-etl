@@ -110,7 +110,7 @@ export default function Project() {
     ? projectAssetsResponse?.data?.data.map((asset: AssetData) => {
         return {
           ...asset,
-          size: formatFileSize(asset.size),
+          size: asset.size ? formatFileSize(asset.size) : "-",
         };
       })
     : [];
