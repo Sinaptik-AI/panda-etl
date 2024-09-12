@@ -1,4 +1,9 @@
-import { DeleteRequest, GetRequest, PostRequest } from "@/lib/requests";
+import {
+  DeleteRequest,
+  GetRequest,
+  PostRequest,
+  PutRequest,
+} from "@/lib/requests";
 import { ProjectData } from "@/interfaces/projects";
 import { AssetData } from "@/interfaces/assets";
 import { ProcessData } from "@/interfaces/processes";
@@ -147,6 +152,19 @@ export const DeleteAssets = async (projectId: string, assetId: string) => {
     const response = await DeleteRequest(
       `${projectsApiUrl}/${projectId}/assets/${assetId}`,
     );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Add this new function to update a project
+export const UpdateProject = async (
+  projectId: string,
+  data: { name: string; description: string },
+) => {
+  try {
+    const response = await PutRequest(`${projectsApiUrl}/${projectId}`, data);
     return response;
   } catch (error) {
     throw error;

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, joinedload, defer, aliased
 from sqlalchemy import and_, asc, desc, func
 
 from app import models
-from app.schemas.project import ProjectCreate
+from app.schemas.project import ProjectCreate, ProjectUpdate
 from app.models.asset import Asset
 from app.models.process import Process
 from app.models.process_step import ProcessStep, ProcessStepStatus
@@ -216,3 +216,17 @@ def get_assets_filename(db: Session, asset_ids: List[int]):
         asset.filename
         for asset in db.query(models.Asset).filter(models.Asset.id.in_(asset_ids)).all()
     ]
+
+
+def update_project(db: Session, project_id: int, project: ProjectUpdate):
+    db_project = get_project(db, project_id)
+    if db_project is None:
+        return None
+    
+    for key, value in project.dict(exclude_unset=True).items():
+        setattr(db_project, key, value)
+    
+    db_project.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(db_project)
+    return db_project

@@ -11,6 +11,7 @@ import {
   LinkIcon,
   SearchIcon,
   DownloadIcon,
+  PencilIcon,
 } from "lucide-react";
 import TabList from "@/components/ui/TabList";
 import ProcessesList from "@/components/ProcessesList";
@@ -42,6 +43,7 @@ import PageLoader from "@/components/ui/PageLoader";
 import toast from "react-hot-toast";
 import { formatFileSize } from "@/lib/utils";
 import RecentTransformations from "@/components/RecentTransformations";
+import Link from "next/link";
 
 export default function Project() {
   const params = useParams();
@@ -236,7 +238,7 @@ export default function Project() {
     if (isProcesses) {
       setActiveTab("processes");
     }
-  }, [, /* ... other dependencies ... */ isProcesses]); // Add isProcesses to the dependency array
+  }, [isProcesses]);
 
   const handleDelete = () => {
     deleteAsset(
@@ -281,8 +283,22 @@ export default function Project() {
 
       <Breadcrumb items={breadcrumbItems} classNames="mb-8" />
 
-      <div className="flex justify-between items-center mb-8">
-        <Title margin={false}>{project?.name}</Title>
+      <div className="mb-8">
+        <div className="flex items-center group">
+          <Title margin={false}>{project?.name}</Title>
+          <Link
+            href={`/projects/${id}/edit`}
+            className="ml-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <PencilIcon className="h-4 w-4" />
+            <span className="sr-only">Edit project</span>
+          </Link>
+        </div>
+        {project?.description && (
+          <p className="text-gray-600 mt-2 text-sm leading-relaxed max-w-2xl">
+            {project?.description}
+          </p>
+        )}
       </div>
 
       {isLoading || isAssetsLoading ? (

@@ -12,6 +12,7 @@ import {
   ListIcon,
   TrashIcon,
   FolderIcon,
+  PencilIcon,
 } from "lucide-react";
 import { ProjectData } from "@/interfaces/projects";
 import { GetProjects } from "@/services/projects";
@@ -132,6 +133,10 @@ export default function Projects() {
     }
   };
 
+  const handleEdit = (project: ProjectData) => {
+    router.push(`/projects/${project.id}/edit`);
+  };
+
   return (
     <>
       <Head>
@@ -168,6 +173,10 @@ export default function Projects() {
                   </ContextMenuTrigger>
 
                   <ContextMenuContent className="bg-white">
+                    <ContextMenuItem onClick={() => handleEdit(project)}>
+                      <PencilIcon className="mr-2 h-4 w-4" />
+                      Edit
+                    </ContextMenuItem>
                     <ContextMenuItem
                       onClick={() => {
                         setDeletedProject(project);
@@ -187,6 +196,11 @@ export default function Projects() {
               columns={columns}
               onRowClick={(project) => handleProjectClick(project.id)}
               actions={[
+                {
+                  label: "Edit",
+                  icon: <PencilIcon className="mx-1 h-4 w-4" />,
+                  onClick: (project: ProjectData) => handleEdit(project),
+                },
                 {
                   label: "Delete",
                   icon: <TrashIcon className="mx-1 h-4 w-4" />,

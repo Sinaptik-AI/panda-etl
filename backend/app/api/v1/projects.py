@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal, get_db
-from app.schemas.project import ProjectCreate
+from app.schemas.project import ProjectCreate, ProjectUpdate
 from app.repositories import project_repository
 from app.config import settings
 from app.models.asset import Asset
@@ -311,6 +311,26 @@ def get_processes(id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to fetch response")
+
+
+@project_router.put("/{id}")
+def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db)):
+    try:
+        db_project = project_repository.get_project(db=db, project_id=id)
+        if db_project is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        updated_project = project_repository.update_project(db=db, project_id=id, project=project)
+        return {
+            "status": "success",
+            "message": "Project updated successfully",
+            "data": updated_project,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(traceback.print_exc())
+        raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
 @project_router.delete("/{project_id}")
