@@ -7,14 +7,15 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.api.v1.projects import update_project
 from app.schemas.project import ProjectUpdate
-from app.repositories import project_repository
 
 client = TestClient(app)
+
 
 @pytest.fixture
 def mock_db():
     """Fixture to mock the database session"""
     return MagicMock(spec=Session)
+
 
 @patch("app.repositories.project_repository.update_project")
 @patch("app.repositories.project_repository.get_project")
@@ -27,7 +28,7 @@ def test_update_project_success(mock_get_project, mock_update_project, mock_db):
     mock_update_project.return_value = {
         "id": project_id,
         "name": "Updated Project",
-        "description": "New description"
+        "description": "New description",
     }
 
     response = update_project(id=project_id, project=project_data, db=mock_db)
@@ -37,9 +38,11 @@ def test_update_project_success(mock_get_project, mock_update_project, mock_db):
     assert response["data"] == {
         "id": project_id,
         "name": "Updated Project",
-        "description": "New description"
+        "description": "New description",
     }
-    mock_update_project.assert_called_once_with(db=mock_db, project_id=project_id, project=project_data)
+    mock_update_project.assert_called_once_with(
+        db=mock_db, project_id=project_id, project=project_data
+    )
 
 
 @patch("app.repositories.project_repository.get_project")
@@ -84,10 +87,13 @@ def test_update_project_api_success(mock_get_project, mock_update_project):
     mock_update_project.return_value = {
         "id": project_id,
         "name": "Updated Project",
-        "description": "New description"
+        "description": "New description",
     }
 
-    response = client.put(f"/v1/projects/{project_id}", json={"name": "Updated Project", "description": "New description"})
+    response = client.put(
+        f"/v1/projects/{project_id}",
+        json={"name": "Updated Project", "description": "New description"},
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -96,8 +102,8 @@ def test_update_project_api_success(mock_get_project, mock_update_project):
         "data": {
             "id": project_id,
             "name": "Updated Project",
-            "description": "New description"
-        }
+            "description": "New description",
+        },
     }
 
 
@@ -106,7 +112,9 @@ def test_update_project_api_not_found(mock_get_project):
     """Test project update when project is not found via API"""
     project_id = 999
     mock_get_project.return_value = None
-    response = client.put(f"/v1/projects/{project_id}", json={"name": "Updated Project"})
+    response = client.put(
+        f"/v1/projects/{project_id}", json={"name": "Updated Project"}
+    )
     assert response.status_code == 404
     assert response.json() == {"detail": "Project not found"}
 
@@ -117,7 +125,9 @@ def test_update_project_api_db_error(mock_get_project):
     project_id = 1
     mock_get_project.side_effect = Exception("Database error")
 
-    response = client.put(f"/v1/projects/{project_id}", json={"name": "Updated Project"})
+    response = client.put(
+        f"/v1/projects/{project_id}", json={"name": "Updated Project"}
+    )
 
     assert response.status_code == 500
     assert response.json() == {"detail": "Unable to process request!"}

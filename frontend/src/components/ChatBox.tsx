@@ -95,7 +95,7 @@ const ChatBox = ({
 
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 18rem)" }}>
-      {isLoading || !chatEnabled || messages.length === 0 ? (
+      {isLoading || !chatEnabled ? (
         <NoChatPlaceholder isLoading={isLoading || !chatEnabled} />
       ) : (
         <>

@@ -2,6 +2,7 @@ import traceback
 from typing import Optional
 from app.database import get_db
 from app.logger import Logger
+from app.models.asset_content import AssetProcessingStatus
 from app.repositories import project_repository, user_repository
 from app.repositories import conversation_repository
 from app.requests import chat_query
@@ -93,6 +94,13 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
         asset_contents = project_repository.get_assets_without_content(
             db=db, project_id=project_id
         )
+
+        asset_contents = [
+            asset
+            for asset in asset_contents
+            if asset.status != AssetProcessingStatus.FAILED
+        ]
+
         pending_contents = project_repository.get_assets_content_pending(
             db=db, project_id=project_id
         )

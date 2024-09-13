@@ -147,8 +147,9 @@ def update_or_add_asset_content(db: Session, asset_id: int, content: dict):
     )
 
     if asset_content:
-        asset_content.content = content
-        asset_content.language = content.get("lang", asset_content.language)
+        if content:
+            asset_content.content = content
+            asset_content.language = content.get("lang", asset_content.language)
     else:
         asset_content = models.AssetContent(
             asset_id=asset_id,

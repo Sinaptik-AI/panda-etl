@@ -30,13 +30,18 @@ def preprocess_file(asset_id: int):
             success = False
 
             while retries < settings.max_retries and not success:
+                asset_content = project_repository.update_or_add_asset_content(
+                    db, asset_id, None
+                )
                 try:
                     pdf_content = extract_text_from_file(
                         api_key.key, asset.path, asset.type
                     )
+
                     asset_content = project_repository.update_or_add_asset_content(
                         db, asset_id, pdf_content
                     )
+
                     segmentation = extract_file_segmentation(
                         api_token=api_key.key, pdf_content=pdf_content
                     )
@@ -60,9 +65,10 @@ def preprocess_file(asset_id: int):
                     if retries == settings.max_retries:
                         project_repository.update_asset_content_status(
                             db,
-                            asset_id=asset_content.id,
+                            asset_id=asset_id,
                             status=AssetProcessingStatus.FAILED,
                         )
+
                     logger.error(
                         f"Error during retry {retries} for asset {asset_id}: {e}"
                     )
