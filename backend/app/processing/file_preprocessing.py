@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import traceback
+from sqlalchemy.orm.exc import ObjectDeletedError
 from app.models.asset_content import AssetProcessingStatus
 from app.database import SessionLocal
 from app.repositories import project_repository
@@ -25,6 +26,10 @@ def preprocess_file(asset_id: int):
     try:
         with SessionLocal() as db:
             asset = project_repository.get_asset(db=db, asset_id=asset_id)
+            if asset is None:
+                logger.error(f"Asset with id {asset_id} not found in the database")
+                return
+
             api_key = user_repository.get_user_api_key(db)
             retries = 0
             success = False
@@ -34,6 +39,9 @@ def preprocess_file(asset_id: int):
                     db, asset_id, None
                 )
                 try:
+                    # Refresh the asset object from the database
+                    db.refresh(asset)
+                    
                     pdf_content = extract_text_from_file(
                         api_key.key, asset.path, asset.type
                     )
@@ -59,6 +67,9 @@ def preprocess_file(asset_id: int):
                         status=AssetProcessingStatus.COMPLETED,
                     )
                     success = True
+                except ObjectDeletedError:
+                    logger.error(f"Asset with id {asset_id} was deleted during processing")
+                    return
                 except Exception as e:
                     logger.error(traceback.format_exc())
                     retries += 1

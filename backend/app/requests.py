@@ -3,7 +3,9 @@ import os
 from typing import List
 import requests
 from app.config import settings
+from app.logger import Logger
 
+logger = Logger()
 
 def request_api_key(email: str):
     url = f"{settings.api_server_url}/api/auth/register-pandaetl"
@@ -13,13 +15,13 @@ def request_api_key(email: str):
     response = requests.post(url, json={"email": email}, headers=headers)
 
     if response.status_code not in [200, 201]:
-        raise Exception(
-            f"Failed to request API: {response.status_code} - {response.text}"
-        )
+        logger.error(f"Failed to request API key. It returned {response.status_code} code: {response.text}")
+        raise Exception(f"Failed to request API key")
 
     try:
         data = response.json()
     except requests.exceptions.JSONDecodeError:
+        logger.error(f"Invalid JSON response from API server: {response.text}")
         raise Exception("Invalid JSON response")
 
     return data.get("message", "No message in response")
@@ -43,6 +45,7 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during text extraction. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -79,6 +82,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during extraction. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -101,6 +105,7 @@ def extract_field_descriptions(api_token, fields):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during field description generation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -139,6 +144,7 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during summary generation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -161,6 +167,7 @@ def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: s
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during summary of summaries generation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -195,9 +202,8 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
             output_file.write(response.content)
 
     else:
-        raise Exception(
-            f"Unable to process file! Status code: {response.status_code}, Response: {response.text}"
-        )
+        logger.error(f"Unable to process file during highlight sentences in pdf. It returned {response.status_code} code: {response.text}")
+        raise Exception(f"Unable to process file!")
 
 
 def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
@@ -231,6 +237,7 @@ def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process file during file segmentation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -252,4 +259,5 @@ def chat_query(api_token, query, docs):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
+        logger.error(f"Unable to process user query in the chat. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process user query!")
