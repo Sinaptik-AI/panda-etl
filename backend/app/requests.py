@@ -45,7 +45,7 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during text extraction. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during text extraction. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -82,7 +82,7 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during extraction. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during extraction. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -144,7 +144,7 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during summary generation. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during summary generation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -167,7 +167,7 @@ def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: s
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during summary of summaries generation. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during summary of summaries generation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
@@ -202,7 +202,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
             output_file.write(response.content)
 
     else:
-        logger.error(f"Unable to process file during highlight sentences in pdf. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during highlight sentences in pdf. It returned {response.status_code} code: {response.text}")
         raise Exception(f"Unable to process file!")
 
 
@@ -237,7 +237,7 @@ def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during file segmentation. It returned {response.status_code} code: {response.text}")
+        logger.error(f"Unable to process file ${file_path} during file segmentation. It returned {response.status_code} code: {response.text}")
         raise Exception("Unable to process file!")
 
 
