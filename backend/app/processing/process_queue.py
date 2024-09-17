@@ -104,6 +104,8 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
                     if summary:
                         summaries.append(summary)
 
+                    process_step.output = data
+
                 else:
                     if asset_content.content:
                         asset_content = "\n".join(asset_content.content["content"])
@@ -119,7 +121,9 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
                         pdf_content=(asset_content if asset_content else None),
                     )
 
-                process_step.output = data
+                    process_step.output = data["fields"]
+                    process_step.output_references = data["context"]
+
                 process_step.status = ProcessStepStatus.COMPLETED
                 db.add(process_step)
                 db.commit()

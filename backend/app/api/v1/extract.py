@@ -61,7 +61,7 @@ async def extract(
         return {
             "status": "success",
             "message": "File processed successfully",
-            "data": data,
+            "data": data["fields"],
         }
 
     except HTTPException:

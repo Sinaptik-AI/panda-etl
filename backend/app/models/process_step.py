@@ -26,6 +26,7 @@ class ProcessStep(Base):
     asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
     output = Column(JSON, nullable=True)
     status = Column(SQLAlchemyEnum(ProcessStepStatus), nullable=False)
+    output_references = Column(JSON, nullable=True)
 
     process = relationship("Process", back_populates="process_steps")
     asset = relationship("Asset", back_populates="process_steps")

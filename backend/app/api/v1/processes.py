@@ -325,6 +325,8 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
         )  # Assuming output is a list of dicts
     else:
         headers.append("summary")
+
+    headers.append("process_step_id")
     csv_writer.writerow(headers)
 
     # Write data rows
@@ -332,7 +334,7 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
         if process.type == "extract":
             for output in step.output:
                 row = [step.asset.filename]
-                for key in headers[1:]:  # Skip "Filename" column
+                for key in headers[1:-1]:  # Skip "Filename" column
                     value = output.get(key, "")
                     if key in date_columns:
                         try:
@@ -351,9 +353,11 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
                                 f"Unable to parse number {value}, fallback to extracted text. Error: {e}"
                             )
                     row.append(value)
+
+                row.append(step.id)
                 csv_writer.writerow(row)
         else:
-            row = [step.asset.filename, step.output.get("summary", "")]
+            row = [step.asset.filename, step.output.get("summary", ""), step.id]
             csv_writer.writerow(row)
 
     # Get the CSV content from the buffer

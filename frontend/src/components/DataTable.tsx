@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import DataGrid, { Column } from "react-data-grid";
 import TextEditor from "@/components/editor/TextEditor";
 import "react-data-grid/lib/styles.css";
+import { FaInfoCircle } from "react-icons/fa";
+import ExtractReferenceDrawer from "./ExtractReferenceDrawer";
 
 function calculateColumnWidth(
   title: string,
@@ -28,6 +30,11 @@ interface DataTableProps {
   data: Record<string, any>[];
 }
 
+interface SelectRowColumnType {
+  id: string;
+  key: string;
+}
+
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
   const [rows, setRows] = useState<Record<string, any>[]>([]);
   const [columns, setColumns] = useState<
@@ -36,7 +43,39 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
     new Set(),
   );
+
+  const [selectRowColumn, setSelectRowColumn] =
+    useState<SelectRowColumnType | null>(null);
+  const [displayDrawer, setDisplayDrawer] = useState<boolean>(false);
+
   const gridRef = useRef<HTMLDivElement>(null);
+
+  const renderCell = useCallback(
+    (props: {
+      row: Record<string, any>;
+      column: Column<Record<string, any>, unknown>;
+    }) => {
+      return (
+        <div className="relative group">
+          <span>{props.row[props.column.key]}</span>
+          <div className="absolute top-0 right-0 hidden group-hover:block">
+            <FaInfoCircle
+              className="text-blue-500 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectRowColumn({
+                  id: props.row.process_step_id,
+                  key: props.column.key,
+                });
+                setDisplayDrawer(true);
+              }}
+            />
+          </div>
+        </div>
+      );
+    },
+    [],
+  );
 
   useEffect(() => {
     const lineNumberColumn = {
@@ -59,6 +98,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
       editable: true,
       resizable: true,
       width: calculateColumnWidth(col, data),
+      renderCell: renderCell,
     }));
 
     setColumns([lineNumberColumn, ...dataCols]);
@@ -84,6 +124,10 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     setRows(newRows);
   }, []);
 
+  const onCancel = () => {
+    setDisplayDrawer(false);
+  };
+
   return (
     <div className="h-full w-full overflow-hidden" ref={gridRef} tabIndex={0}>
       <DataGrid
@@ -99,6 +143,13 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         rowKeyGetter={(row) => row.id}
         enableVirtualization={true}
       />
+      {displayDrawer && selectRowColumn && (
+        <ExtractReferenceDrawer
+          process_step_id={selectRowColumn.id}
+          column_name={selectRowColumn.key}
+          onCancel={onCancel}
+        />
+      )}
     </div>
   );
 };

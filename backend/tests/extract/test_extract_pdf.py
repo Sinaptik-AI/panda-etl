@@ -60,8 +60,10 @@ def test_extract_success(
         content={"content": ["Page 1 content", "Page 2 content"]}
     )
     mock_extract_data.return_value = {
-        "extracted_field1": "value1",
-        "extracted_field2": "value2",
+        "fields": {
+            "extracted_field1": "value1",
+            "extracted_field2": "value2",
+        }
     }
 
     response = client.post("/v1/extract/1", json=extract_fields.dict())

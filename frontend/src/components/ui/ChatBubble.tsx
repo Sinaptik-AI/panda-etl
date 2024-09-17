@@ -2,6 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { markify_text } from "@/lib/utils";
 
 interface ChatBubbleProps {
   message: string;
@@ -29,10 +30,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   timestamp,
   sender,
 }) => {
-  const markify_text = (text: string) => {
-    return text.replace(/\n/g, "<br>");
-  };
-
   return (
     <ChatBubbleWrapper sender={sender}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>

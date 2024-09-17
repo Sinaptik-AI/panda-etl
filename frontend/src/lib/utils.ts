@@ -41,3 +41,7 @@ export const truncateTextFromCenter = (
 
   return `${start}...${end}`;
 };
+
+export const markify_text = (text: string) => {
+  return text.replace(/\n/g, "<br>");
+};
