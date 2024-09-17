@@ -18,6 +18,7 @@ interface ExtractionStepProps {
   outputType: string;
   templateData?: any;
   processName: string;
+  multiFields: boolean;
 }
 
 export const ExtractionStep: React.FC<ExtractionStepProps> = ({
@@ -26,6 +27,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
   templateData,
   outputType,
   processName,
+  multiFields,
 }) => {
   const router = useRouter();
   const [currentAssetPreview, setCurrentAssetPreview] =
@@ -66,13 +68,17 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     }
   };
 
-  const handleProcessStart = async (fields: ExtractionField[]) => {
+  const handleProcessStart = async (
+    fields: ExtractionField[],
+    multiFields: boolean,
+  ) => {
     const { data } = await StartProcess({
       name: processName,
       type: "extract",
       data: {
         fields: fields,
         output_type: outputType,
+        multiple_fields: multiFields,
       },
       project_id: project.id,
     });
@@ -97,6 +103,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
           onStartProcess={handleProcessStart}
           fields={fields}
           setFields={setFields}
+          multiField={multiFields}
           processData={{
             name: processName,
             type: "extract",

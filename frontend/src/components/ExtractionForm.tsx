@@ -20,6 +20,7 @@ import { ProcessSelectionDrawer } from "./ProcessSelectionDrawer";
 import { ExtractionField } from "@/interfaces/extract";
 import AddFieldsAIDrawer from "./AddFieldsAIDrawer";
 import { Card } from "@/components/ui/Card";
+import Switch from "./ui/Switch";
 
 const FIELD_TYPES = ["text", "number", "date", "list"] as const;
 
@@ -33,10 +34,11 @@ interface Field {
 
 interface ExtractionFormProps {
   onSubmit: (fields: Field[]) => Promise<void>;
-  onStartProcess: (fields: Field[]) => Promise<void>;
+  onStartProcess: (fields: Field[], multiFields: boolean) => Promise<void>;
   fields: Field[];
   setFields: React.Dispatch<React.SetStateAction<Field[]>>;
   processData: ProcessSuggestionRequest;
+  multiField: boolean;
 }
 
 export default function ExtractionForm({
@@ -45,6 +47,7 @@ export default function ExtractionForm({
   fields,
   setFields,
   processData,
+  multiField,
 }: ExtractionFormProps) {
   const [expandedFields, setExpandedFields] = useState<Record<number, boolean>>(
     { 0: true },
@@ -55,6 +58,7 @@ export default function ExtractionForm({
     useState<boolean>(false);
   const [startingProcess, setStartingProcess] = useState<boolean>(false);
   const fieldRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [multiFields, setMultiFields] = useState<boolean>(multiField);
 
   const addField = () => {
     const newField: Field = { key: "", description: "", type: "text" };
@@ -111,7 +115,7 @@ export default function ExtractionForm({
   const onStartBtnClick = async () => {
     try {
       setStartingProcess(true);
-      await onStartProcess(fields);
+      await onStartProcess(fields, multiFields);
       setStartingProcess(false);
     } catch (error) {
       console.error("Error start process:", error);
@@ -233,6 +237,10 @@ export default function ExtractionForm({
               Use process as template
             </Button>
           </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <div>Enable multiple extractions for each file</div>
+          <Switch onChange={setMultiFields} value={multiFields} />
         </div>
         <div className="space-y-6">
           {fields?.map((field, index) => (

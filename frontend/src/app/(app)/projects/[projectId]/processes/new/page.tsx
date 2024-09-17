@@ -129,6 +129,7 @@ export default function NewProcess() {
             project={project}
             outputType={selectedOutput}
             templateData={templateProcess?.fields}
+            multiFields={templateProcess?.multiple_fields}
             processName={processName}
           />
         ) : selectedProcess === "extractive_summary" ? (
