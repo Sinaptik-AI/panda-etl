@@ -208,3 +208,42 @@ tr:hover .action-icons {
   border-right: 1px solid #ddd;
   text-align: center;
 }
+
+/* Add these new styles for the animated gradient */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(
+    to left,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: gradientAnimation 1.5s ease infinite;
+}
+
+.group:hover .animated-gradient {
+  animation-play-state: running;
+}
+
+/* Add these new styles for the gradient animation */
+@keyframes fadeInGradient {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.group:hover .bg-gradient-to-l {
+  animation: fadeInGradient 0.3s ease-in-out forwards;
+}

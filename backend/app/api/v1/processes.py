@@ -326,7 +326,7 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
     else:
         headers.append("summary")
 
-    headers.append("process_step_id")
+    headers.append("___process_step_id")
     csv_writer.writerow(headers)
 
     # Write data rows

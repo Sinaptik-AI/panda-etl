@@ -55,22 +55,27 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
       row: Record<string, any>;
       column: Column<Record<string, any>, unknown>;
     }) => {
+      const hasProcessId = !!props.row.___process_step_id;
+
       return (
-        <div className="relative group">
-          <span>{props.row[props.column.key]}</span>
-          <div className="absolute top-0 right-0 hidden group-hover:block">
-            <FaInfoCircle
-              className="text-blue-500 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectRowColumn({
-                  id: props.row.process_step_id,
-                  key: props.column.key,
-                });
-                setDisplayDrawer(true);
-              }}
-            />
-          </div>
+        <div className="relative group h-full flex items-center overflow-hidden">
+          <span className="truncate">{props.row[props.column.key]}</span>
+          {hasProcessId && (
+            <div className="absolute inset-y-1 right-1 w-12 bg-gradient-to-l from-[#f9fafb] via-[#f9fafb] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-end">
+              <FaInfoCircle
+                className="text-primary cursor-pointer mr-2"
+                size={14}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectRowColumn({
+                    id: props.row.___process_step_id,
+                    key: props.column.key,
+                  });
+                  setDisplayDrawer(true);
+                }}
+              />
+            </div>
+          )}
         </div>
       );
     },
@@ -91,22 +96,26 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
       },
     };
 
-    const dataCols = Object.keys(data[0] || {}).map((col: string) => ({
-      key: col,
-      name: col,
-      renderEditCell: TextEditor,
-      editable: true,
-      resizable: true,
-      width: calculateColumnWidth(col, data),
-      renderCell: renderCell,
-    }));
+    const dataCols = Object.keys(data[0] || {})
+      .filter((col) => !col.startsWith("___"))
+      .map((col: string) => ({
+        key: col,
+        name: col,
+        renderEditCell: TextEditor,
+        editable: true,
+        resizable: true,
+        width: calculateColumnWidth(col, data),
+        renderCell: renderCell,
+      }));
 
     setColumns([lineNumberColumn, ...dataCols]);
 
-    let rowsWithId = data.map((row, index) => ({
-      id: index,
-      ...row,
-    }));
+    let rowsWithId = data.map((row, index) => {
+      return {
+        id: index,
+        ...row,
+      };
+    });
 
     if (rowsWithId.length < MIN_ROWS) {
       const emptyRowsNeeded = MIN_ROWS - rowsWithId.length;
@@ -118,7 +127,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     }
 
     setRows(rowsWithId);
-  }, [data]);
+  }, [data, renderCell]);
 
   const onRowsChange = useCallback((newRows: Record<string, any>[]) => {
     setRows(newRows);
