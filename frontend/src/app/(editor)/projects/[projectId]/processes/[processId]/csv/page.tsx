@@ -8,6 +8,7 @@ import { X, Download } from "lucide-react"; // Add Download icon
 import DataTable from "@/components/DataTable";
 import Papa from "papaparse";
 import { BASE_API_URL } from "@/constants";
+import { toast } from "react-hot-toast";
 
 const ProcessPage = () => {
   const router = useRouter();
@@ -60,11 +61,27 @@ const ProcessPage = () => {
     }
   }, [processId]);
 
-  const handleDownloadCsv = useCallback(() => {
-    window.open(
-      `${BASE_API_URL}/${processApiUrl}/${processId}/download-csv`,
-      "_blank",
-    );
+  const handleDownloadCsv = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/${processApiUrl}/${processId}/download-csv`,
+      );
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `process_${processId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Show success toast
+      toast.success("CSV downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+      toast.error("Failed to download CSV");
+    }
   }, [processId]);
 
   React.useEffect(() => {

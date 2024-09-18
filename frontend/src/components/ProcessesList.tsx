@@ -31,6 +31,7 @@ import Tooltip from "@/components/ui/Tooltip";
 import Drawer from "./ui/Drawer";
 import dynamic from "next/dynamic";
 import { marked } from "marked";
+import { toast } from "react-hot-toast";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
@@ -258,6 +259,28 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
     "image",
   ];
 
+  const handleDownloadCsv = async (process: ProcessData) => {
+    try {
+      const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `process_${process.id}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Show success toast
+      toast.success("CSV downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+      toast.error("Failed to download CSV");
+    }
+  };
+
   return (
     <>
       {processes && processes.length > 0 ? (
@@ -323,9 +346,7 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
                 ) {
                   return;
                 }
-
-                const downloadUrl = `${BASE_API_URL}/${processApiUrl}/${process.id}/download-csv`;
-                window.open(downloadUrl, "_blank");
+                handleDownloadCsv(process);
               },
               hidden: (process: ProcessData) =>
                 process.status === ProcessStatus.IN_PROGRESS ||
