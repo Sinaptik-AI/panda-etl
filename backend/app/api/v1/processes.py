@@ -327,14 +327,15 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
         headers.append("summary")
 
     headers.append("___process_step_id")
+    headers.append("___extraction_index")
     csv_writer.writerow(headers)
 
     # Write data rows
     for step in completed_steps:
         if process.type == "extract":
-            for output in step.output:
+            for index, output in enumerate(step.output):
                 row = [step.asset.filename]
-                for key in headers[1:-1]:  # Skip "Filename" column
+                for key in headers[1:-2]:  # Skip "Filename" column
                     value = output.get(key, "")
                     if key in date_columns:
                         try:
@@ -355,9 +356,10 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
                     row.append(value)
 
                 row.append(step.id)
+                row.append(index)
                 csv_writer.writerow(row)
         else:
-            row = [step.asset.filename, step.output.get("summary", ""), step.id]
+            row = [step.asset.filename, step.output.get("summary", ""), step.id, 0]
             csv_writer.writerow(row)
 
     # Get the CSV content from the buffer

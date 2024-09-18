@@ -11,6 +11,7 @@ import { markify_text } from "@/lib/utils";
 interface IProps {
   process_step_id: string;
   column_name: string;
+  index: number;
   isOpen?: boolean;
   onCancel: () => void;
 }
@@ -19,6 +20,7 @@ const ExtractReferenceDrawer = ({
   isOpen = true,
   process_step_id,
   column_name,
+  index,
   onCancel,
 }: IProps) => {
   const { data, error, isLoading } = useQuery({
@@ -28,7 +30,7 @@ const ExtractReferenceDrawer = ({
     },
   });
 
-  const output = data?.output_reference?.[0]?.[column_name] ?? null; // hardcoded index 0 need to change for multi
+  const output = data?.output_reference?.[index]?.[column_name] ?? null;
 
   return (
     <Drawer isOpen={isOpen} onClose={onCancel} title={column_name}>
