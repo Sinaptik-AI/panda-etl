@@ -21,7 +21,12 @@ const RecentTransformations = ({ projectId }: { projectId?: string }) => {
     router.push(`/projects/${projectId}/processes/${process.id}/csv`);
   };
 
-  if (!processes || processes.length === 0) {
+  const completedProcesses =
+    processes?.filter(
+      (process: ProcessData) => process.status === ProcessStatus.COMPLETED,
+    ) || [];
+
+  if (completedProcesses.length === 0) {
     return null;
   }
 
@@ -29,20 +34,14 @@ const RecentTransformations = ({ projectId }: { projectId?: string }) => {
     <>
       <h2 className="text-lg font-semibold mb-4">Recent transformations</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-8">
-        {processes &&
-          processes
-            .filter(
-              (process: ProcessData) =>
-                process.status === ProcessStatus.COMPLETED,
-            )
-            .map((process: ProcessData) => (
-              <File
-                key={process.id}
-                name={`${process.name}.csv`}
-                type="spreadsheet"
-                onClick={() => handleFileClick(process)}
-              />
-            ))}
+        {completedProcesses.map((process: ProcessData) => (
+          <File
+            key={process.id}
+            name={`${process.name}.csv`}
+            type="spreadsheet"
+            onClick={() => handleFileClick(process)}
+          />
+        ))}
       </div>
     </>
   );
