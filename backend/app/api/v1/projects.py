@@ -80,7 +80,7 @@ def get_project(id: int, db: Session = Depends(get_db)):
 
         return {
             "status": "success",
-            "message": "Projects successfully returned",
+            "message": "Project successfully returned",
             "data": {
                 "id": project.id,
                 "name": project.name,
@@ -109,7 +109,7 @@ def get_assets(
         )
         return {
             "status": "success",
-            "message": "Projects successfully returned",
+            "message": "Assets successfully returned",
             "data": [
                 {
                     "id": asset.id,

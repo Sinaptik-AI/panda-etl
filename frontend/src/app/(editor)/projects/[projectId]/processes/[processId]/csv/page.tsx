@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { GetProcess, processApiUrl } from "@/services/processes";
 import { useQuery } from "@tanstack/react-query";
 import LogoDark from "@/icons/LogoDark";
-import { X } from "lucide-react";
+import { X, Download } from "lucide-react"; // Add Download icon
 import DataTable from "@/components/DataTable";
 import Papa from "papaparse";
 import { BASE_API_URL } from "@/constants";
@@ -60,6 +60,13 @@ const ProcessPage = () => {
     }
   }, [processId]);
 
+  const handleDownloadCsv = useCallback(() => {
+    window.open(
+      `${BASE_API_URL}/${processApiUrl}/${processId}/download-csv`,
+      "_blank",
+    );
+  }, [processId]);
+
   React.useEffect(() => {
     loadCsvData();
   }, [loadCsvData]);
@@ -79,13 +86,20 @@ const ProcessPage = () => {
             {isLoading ? "Loading..." : `${process?.name}.csv` || "CSV Preview"}
           </h1>
         </div>
-        <div className="space-x-2">
+        <div className="space-x-2 flex items-center">
+          <button
+            onClick={handleDownloadCsv}
+            className="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-200"
+            title="Download CSV"
+          >
+            <Download className="h-5 w-5" />
+          </button>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-gray-400 hover:text-gray-500 p-1 rounded-full hover:bg-gray-200"
+            title="Close"
           >
-            <span className="sr-only">Close</span>
-            <X className="h-6 w-6" aria-hidden="true" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
       </header>
