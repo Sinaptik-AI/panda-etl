@@ -230,7 +230,7 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
         # Add missing Asset Content
         assets = project_repository.get_assets_without_content(db=db, project_id=id)
         for asset in assets:
-            project_repository.add_asset_content(db, asset.id)
+            project_repository.add_asset_content(db, asset.id, None)
             process_file(asset.id)
 
         return JSONResponse(content="Successfully uploaded the files")
