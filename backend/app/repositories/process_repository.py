@@ -126,3 +126,24 @@ def delete_process_steps(db: Session, process_id: int):
     )
 
     db.commit()
+
+
+def update_process_step_status(
+    db, process_step, status, output=None, output_reference=None
+):
+    process_step.status = status
+    if output:
+        process_step.output = output
+
+    if output_reference:
+        process_step.output_reference = output_reference
+    db.add(process_step)
+    db.commit()
+
+
+def update_process_status(db, process, status, completed_at=None):
+    process.status = status
+    if completed_at:
+        process.completed_at = completed_at
+    db.add(process)
+    db.commit()

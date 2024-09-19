@@ -290,7 +290,9 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
         }
 
     completed_steps = [
-        step for step in process_steps if step.status == ProcessStepStatus.COMPLETED
+        step
+        for step in process_steps
+        if step.status == ProcessStepStatus.COMPLETED and step.output is not None
     ]
     if not completed_steps:
         return {
@@ -330,6 +332,7 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
     headers.append("___extraction_index")
     csv_writer.writerow(headers)
 
+    print(completed_steps)
     # Write data rows
     for step in completed_steps:
         if process.type == "extract":

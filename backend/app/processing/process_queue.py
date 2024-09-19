@@ -30,38 +30,45 @@ def submit_process(process_id: int):
 
 # Background task processing function
 def process_step_task(process_id, process_step_id, summaries, failed_docs):
-    db = SessionLocal()  # Create a new session for this thread
     try:
-        process = process_repository.get_process(db, process_id)
-        process_step = process_repository.get_process_step(db, process_step_id)
-        api_key = user_repository.get_user_api_key(db)
+        # Initial DB operations (open and fetch relevant data)
+        with SessionLocal() as db:
+            process = process_repository.get_process(db, process_id)
+            process_step = process_repository.get_process_step(db, process_step_id)
+            api_key = user_repository.get_user_api_key(db)
 
-        db.refresh(process)
+            api_key = api_key.key
 
-        if process.status == ProcessStatus.STOPPED:
-            return False  # Signal to stop processing
+            db.refresh(process)
 
-        logger.log(f"Processing file: {process_step.asset.path}")
-        if process_step.status == ProcessStepStatus.COMPLETED:
-            return True
+            if process.status == ProcessStatus.STOPPED:
+                return False  # Stop processing if the process is stopped
 
-        process_step.status = ProcessStepStatus.IN_PROGRESS
-        db.add(process_step)
-        db.commit()
+            logger.log(f"Processing file: {process_step.asset.path}")
+            if process_step.status == ProcessStepStatus.COMPLETED:
+                summaries.append(process_step.output.get("summary", ""))
+                return True
 
-        retries = 0
-        success = False
+            # Mark step as in progress
+            process_repository.update_process_step_status(
+                db, process_step, ProcessStepStatus.IN_PROGRESS
+            )
+
+            retries = 0
+            success = False
+            asset_content = project_repository.get_asset_content(
+                db, asset_id=process_step.asset.id
+            )
+
+        # Move the expensive external operations out of the DB session
         while retries < settings.max_retries and not success:
             try:
-                asset_content = project_repository.get_asset_content(
-                    db, asset_id=process_step.asset.id
-                )
-
                 if process.type == "extractive_summary":
+                    # Extract summary
                     from app.requests import extract_summary
 
                     data = extract_summary(
-                        api_token=api_key.key,
+                        api_token=api_key,
                         config=process.details,
                         file_path=(
                             process_step.asset.path
@@ -78,10 +85,10 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
                     summary = data.get("summary", "")
                     summary_sentences = data.get("summary_sentences", "")
 
+                    # Create directory for highlighted PDF
                     highlighted_file_dir = os.path.join(
-                        settings.process_dir, str(process_id), str(process_step.id)
+                        settings.process_dir, str(process_id), str(process_step_id)
                     )
-
                     os.makedirs(highlighted_file_dir, exist_ok=True)
 
                     highlighted_file_path = os.path.join(
@@ -89,8 +96,9 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
                         f"highlighted_{process_step.asset.filename}",
                     )
 
+                    # Highlight sentences in PDF (expensive operation)
                     highlight_sentences_in_pdf(
-                        api_token=api_key.key,
+                        api_token=api_key,
                         sentences=summary_sentences,
                         file_path=process_step.asset.path,
                         output_path=highlighted_file_path,
@@ -104,44 +112,57 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
                     if summary:
                         summaries.append(summary)
 
-                    process_step.output = data
+                    # Update process step output outside the expensive operations
+                    with SessionLocal() as db:
+                        process_repository.update_process_step_status(
+                            db, process_step, ProcessStepStatus.COMPLETED, output=data
+                        )
 
                 else:
-                    if asset_content.content:
-                        asset_content = "\n".join(asset_content.content["content"])
-                    else:
-                        asset_content = None
-
-                    data = extract_data(
-                        api_key.key,
-                        process.details,
-                        file_path=(
-                            process_step.asset.path if not asset_content else None
-                        ),
-                        pdf_content=(asset_content if asset_content else None),
+                    # Handle non-extractive summary process
+                    asset_content_text = (
+                        "\n".join(asset_content.content["content"])
+                        if asset_content.content
+                        else None
                     )
 
-                    process_step.output = data["fields"]
-                    process_step.output_references = data["context"]
+                    # Extract data (expensive operation)
+                    data = extract_data(
+                        api_key,
+                        process.details,
+                        file_path=(
+                            process_step.asset.path if not asset_content_text else None
+                        ),
+                        pdf_content=asset_content_text if asset_content_text else None,
+                    )
 
-                process_step.status = ProcessStepStatus.COMPLETED
-                db.add(process_step)
-                db.commit()
+                    # Update process step output outside the expensive operations
+                    with SessionLocal() as db:
+                        process_repository.update_process_step_status(
+                            db,
+                            process_step,
+                            ProcessStepStatus.COMPLETED,
+                            output=data["fields"],
+                            output_reference=data["context"],
+                        )
+
                 success = True
+
             except Exception as e:
                 logger.error(traceback.format_exc())
                 retries += 1
                 if retries == settings.max_retries:
                     failed_docs.append(process_step.asset.id)
-                    process_step.status = ProcessStepStatus.FAILED
-                    db.add(process_step)
-                    db.commit()
+                    with SessionLocal() as db:
+                        process_repository.update_process_step_status(
+                            db, process_step, ProcessStepStatus.FAILED
+                        )
+
         return True
+
     except Exception as e:
         logger.error(traceback.format_exc())
         return False
-    finally:
-        db.close()  # Ensure the session is closed after processing
 
 
 def process_task(process_id: int):
@@ -187,6 +208,9 @@ def process_task(process_id: int):
             # Fetch API key outside the expensive operation block
             with SessionLocal() as db:
                 api_key = user_repository.get_user_api_key(db).key
+
+            if process.output:
+                return
 
             # Extract summary outside the DB session to avoid holding connection
             data = extract_summary_of_summaries(
