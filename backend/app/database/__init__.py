@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 engine = create_engine(
     settings.sqlalchemy_database_url,
     connect_args={"check_same_thread": False},
-    pool_size=10,
-    max_overflow=20,
-    pool_timeout=60,
+    pool_size=30,
+    max_overflow=40,
+    pool_timeout=120,
 )
 
 SessionLocal = sessionmaker(

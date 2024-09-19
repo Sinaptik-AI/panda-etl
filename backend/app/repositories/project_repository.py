@@ -165,12 +165,21 @@ def update_or_add_asset_content(db: Session, asset_id: int, content: dict):
 
 
 def update_asset_content_status(
-    db: Session, asset_id: int, status: AssetProcessingStatus
+    db: Session,
+    status: AssetProcessingStatus,
+    asset_content_id: int = None,
+    asset_id: int = None,
 ):
-    db.query(models.AssetContent).filter(models.AssetContent.id == asset_id).update(
-        {models.AssetContent.processing: status}
-    )
-    db.commit()
+    if asset_content_id:
+        db.query(models.AssetContent).filter(
+            models.AssetContent.id == asset_content_id
+        ).update({models.AssetContent.processing: status})
+        db.commit()
+    elif asset_id:
+        db.query(models.AssetContent).filter(
+            models.AssetContent.asset_id == asset_id
+        ).update({models.AssetContent.processing: status})
+        db.commit()
 
 
 def get_asset_content(db: Session, asset_id: int):

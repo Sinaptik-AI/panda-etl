@@ -145,24 +145,25 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
 
 
 def process_task(process_id: int):
-    db = SessionLocal()
-    process = process_repository.get_process(db, process_id)
-    process.status = ProcessStatus.IN_PROGRESS
-    process.started_at = datetime.utcnow()
-    db.commit()
-
     try:
-        process_steps = process_repository.get_process_steps(db, process.id)
+        # Step 1: Fetch process details from the database and update its status
+        with SessionLocal() as db:
+            process = process_repository.get_process(db, process_id)
+            process.status = ProcessStatus.IN_PROGRESS
+            process.started_at = datetime.utcnow()
+            db.commit()
 
-        if not process_steps:
-            raise Exception("No process found!")
+            process_steps = process_repository.get_process_steps(db, process.id)
+            if not process_steps:
+                raise Exception("No process found!")
 
+            db.refresh(process)
+
+        # Step 2: Process each step in parallel outside the database connection
         failed_docs = []
         summaries = []
-
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-
-            for process_step in process_steps:
+            futures = [
                 executor.submit(
                     process_step_task,
                     process_id,
@@ -170,32 +171,52 @@ def process_task(process_id: int):
                     summaries,
                     failed_docs,
                 )
+                for process_step in process_steps
+            ]
+            # Wait for all submitted tasks to complete
+            concurrent.futures.wait(futures)
 
-        db.refresh(process)
-        if process.status != ProcessStatus.STOPPED:
-            if (
-                "show_final_summary" in process.details
-                and process.details["show_final_summary"]
-            ):
-                logger.log(f"Extracting summary from summaries")
-                data = extract_summary_of_summaries(
-                    user_repository.get_user_api_key(db).key,
-                    summaries,
-                    process.details["transformation_prompt"],
-                )
-                summary_of_summaries = data.get("summary", "")
-                process.output = {"summary": summary_of_summaries}
-                logger.log(f"Extracting summary from summaries completed")
+        # Step 3: Handle summary extraction (expensive operation) outside the DB session
+        summary_of_summaries = None
+        if (
+            "show_final_summary" in process.details
+            and process.details["show_final_summary"]
+        ):
+            logger.log(f"Extracting summary from summaries")
+            api_key = None
+            # Fetch API key outside the expensive operation block
+            with SessionLocal() as db:
+                api_key = user_repository.get_user_api_key(db).key
 
-            process.status = (
-                ProcessStatus.COMPLETED if not failed_docs else ProcessStatus.FAILED
+            # Extract summary outside the DB session to avoid holding connection
+            data = extract_summary_of_summaries(
+                api_key, summaries, process.details["transformation_prompt"]
             )
-            process.completed_at = datetime.utcnow()
+            summary_of_summaries = data.get("summary", "")
+            logger.log(f"Extracting summary from summaries completed")
+
+        # Step 4: After all steps are processed, update the process status and output in the DB
+        with SessionLocal() as db:
+            process = process_repository.get_process(db, process_id)
+            db.refresh(process)  # Ensure we have the latest process object
+
+            if process.status != ProcessStatus.STOPPED:
+                # If summary extraction was performed, add it to the process output
+                if summary_of_summaries:
+                    process.output = {"summary": summary_of_summaries}
+
+                process.status = (
+                    ProcessStatus.COMPLETED if not failed_docs else ProcessStatus.FAILED
+                )
+                process.completed_at = datetime.utcnow()
+
+            db.commit()  # Commit the final status and output
 
     except Exception as e:
         logger.error(traceback.format_exc())
-        process.status = ProcessStatus.FAILED
-        process.message = str(e)
-
-    db.commit()
-    db.close()
+        # Step 5: Handle failure cases and update the status accordingly
+        with SessionLocal() as db:
+            process = process_repository.get_process(db, process_id)
+            process.status = ProcessStatus.FAILED
+            process.message = str(e)
+            db.commit()

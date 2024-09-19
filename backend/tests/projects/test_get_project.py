@@ -50,7 +50,7 @@ def test_get_project_success(mock_get_project, mock_db):
     assert response.status_code == 200
     assert response.json() == {
         "status": "success",
-        "message": "Projects successfully returned",
+        "message": "Project successfully returned",
         "data": {
             "id": 1,
             "name": "Project 1",

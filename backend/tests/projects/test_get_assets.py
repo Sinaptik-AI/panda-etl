@@ -67,12 +67,10 @@ def test_get_assets_success(mock_get_assets, mock_db):
 
     response = client.get("/v1/projects/1/assets?page=1&page_size=2")
 
-    print(response.json())
-
     assert response.status_code == 200
     assert response.json() == {
         "status": "success",
-        "message": "Projects successfully returned",
+        "message": "Assets successfully returned",
         "data": [
             {
                 "id": 1,
@@ -117,7 +115,7 @@ def test_get_assets_empty(mock_get_assets, mock_db):
     assert response.status_code == 200
     assert response.json() == {
         "status": "success",
-        "message": "Projects successfully returned",
+        "message": "Assets successfully returned",
         "data": [],
         "total_count": 0,
         "page": 1,
@@ -136,8 +134,6 @@ def test_get_assets_empty(mock_get_assets, mock_db):
 def test_get_assets_invalid_page():
     """Test getting assets with an invalid page number"""
     response = client.get("/v1/projects/1/assets?page=0&page_size=2")
-
-    print(response.json())
     assert response.status_code == 422
     assert (
         "Input should be greater than or equal to 1"

@@ -7,6 +7,7 @@ from app.logger import Logger
 
 logger = Logger()
 
+
 def request_api_key(email: str):
     url = f"{settings.api_server_url}/api/auth/register-pandaetl"
 
@@ -15,7 +16,9 @@ def request_api_key(email: str):
     response = requests.post(url, json={"email": email}, headers=headers)
 
     if response.status_code not in [200, 201]:
-        logger.error(f"Failed to request API key. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Failed to request API key. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception(f"Failed to request API key")
 
     try:
@@ -38,14 +41,16 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
         f"{settings.pandaetl_server_url}/v1/extract/file/content",
         files=files,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file ${file_path} during text extraction. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file ${file_path} during text extraction. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -75,14 +80,16 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         files=files if files else None,
         data=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file ${file_path} during extraction. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file ${file_path} during extraction. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -99,13 +106,15 @@ def extract_field_descriptions(api_token, fields):
         f"{settings.pandaetl_server_url}/v1/extract/field-descriptions",
         json=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file during field description generation. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file during field description generation. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -138,13 +147,15 @@ def extract_summary(api_token, config, file_path=None, pdf_content=None):
         files=files if files else None,
         data=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file ${file_path} during summary generation. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file ${file_path} during summary generation. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -161,13 +172,15 @@ def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: s
         f"{settings.pandaetl_server_url}/v1/extract/summary-of-summaries",
         json=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file ${file_path} during summary of summaries generation. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process files during summary of summaries generation. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -192,7 +205,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
         files=files,
         data=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
 
     # Check the response status code
@@ -202,7 +215,9 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
             output_file.write(response.content)
 
     else:
-        logger.error(f"Unable to process file ${file_path} during highlight sentences in pdf. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file ${file_path} during highlight sentences in pdf. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception(f"Unable to process file!")
 
 
@@ -231,13 +246,15 @@ def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
         files=files if files else None,
         data=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process file ${file_path} during file segmentation. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process file ${file_path} during file segmentation. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process file!")
 
 
@@ -253,11 +270,13 @@ def chat_query(api_token, query, docs):
         f"{settings.pandaetl_server_url}/v1/chat",
         json=data,
         headers=headers,
-        timeout=3600,
+        timeout=360,
     )
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
     else:
-        logger.error(f"Unable to process user query in the chat. It returned {response.status_code} code: {response.text}")
+        logger.error(
+            f"Unable to process user query in the chat. It returned {response.status_code} code: {response.text}"
+        )
         raise Exception("Unable to process user query!")
