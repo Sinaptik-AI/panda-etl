@@ -9,6 +9,9 @@ import TabList from "@/components/ui/TabList";
 import Title from "@/components/ui/Title";
 import { useGetAPIKey, useUpdateAPIKey } from "@/hooks/useUser";
 import { Card } from "@/components/ui/Card";
+import { useQuery } from "@tanstack/react-query";
+import { GetUserUsageData } from "@/services/user";
+import { ApiUsage } from "@/interfaces/user";
 
 interface SettingsGroup {
   id: string;
@@ -71,21 +74,45 @@ const ApiKeysSettings: React.FC = () => {
 };
 
 const ApiUsageSettings: React.FC = () => {
-  const [apiUsage, setApiUsage] = useState<number>(246);
+  const [apiUsage, setApiUsage] = useState<ApiUsage>({
+    credits_used: 100,
+    total_credits: 100,
+  });
+
+  const { data: usageData, isLoading } = useQuery({
+    queryKey: ["userUsage"],
+    queryFn: GetUserUsageData,
+  });
+
+  console.log(usageData);
+
+  useEffect(() => {
+    if (usageData?.data?.data) {
+      setApiUsage(usageData.data.data);
+    }
+  }, [usageData]);
+
+  if (isLoading) {
+    return <div>Loading usage data...</div>;
+  }
 
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-1">
         API Usage
       </label>
-      <div className="flex items-center mt-1">
+      <div className="flex flex-col items-center mt-1 gap-4">
         <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
           <div
             className="bg-primary h-2.5 rounded-full"
-            style={{ width: `${(apiUsage / 1000) * 100}%` }}
+            style={{
+              width: `${(apiUsage.total_credits / apiUsage.total_credits) * 100}%`,
+            }}
           ></div>
         </div>
-        <p className="ml-2 text-sm text-gray-500">{apiUsage} / 1000</p>
+        <p className="ml-2 text-sm text-gray-500">
+          {apiUsage.credits_used} / {apiUsage.total_credits}
+        </p>
       </div>
     </div>
   );

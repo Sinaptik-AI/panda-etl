@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, Depends, HTTPException
 from requests import Session
 
@@ -81,3 +82,31 @@ async def update_user(user_update: UserUpdateRequest, db: Session = Depends(get_
         "message": "User details successfully updated!",
         "data": user,
     }
+
+
+@user_router.get("/usage", status_code=200)
+async def get_user_usage(db: Session = Depends(get_db)):
+    try:
+        users = user_repository.get_users(db, n=1)
+
+        if not users:
+            raise HTTPException(status_code=404, detail="No User Exists!")
+
+        api_key = user_repository.get_user_api_key(db, users[0].id)
+
+        if not api_key:
+            raise HTTPException(status_code=404, detail="API Key not found!")
+
+        usage_data = requests.get_user_usage_data(api_key.key)
+
+        return {
+            "status": "success",
+            "message": "User usage data retrieved successfully!",
+            "data": usage_data,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve user usage data"
+        )

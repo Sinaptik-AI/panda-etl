@@ -56,3 +56,12 @@ export const GetUserData = async () => {
     throw error;
   }
 };
+
+export const GetUserUsageData = async () => {
+  try {
+    const response = await GetRequest(`${userApiUrl}/usage`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

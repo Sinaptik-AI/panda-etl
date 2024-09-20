@@ -280,3 +280,24 @@ def chat_query(api_token, query, docs):
             f"Unable to process user query in the chat. It returned {response.status_code} code: {response.text}"
         )
         raise Exception("Unable to process user query!")
+
+
+def get_user_usage_data(api_token: str):
+    url = f"{settings.pandaetl_server_url}/v1/user/usage"
+
+    # Prepare the headers with the Bearer token
+    headers = {"x-authorization": f"Bearer {api_token}"}
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code not in [200, 201]:
+        logger.error(
+            f"Failed to fetch usage data. It returned {response.status_code} code: {response.text}"
+        )
+        raise Exception(f"Failed to fetch usage data")
+
+    try:
+        return response.json()
+    except requests.exceptions.JSONDecodeError:
+        logger.error(f"Invalid JSON response from API server: {response.text}")
+        raise Exception("Invalid JSON response")
