@@ -1,6 +1,7 @@
 import { GetRequest, PostRequest, PutRequest } from "@/lib/requests";
 import { APIKeyData } from "@/interfaces/user";
 import { UserData } from "@/interfaces/user";
+import localStorage from "@/lib/localStorage";
 
 const userApiUrl = "/user";
 
@@ -22,6 +23,7 @@ export const SaveAPIKey = async (data: { api_key: string }) => {
       `${userApiUrl}/save-api-key`,
       data,
     );
+    localStorage.setItem("api_key", data.api_key);
     return response;
   } catch (error) {
     throw error;
@@ -29,6 +31,11 @@ export const SaveAPIKey = async (data: { api_key: string }) => {
 };
 
 export const GetAPIKey = async () => {
+  const storedApiKey = localStorage.getItem("api_key");
+  if (storedApiKey) {
+    return { data: { api_key: storedApiKey } };
+  }
+
   try {
     const response = await GetRequest<{ data: APIKeyData }>(
       `${userApiUrl}/get-api-key`,

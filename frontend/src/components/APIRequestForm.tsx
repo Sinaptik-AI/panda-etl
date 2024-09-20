@@ -36,16 +36,14 @@ export default function APIRequestForm({ onSubmit }: APIRequestFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex flex-col mt-8">
-        <Input
-          id={`email-field-id`}
-          label="Enter your email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={error}
-          required
-        />
-      </div>
+      <Input
+        id={`email-field-id`}
+        label="Enter your email address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        error={error}
+        required
+      />
 
       <Button
         type="submit"

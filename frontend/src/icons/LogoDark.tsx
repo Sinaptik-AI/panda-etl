@@ -1,11 +1,9 @@
 import React from "react";
 
 const LogoDark = ({
-  color,
   width = "165",
   height = "57",
 }: {
-  color: string;
   width?: string;
   height?: string;
 }) => {
