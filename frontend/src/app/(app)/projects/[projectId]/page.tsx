@@ -121,7 +121,7 @@ export default function Project() {
   const projectTabs = [
     { id: "assets", label: "Docs" },
     { id: "processes", label: "Processes" },
-    { id: "chat", label: "Chat", badge: "beta" },
+    // { id: "chat", label: "Chat", badge: "beta" },
   ];
 
   const breadcrumbItems = [

@@ -47,12 +47,12 @@ export const Step1: React.FC<Step1Props> = ({
   const processNameInputRef = useRef<HTMLInputElement>(null);
   const processOptions: ProcessOption[] = [
     { id: "extract", label: "Extract", icon: FileText, disabled: false },
-    {
-      id: "extractive_summary",
-      label: "Summary",
-      icon: FileSearch,
-      disabled: false,
-    },
+    // {
+    //   id: "extractive_summary",
+    //   label: "Summary",
+    //   icon: FileSearch,
+    //   disabled: false,
+    // },
     // { id: "highlight", label: "Highlight", icon: Highlighter, disabled: true },
     // { id: "fill-form", label: "Fill Form", icon: FileInput, disabled: true },
     // { id: "key-sentences", label: "Key Sentences", icon: Key, disabled: true },

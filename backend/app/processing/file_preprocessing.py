@@ -14,7 +14,7 @@ from app.vectorstore.chroma import ChromaDB
 
 # Thread pool executor for background tasks
 file_preprocessor = ThreadPoolExecutor(max_workers=5)
-file_segmentation_executor = ThreadPoolExecutor(max_workers=1)
+# file_segmentation_executor = ThreadPoolExecutor(max_workers=1)
 
 logger = Logger()
 
@@ -108,12 +108,13 @@ def preprocess_file(asset_id: int):
                     db, asset_id, pdf_content
                 )
                 # Submit the segmentation task once the content is saved
-                file_segmentation_executor.submit(
-                    process_segmentation,
-                    asset.project_id,
-                    asset_content.id,
-                    api_key,
-                )
+                # TODO: Uncomment this after fixing the segmentation
+                # file_segmentation_executor.submit(
+                #     process_segmentation,
+                #     asset.project_id,
+                #     asset_content.id,
+                #     api_key,
+                # )
 
     except Exception as e:
         # Update failure status in the database if an exception occurs
