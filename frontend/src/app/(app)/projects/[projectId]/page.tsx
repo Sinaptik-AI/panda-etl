@@ -24,11 +24,14 @@ import {
   AddProjectURLAsset,
 } from "@/services/projects";
 import { ProjectData } from "@/interfaces/projects";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import DragAndDrop from "@/components/DragAndDrop";
 import DragOverlay from "@/components/DragOverlay";
 import { Table, Column } from "@/components/ui/Table";
-import Pagination from "@/components/ui/Pagination";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useDeleteAssets } from "@/hooks/useProjects";
 import DateLabel from "@/components/ui/Date";
@@ -44,6 +47,8 @@ import toast from "react-hot-toast";
 import { formatFileSize } from "@/lib/utils";
 import RecentTransformations from "@/components/RecentTransformations";
 import Link from "next/link";
+import { useInView } from "react-intersection-observer";
+import { Loader2 } from "lucide-react";
 
 export default function Project() {
   const params = useParams();
@@ -58,7 +63,6 @@ export default function Project() {
   const [currentAssetPreview, setCurrentAssetPreview] = useState<
     AssetData | Blob | null
   >(null);
-  const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [deletedId, setDeletedId] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -72,6 +76,7 @@ export default function Project() {
   >([]);
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
   const [processType, setProcessType] = useState<string | null>(null);
+  const { ref, inView } = useInView();
 
   const queryClient = useQueryClient();
 
@@ -96,27 +101,35 @@ export default function Project() {
 
   const {
     data: projectAssetsResponse,
-    refetch: refetchProjectAssets,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: isAssetsLoading,
-  } = useQuery({
-    queryKey: ["projectAssets", id, page, pageSize],
-    queryFn: () => GetProjectAssets(id, page, pageSize),
+  } = useInfiniteQuery({
+    queryKey: ["projectAssets", id],
+    queryFn: ({ pageParam = 1 }) => GetProjectAssets(id, pageParam, pageSize),
+    getNextPageParam: (lastPage, allPages) => {
+      const nextPage = allPages.length + 1;
+      return lastPage.data.total_count > allPages.length * pageSize
+        ? nextPage
+        : undefined;
+    },
+    initialPageParam: 1,
   });
 
   const { mutateAsync: deleteAsset, isPending: isDeleteAssetPending } =
     useDeleteAssets();
 
-  const assets = projectAssetsResponse?.data?.data
-    ? projectAssetsResponse?.data?.data.map((asset: AssetData) => {
-        return {
-          ...asset,
-          size: asset.size ? formatFileSize(asset.size) : "-",
-        };
-      })
+  const assets = projectAssetsResponse?.pages.flatMap((page) => page.data.data)
+    ? projectAssetsResponse?.pages
+        .flatMap((page) => page.data.data)
+        .map((asset: AssetData) => {
+          return {
+            ...asset,
+            size: asset.size ? formatFileSize(asset.size) : "-",
+          };
+        })
     : [];
-
-  const totalAssets = projectAssetsResponse?.data?.total_count || 0;
-  const totalPages = Math.ceil(totalAssets / pageSize);
 
   const projectTabs = [
     { id: "assets", label: "Docs" },
@@ -143,10 +156,21 @@ export default function Project() {
           console.error("File not found in uploadingFiles.");
         }
       } else {
-        const assetExtracted = assets.find(
-          (value: AssetData) => value.id == asset.id,
-        );
-        setCurrentAssetPreview(assetExtracted);
+        const assetExtracted = assets.find((value) => value.id === asset.id);
+        if (assetExtracted) {
+          setCurrentAssetPreview({
+            id: assetExtracted.id,
+            filename: assetExtracted.filename,
+            path: assetExtracted.path,
+            type: assetExtracted.type,
+            size: Number(assetExtracted.size),
+            details: assetExtracted.details,
+            updated_at: assetExtracted.updated_at,
+            created_at: assetExtracted.created_at,
+          });
+        } else {
+          console.error("Asset not found in assets array.");
+        }
       }
     }
   };
@@ -205,18 +229,18 @@ export default function Project() {
     {
       header: "File name",
       accessor: "filename",
-      label: (process: ProjectData) => (
+      label: (data: { type?: string; filename: string }) => (
         <div className="flex items-center">
-          {process.type?.includes("pdf") ? (
+          {data.type?.includes("pdf") ? (
             <Tooltip content="PDF" delay={1000}>
               <FileIcon className="mr-2 h-4 w-4" />
             </Tooltip>
-          ) : process.type?.includes("url") ? (
+          ) : data.type?.includes("url") ? (
             <Tooltip content="Website">
               <LinkIcon className="mr-2 h-4 w-4" />
             </Tooltip>
           ) : null}
-          {process.filename}
+          {data.filename}
         </div>
       ),
     },
@@ -224,15 +248,11 @@ export default function Project() {
     {
       header: "Last modified",
       accessor: "updated_at",
-      label: (process: ProjectData) => (
-        <DateLabel dateString={process.created_at} />
+      label: (data: { updated_at: string }) => (
+        <DateLabel dateString={data.updated_at} />
       ),
     },
   ];
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
 
   useEffect(() => {
     if (isProcesses) {
@@ -247,7 +267,7 @@ export default function Project() {
         onSuccess() {
           setIsDeleteModalOpen(false);
           toast.success("Asset successfully deleted.");
-          refetchProjectAssets();
+          queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
         },
         onError(error) {
           console.log(error);
@@ -267,12 +287,18 @@ export default function Project() {
       if (!response.data) {
         return false;
       }
-      refetchProjectAssets();
+      queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
     }
 
     setOpenUploadModal(false);
     return true;
   };
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
 
   return (
     <>
@@ -348,44 +374,49 @@ export default function Project() {
                   accept={[".pdf", "application/pdf"]}
                 />
               ) : (
-                <Table
-                  data={assets || []}
-                  columns={columns}
-                  onRowClick={(row) => openPreview(row)}
-                  actions={[
-                    {
-                      label: "Preview",
-                      icon: <SearchIcon className="mx-1 h-4 w-4" />,
-                      onClick: (row) => openPreview(row),
-                    },
-                    {
-                      label: "Download",
-                      icon: <DownloadIcon className="mx-1 h-4 w-4" />,
-                      onClick: (row) => {
-                        startDownload(row);
+                <>
+                  <Table
+                    data={assets || []}
+                    columns={columns}
+                    onRowClick={(row) => openPreview(row)}
+                    actions={[
+                      {
+                        label: "Preview",
+                        icon: <SearchIcon className="mx-1 h-4 w-4" />,
+                        onClick: (row) => openPreview(row),
                       },
-                    },
-                    {
-                      label: "Delete",
-                      icon: <TrashIcon className="mx-1 h-4 w-4" />,
-                      onClick: (row) => {
-                        setDeletedId(row.id);
-                        setIsDeleteModalOpen(true);
+                      {
+                        label: "Download",
+                        icon: <DownloadIcon className="mx-1 h-4 w-4" />,
+                        onClick: (row) => {
+                          startDownload(row);
+                        },
                       },
-                    },
-                  ]}
-                  uploadingFiles={uploadingFiles}
-                  uploadedFiles={uploadedFiles}
-                  isAssetsLoading={isAssetsLoading}
-                />
-              )}
-
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                      {
+                        label: "Delete",
+                        icon: <TrashIcon className="mx-1 h-4 w-4" />,
+                        onClick: (row) => {
+                          setDeletedId(row.id);
+                          setIsDeleteModalOpen(true);
+                        },
+                      },
+                    ]}
+                    uploadingFiles={uploadingFiles}
+                    uploadedFiles={uploadedFiles}
+                    isAssetsLoading={isAssetsLoading}
+                  />
+                  {hasNextPage && (
+                    <div ref={ref} className="flex justify-center py-4">
+                      {isFetchingNextPage ? (
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      ) : (
+                        <Button onClick={() => fetchNextPage()} variant="light">
+                          Load More
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
 
               {activeTab === "assets" && assets && assets.length > 0 && (
