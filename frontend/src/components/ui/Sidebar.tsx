@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
             href="/projects"
             className="flex justify-start items-center cursor-pointer pt-3 w-full"
           >
-            <LogoDark color="black" width="60" height="60" />
+            <LogoDark width="60" height="60" />
             <h2 className="text-lg font-semibold mb-2">
               panda{"{"}·{"}"}etl
             </h2>

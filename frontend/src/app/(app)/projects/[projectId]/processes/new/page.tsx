@@ -58,12 +58,14 @@ export default function NewProcess() {
   });
 
   const { data: apiKey } = useQuery({
-    queryKey: [],
+    queryKey: ["apiKey"],
     queryFn: async () => {
       const response = await GetAPIKey();
-      const { data: key } = response.data;
-      return key;
+      console.log(response);
+      return response.data.api_key;
     },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const breadcrumbItems = [

@@ -151,6 +151,13 @@ async def upload_files(
                     status_code=400, detail=f"The file {file.filename} is not a PDF"
                 )
 
+            # Check if the file size is greater than 20MB
+            if file.size > settings.MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"The file {file.filename} exceeds the size limit of 20MB",
+                )
+
             # Generate a secure filename
             filename = file.filename.replace(" ", "_")
             filepath = os.path.join(settings.upload_dir, str(id), filename)

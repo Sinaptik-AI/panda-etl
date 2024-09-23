@@ -41,7 +41,7 @@ const ApiKeysSettings: React.FC = () => {
 
   useEffect(() => {
     if (apiKeyResponse) {
-      setApiKey(apiKeyResponse?.data?.data.key);
+      setApiKey(apiKeyResponse?.data?.api_key);
     }
   }, [apiKeyResponse]);
 

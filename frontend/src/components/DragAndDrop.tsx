@@ -8,6 +8,8 @@ import React, {
   MouseEvent,
 } from "react";
 import { Upload, File, X } from "lucide-react";
+import { MAX_FILE_SIZE } from "@/constants";
+import toast from "react-hot-toast";
 
 interface DragAndDropProps {
   onFileSelect: (files: FileList | null) => void;
@@ -50,20 +52,38 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
     e.stopPropagation();
   }, []);
 
+  const handleFiles = (files: FileList) => {
+    const acceptedTypes = Array.isArray(accept) ? accept : [accept];
+    const validFiles = Array.from(files).filter(
+      (file) =>
+        file.size <= MAX_FILE_SIZE &&
+        acceptedTypes.some((type) => file.type.match(type)),
+    );
+    const invalidFiles = Array.from(files).filter(
+      (file) =>
+        file.size > MAX_FILE_SIZE ||
+        !acceptedTypes.some((type) => file.type.match(type)),
+    );
+
+    if (invalidFiles.length > 0) {
+      const invalidFileNames = invalidFiles.map((file) => file.name).join("\n");
+      toast.error(
+        `Invalid format or size unable to upload files: \n${invalidFileNames}`,
+      );
+    }
+
+    if (validFiles) {
+      onFilesChange(validFiles as unknown as FileList);
+    }
+  };
+
   const handleDrop = useCallback(
     (e: DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        const droppedFiles = e.dataTransfer.files;
-        const acceptedTypes = Array.isArray(accept) ? accept : [accept];
-        const allFilesAccepted = Array.from(droppedFiles).every((file) =>
-          acceptedTypes.some((type) => file.type.match(type)),
-        );
-        if (allFilesAccepted) {
-          onFilesChange(droppedFiles);
-        }
+        handleFiles(e.dataTransfer.files);
       }
     },
     [accept, onFilesChange],
@@ -85,7 +105,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
   const handleInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        onFilesChange(e.target.files);
+        handleFiles(e.target.files);
       }
     },
     [onFilesChange],
@@ -129,6 +149,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
             <p className="text-gray-300">
               Drag and drop your files here, or click to select
             </p>
+            <p className="text-gray-300 text-sm">max file size is 20 MB</p>
           </div>
         )}
         <input

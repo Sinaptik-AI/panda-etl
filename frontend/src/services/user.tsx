@@ -40,7 +40,7 @@ export const GetAPIKey = async () => {
     const response = await GetRequest<{ data: APIKeyData }>(
       `${userApiUrl}/get-api-key`,
     );
-    return response;
+    return { data: { api_key: response.data.data.key } };
   } catch (error) {
     throw error;
   }

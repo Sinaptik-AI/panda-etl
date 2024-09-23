@@ -97,7 +97,7 @@ const ProcessPage = () => {
       <header className="bg-gray-100 px-2 py-2 flex items-center justify-between shadow-sm border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <div className="mt-[2px]">
-            <LogoDark color="black" width="48" height="48" />
+            <LogoDark width="48" height="48" />
           </div>
           <h1 className="text-lg font-semibold text-gray-800">
             {isLoading ? "Loading..." : `${process?.name}.csv` || "CSV Preview"}

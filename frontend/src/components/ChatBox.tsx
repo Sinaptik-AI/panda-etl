@@ -115,7 +115,7 @@ const ChatBox = ({
                     className="flex-shrink-0 mr-2"
                     style={{ minWidth: "40px", width: "40px" }}
                   >
-                    <LogoDark color="black" width="100%" />
+                    <LogoDark width="100%" />
                   </div>
                 )}
                 <ChatBubble
@@ -128,7 +128,7 @@ const ChatBox = ({
             {messages.length === 0 && (
               <div className="mb-4 flex justify-start">
                 <div style={{ minWidth: "40px", width: "40px" }}>
-                  <LogoDark color="black" width="100%" />
+                  <LogoDark width="100%" />
                 </div>
 
                 <ChatBubble
@@ -141,7 +141,7 @@ const ChatBox = ({
             {loading && (
               <div className="my-4 flex justify-start">
                 <div style={{ minWidth: "40px", width: "40px" }}>
-                  <LogoDark color="black" width="100%" />
+                  <LogoDark width="100%" />
                 </div>
 
                 <ChatLoader />

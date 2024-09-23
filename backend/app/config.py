@@ -17,9 +17,9 @@ class Settings(BaseSettings):
     pandaetl_server_url: str
     log_file_path: str = os.path.join(os.path.dirname(__file__), "..", "pandaetl.log")
     openai_api_key: str
-    ai_model: str = "gpt-4o-mini"
     max_retries: int = 3
     max_relevant_docs: int = 10
+    MAX_FILE_SIZE: int = 20 * 1024 * 1024
 
     class Config:
         env_file = ".env"
