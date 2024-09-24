@@ -1,5 +1,7 @@
 import os
+from typing import List
 from app.database import SessionLocal
+from app.models import Process, ProcessStep
 from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +20,8 @@ import concurrent.futures
 from app.logger import Logger
 import traceback
 
+from app.vectorstore.chroma import ChromaDB
+
 
 executor = ThreadPoolExecutor(max_workers=5)
 
@@ -29,17 +33,19 @@ def submit_process(process_id: int):
 
 
 # Background task processing function
-def process_step_task(process_id, process_step_id, summaries, failed_docs):
+def process_step_task(
+    process_id: int,
+    process_step_id: int,
+    summaries: List[str],
+    failed_docs: List[int],
+    api_key: str,
+):
     try:
         # Initial DB operations (open and fetch relevant data)
         with SessionLocal() as db:
+
             process = process_repository.get_process(db, process_id)
             process_step = process_repository.get_process_step(db, process_step_id)
-            api_key = user_repository.get_user_api_key(db)
-
-            api_key = api_key.key
-
-            db.refresh(process)
 
             if process.status == ProcessStatus.STOPPED:
                 return False  # Stop processing if the process is stopped
@@ -87,7 +93,7 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
 
                     # Create directory for highlighted PDF
                     highlighted_file_dir = os.path.join(
-                        settings.process_dir, str(process_id), str(process_step_id)
+                        settings.process_dir, str(process.id), str(process_step.id)
                     )
                     os.makedirs(highlighted_file_dir, exist_ok=True)
 
@@ -120,20 +126,65 @@ def process_step_task(process_id, process_step_id, summaries, failed_docs):
 
                 else:
                     # Handle non-extractive summary process
-                    asset_content_text = (
-                        "\n".join(asset_content.content["content"])
-                        if asset_content.content
-                        else None
-                    )
+                    pdf_content = ""
+                    if (
+                        (
+                            "multiple_fields" not in process.details
+                            or not process.details["multiple_fields"]
+                        )
+                        and asset_content.content
+                        and asset_content.content["word_count"] > 500
+                    ):
+                        vectorstore = ChromaDB(
+                            f"panda-etl-{process.project_id}", similary_threshold=3
+                        )
+
+                        for field in process.details["fields"]:
+                            relevant_docs = vectorstore.get_relevant_docs(
+                                field["key"],
+                                where={
+                                    "$and": [
+                                        {"asset_id": process_step.asset.id},
+                                        {"project_id": process.project_id},
+                                    ]
+                                },
+                                k=5,
+                            )
+                            for index, metadata in enumerate(
+                                relevant_docs["metadatas"][0]
+                            ):
+                                segment_data = [relevant_docs["documents"][0][index]]
+                                if metadata["previous_sentence_id"] != -1:
+                                    prev_sentence = vectorstore.get_relevant_docs_by_id(
+                                        ids=[metadata["previous_sentence_id"]]
+                                    )
+                                    segment_data = [
+                                        prev_sentence["documents"][0]
+                                    ] + segment_data
+
+                                if metadata["next_sentence_id"] != -1:
+                                    next_sentence = vectorstore.get_relevant_docs_by_id(
+                                        ids=[metadata["next_sentence_id"]]
+                                    )
+                                    segment_data.append(next_sentence["documents"][0])
+
+                                pdf_content += "\n" + " ".join(segment_data)
+
+                    if not pdf_content:
+                        pdf_content = (
+                            "\n".join(asset_content.content["content"])
+                            if asset_content.content
+                            else None
+                        )
 
                     # Extract data (expensive operation)
                     data = extract_data(
                         api_key,
                         process.details,
                         file_path=(
-                            process_step.asset.path if not asset_content_text else None
+                            process_step.asset.path if not pdf_content else None
                         ),
-                        pdf_content=asset_content_text if asset_content_text else None,
+                        pdf_content=pdf_content if pdf_content else None,
                     )
 
                     # Update process step output outside the expensive operations
@@ -178,6 +229,8 @@ def process_task(process_id: int):
             if not process_steps:
                 raise Exception("No process found!")
 
+            api_key = user_repository.get_user_api_key(db)
+            api_key = api_key.key
             db.refresh(process)
 
         # Step 2: Process each step in parallel outside the database connection
@@ -187,10 +240,11 @@ def process_task(process_id: int):
             futures = [
                 executor.submit(
                     process_step_task,
-                    process_id,
+                    process.id,
                     process_step.id,
                     summaries,
                     failed_docs,
+                    api_key,
                 )
                 for process_step in process_steps
             ]
@@ -204,10 +258,6 @@ def process_task(process_id: int):
             and process.details["show_final_summary"]
         ):
             logger.log(f"Extracting summary from summaries")
-            api_key = None
-            # Fetch API key outside the expensive operation block
-            with SessionLocal() as db:
-                api_key = user_repository.get_user_api_key(db).key
 
             if process.output:
                 return
@@ -222,7 +272,6 @@ def process_task(process_id: int):
         # Step 4: After all steps are processed, update the process status and output in the DB
         with SessionLocal() as db:
             process = process_repository.get_process(db, process_id)
-            db.refresh(process)  # Ensure we have the latest process object
 
             if process.status != ProcessStatus.STOPPED:
                 # If summary extraction was performed, add it to the process output

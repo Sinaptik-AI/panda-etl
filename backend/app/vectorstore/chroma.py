@@ -83,6 +83,11 @@ class ChromaDB(VectorStore):
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
 
+        # Add previous_id and next_id to metadatas
+        for idx, metadata in enumerate(metadatas):
+            metadata["previous_sentence_id"] = ids[idx - 1] if idx > 0 else -1
+            metadata["next_sentence_id"] = ids[idx + 1] if idx < len(ids) - 1 else -1
+
         for i in range(0, len(docs), batch_size):
             self._docs_collection.add(
                 documents=docs[i : i + batch_size],
@@ -91,7 +96,7 @@ class ChromaDB(VectorStore):
             )
 
     def delete_docs(
-        self, ids: Optional[List[str]] = None, metadata_criteria: Optional[dict] = None
+        self, ids: Optional[List[str]] = None, where: Optional[dict] = None
     ) -> Optional[bool]:
         """
         Delete by vector ID to delete docs
@@ -103,36 +108,50 @@ class ChromaDB(VectorStore):
             False otherwise
         """
 
-        if ids is None and metadata_criteria is not None:
-            records_to_delete = self._docs_collection.get(where=metadata_criteria)
+        if ids is None and where is not None:
+            records_to_delete = self._docs_collection.get(where=where)
             ids = records_to_delete["ids"]
 
         self._docs_collection.delete(ids=ids)
         return True
 
-    def get_relevant_docs(self, question: str, k: int = None) -> List[dict]:
+    def get_relevant_docs(
+        self, question: str, where: Optional[dict] = None, k: int = None
+    ) -> List[dict]:
         """
         Returns relevant documents based search
         """
         k = k or self._max_samples
 
-        relevant_data: chromadb.QueryResult = self._docs_collection.query(
-            query_texts=question,
-            n_results=k,
-            include=["metadatas", "documents", "distances"],
-        )
+        if not where:
+            relevant_data: chromadb.QueryResult = self._docs_collection.query(
+                query_texts=question,
+                n_results=k,
+                include=["metadatas", "documents", "distances"],
+            )
+        else:
+            relevant_data: chromadb.QueryResult = self._docs_collection.query(
+                query_texts=question,
+                n_results=k,
+                include=["metadatas", "documents", "distances"],
+                where=where,
+            )
 
         return self._filter_docs_based_on_distance(
             relevant_data, self._similarity_threshold
         )
 
-    def get_relevant_docs_documents(self, question: str, k: int = None) -> List[str]:
+    def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
         """
-        Returns relevant question answers documents only
-        Args:
-            question (_type_): list of documents
+        Returns relevant question answers based on ids
         """
-        return self.get_relevant_docs(question, k)["documents"][0]
+
+        relevant_data: chromadb.QueryResult = self._docs_collection.get(
+            ids=ids,
+            include=["metadatas", "documents"],
+        )
+
+        return relevant_data
 
     def _filter_docs_based_on_distance(
         self, documents: chromadb.QueryResult, threshold: int

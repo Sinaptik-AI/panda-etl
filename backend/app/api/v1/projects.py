@@ -378,7 +378,7 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
             )
         asset.deleted_at = datetime.now(tz=timezone.utc)
         vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
-        vectorstore.delete_docs(metadata_criteria={"doc_id": asset.id})
+        vectorstore.delete_docs(where={"asset_id": asset.id})
         db.commit()
         return {"message": "Asset deleted successfully"}
 
