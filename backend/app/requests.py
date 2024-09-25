@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List
+from app.exceptions import CreditLimitExceededException
 import requests
 from app.config import settings
 from app.logger import Logger
@@ -86,6 +87,12 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
         return response.json()
+
+    elif response.status_code == 402:
+        raise CreditLimitExceededException(
+            response.json().get("detail", "Credit limit exceeded!")
+        )
+
     else:
         logger.error(
             f"Unable to process file ${file_path} during extraction. It returned {response.status_code} code: {response.text}"

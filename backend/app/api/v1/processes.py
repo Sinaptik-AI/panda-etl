@@ -3,6 +3,7 @@ import os
 import zipfile
 
 from app.processing.process_queue import submit_process
+from app.requests import get_user_usage_data
 import dateparser
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse, StreamingResponse
@@ -11,7 +12,7 @@ import csv
 from io import StringIO
 
 from app.database import get_db
-from app.repositories import process_repository
+from app.repositories import process_repository, user_repository
 from app.repositories import project_repository
 from app.models import ProcessStatus, ProcessStep
 from app.schemas.process import ProcessData, ProcessSuggestion
@@ -96,6 +97,17 @@ def get_processes(db: Session = Depends(get_db)):
 
 @process_router.post("/start")
 def start_process(process: ProcessData, db: Session = Depends(get_db)):
+
+    user_api_key = user_repository.get_user_api_key(db)
+
+    usage_data = get_user_usage_data(user_api_key.key)
+
+    if usage_data["credits_used"] >= usage_data["total_credits"]:
+        raise HTTPException(
+            status_code=402,
+            detail="Credit limit Reached, Wait next month or upgrade your Plan",
+        )
+
     process = process_repository.create_process(db, process)
 
     assets = project_repository.get_assets(db, process.project_id)
@@ -154,6 +166,16 @@ def stop_processes(process_id: int, db: Session = Depends(get_db)):
 
 @process_router.post("/{process_id}/resume")
 def resume_processes(process_id: int, db: Session = Depends(get_db)):
+
+    user_api_key = user_repository.get_user_api_key(db)
+
+    usage_data = get_user_usage_data(user_api_key.key)
+
+    if usage_data["credits_used"] >= usage_data["total_credits"]:
+        raise HTTPException(
+            status_code=402,
+            detail="Credit limit Reached, Wait next month or upgrade your Plan",
+        )
 
     process = process_repository.get_process(db, process_id)
 

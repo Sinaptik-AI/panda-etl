@@ -1,0 +1,2 @@
+class CreditLimitExceededException(Exception):
+    pass

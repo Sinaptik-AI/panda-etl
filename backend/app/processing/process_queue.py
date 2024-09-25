@@ -1,6 +1,7 @@
 import os
 from typing import List
 from app.database import SessionLocal
+from app.exceptions import CreditLimitExceededException
 from app.models import Process, ProcessStep
 from app.repositories import process_repository
 from app.repositories import project_repository
@@ -198,6 +199,13 @@ def process_step_task(
                         )
 
                 success = True
+
+            except CreditLimitExceededException as e:
+                with SessionLocal() as db:
+                    process = process_repository.get_process(db, process_id)
+                    process_repository.update_process_status(
+                        db, process, ProcessStatus.STOPPED
+                    )
 
             except Exception as e:
                 logger.error(traceback.format_exc())
