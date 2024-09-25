@@ -111,7 +111,8 @@ const ApiUsageSettings: React.FC = () => {
           ></div>
         </div>
         <p className="ml-2 text-sm text-gray-500">
-          {apiUsage.credits_used} / {apiUsage.total_credits}
+          {Math.min(apiUsage.credits_used, apiUsage.total_credits)} /{" "}
+          {apiUsage.total_credits}
         </p>
       </div>
     </div>
