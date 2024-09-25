@@ -40,6 +40,7 @@ import { ProcessSelectionDrawer } from "./ProjectSelectionDrawer";
 import { ProjectData } from "@/interfaces/projects";
 import Image from "next/image";
 import PageLoader from "./ui/PageLoader";
+import { AxiosError } from "axios";
 
 interface ProcessesProps {
   projectId?: string;
@@ -129,18 +130,38 @@ const ProcessesList: React.FC<ProcessesProps> = ({ projectId }) => {
   }, [processDetails]);
 
   const stop_process = async (process: ProcessData) => {
-    const response = await StopProcess(process.id);
-    if (!response.data) {
-      alert("Failed to stop process!");
-      throw new Error("Failed to stop process!");
+    try {
+      const response = await StopProcess(process.id);
+      if (!response.data) {
+        toast.error("Failed to stop process!");
+        throw new Error("Failed to stop process!");
+      }
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        "status" in error &&
+        error.status === 402
+      ) {
+        toast.error(error.response?.data.detail);
+      }
     }
   };
 
   const resume_process = async (process: ProcessData) => {
-    const response = await ResumeProcess(process.id);
-    if (!response.data) {
-      alert("Failed to stop process!");
-      throw new Error("Failed to stop process!");
+    try {
+      const response = await ResumeProcess(process.id);
+      if (!response.data) {
+        toast.error("Failed to resume process!");
+        throw new Error("Failed to resume process!");
+      }
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        "status" in error &&
+        error.status === 402
+      ) {
+        toast.error(error.response?.data.detail);
+      }
     }
   };
 

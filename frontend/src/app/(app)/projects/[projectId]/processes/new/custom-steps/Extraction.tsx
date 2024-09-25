@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import AssetViewer from "@/components/AssetViewer";
 import CustomViewsPaginator from "@/components/CustomViewsPaginator";
 import Drawer from "@/components/ui/Drawer";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 interface ExtractionStepProps {
   project: ProjectData;
@@ -72,17 +74,27 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     fields: ExtractionField[],
     multiFields: boolean,
   ) => {
-    const { data } = await StartProcess({
-      name: processName,
-      type: "extract",
-      data: {
-        fields: fields,
-        output_type: outputType,
-        multiple_fields: multiFields,
-      },
-      project_id: project.id,
-    });
-    router.push(`/projects/${project.id}?tab=processes`);
+    try {
+      const { data } = await StartProcess({
+        name: processName,
+        type: "extract",
+        data: {
+          fields: fields,
+          output_type: outputType,
+          multiple_fields: multiFields,
+        },
+        project_id: project.id,
+      });
+      router.push(`/projects/${project.id}?tab=processes`);
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        "status" in error &&
+        error.status === 402
+      ) {
+        toast.error(error.response?.data.detail);
+      }
+    }
   };
 
   const handlePageChange = (index: number) => {
