@@ -77,15 +77,6 @@ const Sidebar: React.FC = () => {
               Contact us
             </a>
           </li>
-          <li className="mb-10">
-            <Link
-              href="/settings"
-              className="flex items-center text-gray-700 hover:text-priamry-hover"
-            >
-              <Settings className="w-5 h-5 mr-2" />
-              Settings
-            </Link>
-          </li>
           <li className="flex justify-between text-sm text-gray-500">
             <a
               href="https://sinaptik.notion.site/Terms-of-Service-6531411a9dfe4f1b9cb6045e93e9723c?pvs=4"

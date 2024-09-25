@@ -20,24 +20,12 @@ const Navbar: React.FC = () => {
           </button>
         </div>
         <div className="relative">
-          <button
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="flex items-center focus:outline-none"
+          <Link
+            href="/settings"
+            className="flex items-center  text-sm text-gray-700"
           >
-            <User className="w-5 h-5 text-gray-500" />
-            <ChevronDown className="w-4 h-4 ml-1 text-gray-500" />
-          </button>
-          {isUserMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-              <Link
-                href="/user/settings"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                Manage settings
-              </Link>
-            </div>
-          )}
+            <Settings className="w-5 h-5 mr-2" />
+          </Link>
         </div>
       </div>
     </header>
