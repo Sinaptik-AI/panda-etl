@@ -106,12 +106,12 @@ const ApiUsageSettings: React.FC = () => {
           <div
             className="bg-primary h-2.5 rounded-full"
             style={{
-              width: `${(apiUsage.total_credits / apiUsage.total_credits) * 100}%`,
+              width: `${((apiUsage.total_credits - apiUsage.credits_used) / apiUsage.total_credits) * 100}%`,
             }}
           ></div>
         </div>
         <p className="ml-2 text-sm text-gray-500">
-          {Math.min(apiUsage.credits_used, apiUsage.total_credits)} /{" "}
+          {apiUsage.total_credits - apiUsage.credits_used} /{" "}
           {apiUsage.total_credits}
         </p>
       </div>
