@@ -195,7 +195,7 @@ def process_step_task(
                             process_step,
                             ProcessStepStatus.COMPLETED,
                             output=data["fields"],
-                            output_reference=data["context"],
+                            output_references=data["context"],
                         )
 
                 success = True
