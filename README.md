@@ -1,5 +1,8 @@
 # 🐼 PandaETL
 
+[![Discord](https://dcbadge.vercel.app/api/server/kF7FqH2FwS?style=flat&compact=true)](https://discord.gg/kF7FqH2FwS)
+![Version](https://img.shields.io/github/v/release/Sinaptik-AI/panda-etl?include_prereleases&style=flat-square)
+
 PandaETL is an open-source, no-code ETL (Extract, Transform, Load) tool designed to extract and parse data from various document types including PDFs, emails, websites, audio files, and more. With an intuitive interface and powerful backend, PandaETL simplifies the process of data extraction and transformation, making it accessible to users without programming skills.
 
 ## ✨ Features
