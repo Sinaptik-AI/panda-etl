@@ -57,8 +57,11 @@ const Drawer: React.FC<DrawerProps> = ({
           onClick={onClose}
         />
         <section
-          className={`absolute inset-y-0 ${position}-0 max-w-full flex outline-none`}
+          className={`absolute inset-y-0  max-w-full flex outline-none`}
           aria-labelledby="slide-over-heading"
+          style={{
+            [position]: 0,
+          }}
         >
           <div
             style={drawerStyle}

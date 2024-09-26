@@ -247,3 +247,19 @@ tr:hover .action-icons {
 .group:hover .bg-gradient-to-l {
   animation: fadeInGradient 0.3s ease-in-out forwards;
 }
+
+.rdg-cell,
+.rdg-header-cell {
+  width: auto !important; /* Ensure the header spans full width */
+  border-right: none;
+  border-bottom: 1px solid #e5e7eb;
+  color: black;
+  height: auto;
+}
+
+.rdg-editor-container {
+  height: 35px;
+  width: auto;
+  display: flex;
+  align-items: flex-start;
+}
