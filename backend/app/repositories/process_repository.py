@@ -129,14 +129,15 @@ def delete_process_steps(db: Session, process_id: int):
 
 
 def update_process_step_status(
-    db, process_step, status, output=None, output_reference=None
+    db, process_step, status, output=None, output_references=None
 ):
     process_step.status = status
     if output:
         process_step.output = output
 
-    if output_reference:
-        process_step.output_reference = output_reference
+    if output_references:
+        process_step.output_references = output_references
+
     db.add(process_step)
     db.commit()
 
