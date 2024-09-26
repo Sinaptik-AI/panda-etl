@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "backend"
 version = "0.1.0"
-description = ""
-authors = ["ArslanSaleem <khan.arslan38@gmail.com>"]
+description = "No-code ETL and data pipelines with AI and NLP"
+authors = ["Gabriele Venturi <gabriele@sinaptik.ai>", "ArslanSaleem <arslan@sinaptik.ai>"]
 readme = "README.md"
 packages = [{include = "app"}]
 
@@ -16,7 +16,6 @@ starlette = "^0.37.2"
 dateparser = "^1.2.0"
 requests = "^2.32.3"
 chromadb = "^0.5.5"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

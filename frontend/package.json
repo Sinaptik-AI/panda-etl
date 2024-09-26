@@ -1,7 +1,7 @@
 {
   "name": "pandaetl-frontend",
+  "description": "No-code ETL and data pipelines with AI and NLP",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
