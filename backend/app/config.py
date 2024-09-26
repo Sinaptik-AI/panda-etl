@@ -14,9 +14,8 @@ class Settings(BaseSettings):
     upload_dir: str = os.path.join(os.path.dirname(__file__), "..", "uploads")
     process_dir: str = os.path.join(os.path.dirname(__file__), "..", "processed")
     api_server_url: str = "https://api.domer.ai"
-    pandaetl_server_url: str
+    pandaetl_server_url: str = "https://api.panda-etl.ai/"
     log_file_path: str = os.path.join(os.path.dirname(__file__), "..", "pandaetl.log")
-    openai_api_key: str
     max_retries: int = 3
     max_relevant_docs: int = 10
     MAX_FILE_SIZE: int = 20 * 1024 * 1024
