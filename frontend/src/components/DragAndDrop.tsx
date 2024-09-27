@@ -59,16 +59,30 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         file.size <= MAX_FILE_SIZE &&
         acceptedTypes.some((type) => file.type.match(type)),
     );
-    const invalidFiles = Array.from(files).filter(
-      (file) =>
-        file.size > MAX_FILE_SIZE ||
-        !acceptedTypes.some((type) => file.type.match(type)),
+
+    const invalidFileFormat = Array.from(files).filter(
+      (file) => !acceptedTypes.some((type) => file.type.match(type)),
     );
 
-    if (invalidFiles.length > 0) {
-      const invalidFileNames = invalidFiles.map((file) => file.name).join("\n");
+    const invalidFileSize = Array.from(files).filter(
+      (file) => file.size > MAX_FILE_SIZE,
+    );
+
+    if (invalidFileSize.length > 0) {
+      const invalidFileNames = invalidFileSize
+        .map((file) => file.name)
+        .join("\n");
       toast.error(
-        `Invalid format or size unable to upload files: \n${invalidFileNames}`,
+        `Max file size is 20 MB, unable to upload files: \n${invalidFileNames}`,
+      );
+    }
+
+    if (invalidFileFormat.length > 0) {
+      const invalidFileNames = invalidFileFormat
+        .map((file) => file.name)
+        .join("\n");
+      toast.error(
+        `Invalid file format, unable to upload files: \n${invalidFileNames}`,
       );
     }
 
