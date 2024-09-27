@@ -37,13 +37,24 @@ PandaETL is an open-source, no-code ETL (Extract, Transform, Load) tool designed
    yarn install
    ```
 
-3. Run the development server:
+3. Create a `.env` file in the frontend directory with the following:
+
+   ```bash
+   NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+   NEXT_PUBLIC_STORAGE_URL=http://localhost:3000/api/assets
+   ```
+
+   or
+
+   copy the `.env.example` file to `.env`
+
+4. Run the development server:
 
    ```bash
    yarn dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ### 🛠️ Backend Setup
 
