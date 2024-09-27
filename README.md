@@ -27,8 +27,8 @@ PandaETL is an open-source, no-code ETL (Extract, Transform, Load) tool designed
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/pandaetl.git
-   cd pandaetl/frontend
+   git clone https://github.com/yourusername/panda-etl.git
+   cd panda-etl/frontend/
    ```
 
 2. Install dependencies:
