@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor
-import traceback
 from sqlalchemy.orm.exc import ObjectDeletedError
 from app.models.asset_content import AssetProcessingStatus
 from app.database import SessionLocal
