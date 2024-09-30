@@ -1,10 +1,24 @@
+# credentials
 .env
-__pycache__/
 .venv
+
+# virtualenv
 venv
+VENV
+ENV
+
+# database
+*.db
+
+# logs
+pandaetl.log
+
+# pycache
+__pycache__/
+
+
+# dirs
 /instance/*
 !/instance/
 uploads/
 processed/
-pandaetl.log
-*.db

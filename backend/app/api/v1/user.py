@@ -1,7 +1,5 @@
-import traceback
 from fastapi import APIRouter, Depends, HTTPException
 from requests import Session
-
 from app.database import get_db
 from app.schemas.user import APIKeyRequest, UpdateAPIKeyRequest, UserUpdateRequest
 from app.repositories import user_repository

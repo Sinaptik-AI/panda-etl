@@ -20,7 +20,7 @@ def request_api_key(email: str):
         logger.error(
             f"Failed to request API key. It returned {response.status_code} code: {response.text}"
         )
-        raise Exception(f"Failed to request API key")
+        raise Exception("Failed to request API key")
 
     try:
         data = response.json()
@@ -225,7 +225,7 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
         logger.error(
             f"Unable to process file ${file_path} during highlight sentences in pdf. It returned {response.status_code} code: {response.text}"
         )
-        raise Exception(f"Unable to process file!")
+        raise Exception("Unable to process file!")
 
 
 def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
@@ -301,7 +301,7 @@ def get_user_usage_data(api_token: str):
         logger.error(
             f"Failed to fetch usage data. It returned {response.status_code} code: {response.text}"
         )
-        raise Exception(f"Failed to fetch usage data")
+        raise Exception("Failed to fetch usage data")
 
     try:
         return response.json()

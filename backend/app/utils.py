@@ -9,7 +9,6 @@ def generate_unique_filename(url, extension=".html"):
     url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()
     unique_id = uuid.uuid4().hex
     filename = f"{url_hash}_{unique_id}{extension}"
-
     return filename
 
 
@@ -43,9 +42,7 @@ def fetch_html_and_save(url, file_path):
     }
 
     response = requests.get(url, headers=headers)
-
     response.raise_for_status()
-
     # Get the content of the response
     with open(file_path, "wb") as file:
         file.write(response.content)
