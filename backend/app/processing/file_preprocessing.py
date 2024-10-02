@@ -35,8 +35,12 @@ def process_segmentation(project_id: int, asset_content_id: int, api_key: str):
         vectorstore.add_docs(
             docs=asset_content.content["content"],
             metadatas=[
-                {"asset_id": asset_content.asset_id, "project_id": project_id}
-                for _ in asset_content.content["content"]
+                {
+                    "asset_id": asset_content.asset_id,
+                    "project_id": project_id,
+                    "page_number": asset_content.content["page_number_data"][index],
+                }
+                for index, _ in enumerate(asset_content.content["content"])
             ],
         )
 

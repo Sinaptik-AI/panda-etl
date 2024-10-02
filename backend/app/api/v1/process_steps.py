@@ -44,6 +44,7 @@ def get_process_step_output_reference(
         "data": {
             "id": process_step.id,
             "process_id": process_step.process_id,
+            "project_id": process_step.process.project_id,
             "asset_id": process_step.asset_id,
             "output_reference": process_step.output_references,
         },

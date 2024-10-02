@@ -263,3 +263,8 @@ tr:hover .action-icons {
   display: flex;
   align-items: flex-start;
 }
+
+.page {
+  margin: 0; /* Remove default margins */
+  padding: 0; /* Remove default padding */
+}
