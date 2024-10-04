@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { markify_text } from "@/lib/utils";
-import HighlightPdfViewer from "./HighlightPdfViewer";
+import HighlightPdfViewer from "../ee/components/HighlightPdfViewer";
 import { FlattenedSource, Source } from "@/interfaces/processSteps";
 import { BASE_STORAGE_URL } from "@/constants";
 
