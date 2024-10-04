@@ -70,33 +70,80 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     });
   };
 
+  //   function findOverlap(sentence1: string, sentence2: string) {
+  //     // Split both sentences into words
+  //     const words1 = sentence1.split(" ");
+  //     const words2 = sentence2.split(" ");
+
+  //     // Loop over both sentences to find the common part
+  //     for (let i = 0; i < words1.length; i++) {
+  //       for (let j = 0; j < words2.length; j++) {
+  //         let overlapWords1 = words1.slice(i);
+  //         let overlapWords2 = words2.slice(j, j + overlapWords1.length);
+
+  //         if (overlapWords1.join(" ") === overlapWords2.join(" ")) {
+  //           // Determine the position of the overlap in sentence1
+  //           let position;
+  //           if (i === 0) {
+  //             position = "start";
+  //           } else if (i + overlapWords1.length === words1.length) {
+  //             position = "end";
+  //           } else {
+  //             position = "middle";
+  //           }
+  //           return { overlap: overlapWords1.join(" "), position: position };
+  //         }
+  //       }
+  //     }
+
+  //     return { overlap: "No overlap found", position: null };
+  //   }
+
   function findOverlap(sentence1: string, sentence2: string) {
     // Split both sentences into words
     const words1 = sentence1.split(" ");
     const words2 = sentence2.split(" ");
 
-    // Loop over both sentences to find the common part
+    let longestOverlap = { overlap: "No overlap found", position: null };
+    let maxLength = 0;
+
+    // Loop over each possible starting point in sentence1
     for (let i = 0; i < words1.length; i++) {
       for (let j = 0; j < words2.length; j++) {
-        let overlapWords1 = words1.slice(i);
-        let overlapWords2 = words2.slice(j, j + overlapWords1.length);
+        let overlapLength = 0;
 
-        if (overlapWords1.join(" ") === overlapWords2.join(" ")) {
+        // Compare words from both sentences starting at words1[i] and words2[j]
+        while (
+          i + overlapLength < words1.length &&
+          j + overlapLength < words2.length &&
+          words1[i + overlapLength] === words2[j + overlapLength]
+        ) {
+          overlapLength++;
+        }
+
+        // If we found an overlap longer than what we've seen, update longestOverlap
+        if (overlapLength > maxLength) {
+          maxLength = overlapLength;
+
           // Determine the position of the overlap in sentence1
           let position;
           if (i === 0) {
             position = "start";
-          } else if (i + overlapWords1.length === words1.length) {
+          } else if (i + overlapLength === words1.length) {
             position = "end";
           } else {
             position = "middle";
           }
-          return { overlap: overlapWords1.join(" "), position: position };
+
+          longestOverlap = {
+            overlap: words1.slice(i, i + overlapLength).join(" "),
+            position: position,
+          };
         }
       }
     }
 
-    return { overlap: "No overlap found", position: null };
+    return longestOverlap;
   }
 
   const constructCoordinates = (
@@ -141,6 +188,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     textContent.items.forEach((item) => {
       if ("str" in item && typeof item.str === "string") {
         const pdfText = item.str.toLowerCase().trim();
+
+        if (pdfText.length == 0) return;
+
         let overlap = findOverlap(pdfText, copyText);
         if (overlap.overlap === "No overlap found") {
           overlap = findOverlap(copyText, item.str.toLowerCase());
@@ -192,7 +242,6 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           copyText = copyText.replace(overlap.overlap, "").trim();
         } else if (
           !isOverlapEqualToPdf &&
-          overlap.position === "end" &&
           !isOverlapEqualToCopy &&
           isOverlapAtStart
         ) {
@@ -204,7 +253,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
-        } else if (found && copyText.length !== 0 && !isOverlapEqualToCopy) {
+        } else if (found && copyText.length > 1 && !isOverlapEqualToCopy) {
           highlightCoordinates = [];
           copyText = text.toLowerCase();
           found = false;
@@ -234,7 +283,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           highlightSource.source,
         );
       });
-    }, 6000);
+    }, 3000);
 
     return () => clearTimeout(highlightTextTimer);
   }, [onScrolled]);
