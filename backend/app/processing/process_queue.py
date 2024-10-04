@@ -188,7 +188,6 @@ def process_step_task(
                         pdf_content=pdf_content if pdf_content else None,
                     )
 
-                    print(data["context"])
                     for context in data["context"]:
                         for sources in context:
                             page_numbers = []
