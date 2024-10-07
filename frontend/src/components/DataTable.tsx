@@ -34,6 +34,7 @@ interface SelectRowColumnType {
   id: string;
   index: number;
   key: string;
+  filename: string;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
@@ -71,6 +72,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                   setSelectRowColumn({
                     id: props.row.___process_step_id,
                     index: props.row.___extraction_index,
+                    filename: props.row.Filename,
                     key: props.column.key,
                   });
                   setDisplayDrawer(true);
@@ -159,6 +161,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
           process_step_id={selectRowColumn.id}
           column_name={selectRowColumn.key}
           index={selectRowColumn.index}
+          filename={selectRowColumn.filename}
           onCancel={onCancel}
         />
       )}

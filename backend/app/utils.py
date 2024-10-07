@@ -35,14 +35,19 @@ def fetch_html_and_save(url, file_path):
 
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/58.0.3029.110 Safari/537.3"
-        )
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) "
+            "Gecko/20100101 Firefox/91.0"
+        ),
+        "Referer": url,
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
     }
 
-    response = requests.get(url, headers=headers)
+    session = requests.Session()
+    response = session.get(url, headers=headers)
     response.raise_for_status()
-    # Get the content of the response
+
+    # Save the content to a file
     with open(file_path, "wb") as file:
         file.write(response.content)
