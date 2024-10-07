@@ -128,6 +128,9 @@ def process_step_task(
                 else:
                     # Handle non-extractive summary process
                     pdf_content = ""
+                    vectorstore = ChromaDB(
+                        f"panda-etl-{process.project_id}", similary_threshold=3
+                    )
                     if (
                         (
                             "multiple_fields" not in process.details
@@ -136,9 +139,6 @@ def process_step_task(
                         and asset_content.content
                         and asset_content.content["word_count"] > 500
                     ):
-                        vectorstore = ChromaDB(
-                            f"panda-etl-{process.project_id}", similary_threshold=3
-                        )
 
                         for field in process.details["fields"]:
                             relevant_docs = vectorstore.get_relevant_docs(
@@ -187,6 +187,28 @@ def process_step_task(
                         ),
                         pdf_content=pdf_content if pdf_content else None,
                     )
+
+                    for context in data["context"]:
+                        for sources in context:
+                            page_numbers = []
+                            for source in sources["sources"]:
+                                relevant_docs = vectorstore.get_relevant_docs(
+                                    source,
+                                    where={
+                                        "$and": [
+                                            {"asset_id": process_step.asset.id},
+                                            {"project_id": process.project_id},
+                                        ]
+                                    },
+                                    k=1,
+                                )
+
+                                if len(relevant_docs["metadatas"][0]) > 0:
+                                    page_numbers.append(
+                                        relevant_docs["metadatas"][0][0]["page_number"]
+                                    )
+
+                            sources["page_numbers"] = page_numbers
 
                     # Update process step output outside the expensive operations
                     with SessionLocal() as db:
