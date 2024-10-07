@@ -28,18 +28,23 @@ logger = Logger()
 def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
-        docs = vectorstore.get_relevant_docs(
+
+        docs, doc_ids = vectorstore.get_relevant_segments(
             chat_request.query, settings.max_relevant_docs
         )
 
-        file_names = project_repository.get_assets_filename(
-            db, [metadata["doc_id"] for metadata in docs["metadatas"][0]]
-        )
-        extracted_documents = docs["documents"][0]
+        unique_doc_ids = list(set(doc_ids))
+        file_names = project_repository.get_assets_filename(db, unique_doc_ids)
+
+        doc_id_to_filename = {
+            doc_id: filename for doc_id, filename in zip(unique_doc_ids, file_names)
+        }
+
+        ordered_file_names = [doc_id_to_filename[doc_id] for doc_id in doc_ids]
 
         docs_formatted = [
             {"filename": filename, "quote": quote}
-            for filename, quote in zip(file_names, extracted_documents)
+            for filename, quote in zip(ordered_file_names, docs)
         ]
 
         api_key = user_repository.get_user_api_key(db)

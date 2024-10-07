@@ -141,6 +141,58 @@ class ChromaDB(VectorStore):
             relevant_data, self._similarity_threshold
         )
 
+    def get_relevant_segments(
+        self,
+        question: str,
+        k: int = None,
+        num_surrounding_sentences: int = 3,
+    ) -> list[dict]:
+        k = k or self._max_samples
+
+        relevant_docs = self.get_relevant_docs(
+            question,
+            k=k,
+        )
+
+        segments = []
+        doc_ids = []
+        # Iterate over each document's metadata and fetch surrounding sentences
+        for index, metadata in enumerate(relevant_docs["metadatas"][0]):
+            pdf_content = ""
+            segment_data = [relevant_docs["documents"][0][index]]
+
+            # Get previous sentences
+            prev_id = metadata.get("previous_sentence_id")
+            for _ in range(num_surrounding_sentences):
+                if prev_id != -1:
+                    prev_sentence = self.get_relevant_docs_by_id(ids=[prev_id])
+                    segment_data = [prev_sentence["documents"][0]] + segment_data
+                    prev_id = prev_sentence["metadatas"][0].get(
+                        "previous_sentence_id", -1
+                    )
+                else:
+                    break
+
+            # Get next sentences
+            next_id = metadata.get("next_sentence_id")
+            for _ in range(num_surrounding_sentences):
+                if next_id != -1:
+                    next_sentence = self.get_relevant_docs_by_id(ids=[next_id])
+                    segment_data.append(next_sentence["documents"][0])
+                    next_id = next_sentence["metadatas"][0].get("next_sentence_id", -1)
+                else:
+                    break
+
+            print(len(segment_data))
+            # Add the segment data to the PDF content
+            pdf_content += "\n" + " ".join(segment_data)
+            print(pdf_content)
+            segments.append(pdf_content)
+            print(metadata)
+            doc_ids.append(metadata["asset_id"])
+
+        return segments, doc_ids
+
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
         """
         Returns relevant question answers based on ids
