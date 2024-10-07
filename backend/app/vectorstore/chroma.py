@@ -183,12 +183,9 @@ class ChromaDB(VectorStore):
                 else:
                     break
 
-            print(len(segment_data))
             # Add the segment data to the PDF content
             pdf_content += "\n" + " ".join(segment_data)
-            print(pdf_content)
             segments.append(pdf_content)
-            print(metadata)
             doc_ids.append(metadata["asset_id"])
 
         return segments, doc_ids
