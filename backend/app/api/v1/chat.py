@@ -1,3 +1,4 @@
+import re
 import traceback
 from typing import Optional
 from app.database import get_db
@@ -68,11 +69,47 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             )
             conversation_id = str(conversation.id)
 
+        content = response["response"]
+        text_reference = None
+        text_references = []
+        for sentence in response["sentences"]:
+            docs = vectorstore.get_relevant_docs(sentence, k=1)
+            if len(docs["metadatas"][0]) == 0:
+                continue
+
+            metadata = docs["metadatas"][0][0]
+            if (
+                text_reference is None
+                or text_reference["asset_id"] != metadata["asset_id"]
+            ):
+                if text_reference is not None:
+                    text_references.append(text_reference)
+
+                text_reference = {
+                    "asset_id": metadata["asset_id"],
+                    "project_id": metadata["project_id"],
+                    "page_number": metadata["page_number"],
+                    "filename": (
+                        metadata["filename"]
+                        if "filename" in metadata
+                        else project_repository.get_assets_filename(
+                            db, [metadata["asset_id"]]
+                        )[0]
+                    ),
+                }
+                index = content.find(sentence)
+                text_reference["start"] = index
+                text_reference["end"] = index + len(sentence)
+
+            elif text_reference["asset_id"] == metadata["asset_id"]:
+                index = content.find(sentence)
+                text_reference["end"] = index + len(sentence)
+
         conversation_repository.create_conversation_message(
             db,
             conversation_id=conversation_id,
             query=chat_request.query,
-            response=response["response"],
+            response=content,
         )
 
         return {
@@ -80,7 +117,8 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             "message": "chat response successfully returned!",
             "data": {
                 "conversation_id": conversation_id,
-                "response": response["response"],
+                "response": content,
+                "response_references": text_references,
             },
         }
 
