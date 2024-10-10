@@ -11,3 +11,19 @@ export interface ChatResponse {
 export interface ChatStatusResponse {
   status: boolean;
 }
+
+export interface ChatReference {
+  asset_id: number;
+  project_id: number;
+  filename: string;
+  start: number;
+  end: number;
+  page_number: number;
+  source: string[];
+}
+
+export interface ChatReferences {
+  references: ChatReference[];
+  start: number;
+  end: number;
+}
