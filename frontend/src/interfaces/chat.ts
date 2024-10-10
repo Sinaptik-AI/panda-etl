@@ -20,3 +20,9 @@ export interface ChatReference {
   end: number;
   page_number: number;
 }
+
+export interface ChatReferences {
+  references: ChatReference[];
+  start: number;
+  end: number;
+}

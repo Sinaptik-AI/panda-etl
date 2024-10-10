@@ -1,3 +1,4 @@
+from collections import defaultdict
 import re
 import traceback
 from typing import Optional
@@ -23,6 +24,22 @@ class ChatRequest(BaseModel):
 
 
 logger = Logger()
+
+
+def group_by_start_end(references):
+    grouped_references = defaultdict(
+        lambda: {"start": None, "end": None, "references": []}
+    )
+
+    for ref in references:
+        key = (ref["start"], ref["end"])
+        if grouped_references[key]["start"] is None:
+            grouped_references[key]["start"] = ref["start"]
+            grouped_references[key]["end"] = ref["end"]
+
+        grouped_references[key]["references"].append(ref)
+
+    return list(grouped_references.values())
 
 
 @chat_router.post("/project/{project_id}", status_code=200)
@@ -72,38 +89,44 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         content = response["response"]
         text_reference = None
         text_references = []
-        for sentence in response["sentences"]:
-            docs = vectorstore.get_relevant_docs(sentence, k=1)
+        for sentence in response["references"]:
+            print(sentence)
+            docs = vectorstore.get_relevant_docs(sentence, k=3)
             if len(docs["metadatas"][0]) == 0:
                 continue
 
-            metadata = docs["metadatas"][0][0]
-            if (
-                text_reference is None
-                or text_reference["asset_id"] != metadata["asset_id"]
-            ):
-                if text_reference is not None:
-                    text_references.append(text_reference)
+            for metadata in docs["metadatas"][0]:
+                if (
+                    text_reference is None
+                    or text_reference["asset_id"] != metadata["asset_id"]
+                ):
+                    if text_reference is not None:
+                        text_references.append(text_reference)
 
-                text_reference = {
-                    "asset_id": metadata["asset_id"],
-                    "project_id": metadata["project_id"],
-                    "page_number": metadata["page_number"],
-                    "filename": (
-                        metadata["filename"]
-                        if "filename" in metadata
-                        else project_repository.get_assets_filename(
-                            db, [metadata["asset_id"]]
-                        )[0]
-                    ),
-                }
-                index = content.find(sentence)
-                text_reference["start"] = index
-                text_reference["end"] = index + len(sentence)
+                    text_reference = {
+                        "asset_id": metadata["asset_id"],
+                        "project_id": metadata["project_id"],
+                        "page_number": metadata["page_number"],
+                        "filename": (
+                            metadata["filename"]
+                            if "filename" in metadata
+                            else project_repository.get_assets_filename(
+                                db, [metadata["asset_id"]]
+                            )[0]
+                        ),
+                    }
+                    index = content.find(sentence)
+                    text_reference["start"] = index
+                    text_reference["end"] = index + len(sentence)
 
-            elif text_reference["asset_id"] == metadata["asset_id"]:
-                index = content.find(sentence)
-                text_reference["end"] = index + len(sentence)
+                elif text_reference["asset_id"] == metadata["asset_id"]:
+                    index = content.find(sentence)
+                    text_reference["end"] = index + len(sentence)
+
+        # group text references based on start and end
+        refs = group_by_start_end(text_references)
+
+        print(refs)
 
         conversation_repository.create_conversation_message(
             db,
@@ -118,7 +141,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             "data": {
                 "conversation_id": conversation_id,
                 "response": content,
-                "response_references": text_references,
+                "response_references": refs,
             },
         }
 
