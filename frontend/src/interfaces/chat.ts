@@ -19,6 +19,7 @@ export interface ChatReference {
   start: number;
   end: number;
   page_number: number;
+  source: string[];
 }
 
 export interface ChatReferences {

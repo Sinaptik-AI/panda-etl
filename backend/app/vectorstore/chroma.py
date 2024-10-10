@@ -156,6 +156,7 @@ class ChromaDB(VectorStore):
 
         segments = []
         doc_ids = []
+        metadatas = []
         # Iterate over each document's metadata and fetch surrounding sentences
         for index, metadata in enumerate(relevant_docs["metadatas"][0]):
             pdf_content = ""
@@ -187,8 +188,9 @@ class ChromaDB(VectorStore):
             pdf_content += "\n" + " ".join(segment_data)
             segments.append(pdf_content)
             doc_ids.append(metadata["asset_id"])
+            metadatas.append(metadata)
 
-        return segments, doc_ids
+        return (segments, doc_ids, metadatas)
 
     def get_relevant_docs_by_id(self, ids: Iterable[str]) -> List[dict]:
         """

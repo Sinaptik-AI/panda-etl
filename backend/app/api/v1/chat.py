@@ -33,11 +33,28 @@ def group_by_start_end(references):
 
     for ref in references:
         key = (ref["start"], ref["end"])
+
+        # Initialize start and end if not already set
         if grouped_references[key]["start"] is None:
             grouped_references[key]["start"] = ref["start"]
             grouped_references[key]["end"] = ref["end"]
 
-        grouped_references[key]["references"].append(ref)
+        # Check if a reference with the same asset_id already exists
+        existing_ref = None
+        for existing in grouped_references[key]["references"]:
+            if (
+                existing["asset_id"] == ref["asset_id"]
+                and existing["page_number"] == ref["page_number"]
+            ):
+                existing_ref = existing
+                break
+
+        if existing_ref:
+            # Append the source if asset_id already exists
+            existing_ref["source"].extend(ref["source"])
+        else:
+            # Otherwise, add the new reference
+            grouped_references[key]["references"].append(ref)
 
     return list(grouped_references.values())
 
@@ -47,7 +64,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
     try:
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
 
-        docs, doc_ids = vectorstore.get_relevant_segments(
+        docs, doc_ids, _ = vectorstore.get_relevant_segments(
             chat_request.query, settings.max_relevant_docs
         )
 
@@ -89,13 +106,31 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         content = response["response"]
         text_reference = None
         text_references = []
-        for sentence in response["references"]:
-            print(sentence)
-            docs = vectorstore.get_relevant_docs(sentence, k=3)
-            if len(docs["metadatas"][0]) == 0:
+
+        for reference in response["references"]:
+            sentence = reference["sentence"]
+
+            closest_docs = []
+            closest_metdatas = []
+            reference_contexts = []
+            for reference_content in reference["references"]:
+
+                doc_sent, _, doc_metadata = vectorstore.get_relevant_segments(
+                    reference_content["sentence"], k=3, num_surrounding_sentences=0
+                )
+                closest_docs.extend(doc_sent)
+                closest_metdatas.extend(doc_metadata)
+                reference_contexts.extend(
+                    [reference_content["sentence"]] * len(doc_sent)
+                )
+
+            if not closest_docs:
                 continue
 
-            for metadata in docs["metadatas"][0]:
+            for iter, _ in enumerate(closest_docs):
+
+                metadata = closest_metdatas[iter]
+
                 if (
                     text_reference is None
                     or text_reference["asset_id"] != metadata["asset_id"]
@@ -103,21 +138,24 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
                     if text_reference is not None:
                         text_references.append(text_reference)
 
-                    text_reference = {
-                        "asset_id": metadata["asset_id"],
-                        "project_id": metadata["project_id"],
-                        "page_number": metadata["page_number"],
-                        "filename": (
-                            metadata["filename"]
-                            if "filename" in metadata
-                            else project_repository.get_assets_filename(
-                                db, [metadata["asset_id"]]
-                            )[0]
-                        ),
-                    }
                     index = content.find(sentence)
-                    text_reference["start"] = index
-                    text_reference["end"] = index + len(sentence)
+                    if index != -1:
+                        text_reference = {
+                            "asset_id": metadata["asset_id"],
+                            "project_id": metadata["project_id"],
+                            "page_number": metadata["page_number"],
+                            "filename": (
+                                metadata["filename"]
+                                if "filename" in metadata
+                                else project_repository.get_assets_filename(
+                                    db, [metadata["asset_id"]]
+                                )[0]
+                            ),
+                            "source": [reference_contexts[iter]],
+                        }
+
+                        text_reference["start"] = index
+                        text_reference["end"] = index + len(sentence)
 
                 elif text_reference["asset_id"] == metadata["asset_id"]:
                     index = content.find(sentence)
@@ -125,8 +163,6 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
         # group text references based on start and end
         refs = group_by_start_end(text_references)
-
-        print(refs)
 
         conversation_repository.create_conversation_message(
             db,

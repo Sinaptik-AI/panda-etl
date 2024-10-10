@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -39,32 +39,98 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
     ChatReference | undefined
   >();
   const [OpenDrawer, setOpenDrawer] = useState<boolean>(false);
+  const [indexMap, setIndexMap] = useState<{ [key: string]: number }>({});
+  const [GroupFileReferences, setGroupFileReferences] = useState<
+    Array<ChatReference[]>
+  >([]);
 
   const handleReferenceClick = (reference: ChatReference) => {
     setSelectedReference(reference);
     setOpenDrawer(true);
   };
 
-  const combinedMarkdown = references
-    ?.map((item: ChatReferences, index: number) => {
-      const slicedText = message.slice(Math.max(0, item.start - 1), item.end);
+  useEffect(() => {
+    if (references) {
+      const indexMap: { [key: string]: number } = {};
+      let counter = 0;
+      for (const reference_data of references) {
+        for (const reference of reference_data["references"]) {
+          const identifier = `${reference.asset_id}_${reference.page_number}`;
+          if (identifier in indexMap) {
+            continue;
+          } else {
+            indexMap[identifier] = counter;
+            counter += 1;
+          }
+        }
+      }
+      setIndexMap(indexMap);
 
-      return `${slicedText} ${item["references"]
+      // preprocess doc references
+      const groupedReferences: { [key: string]: ChatReference[] } = {};
+      for (const reference_data of references) {
+        for (const reference of reference_data["references"]) {
+          const filename = reference.filename;
+
+          if (!groupedReferences[filename]) {
+            groupedReferences[filename] = [];
+          }
+
+          var exists = false;
+          for (let i = 0; i < groupedReferences[filename].length; i++) {
+            const ref = groupedReferences[filename][i];
+
+            if (
+              ref.asset_id == reference.asset_id &&
+              ref.page_number == reference.page_number
+            ) {
+              if (ref.source.includes(reference.source[0])) {
+                exists = true;
+                break;
+              }
+              ref.source.push(reference.source[0]);
+              exists = true;
+              break;
+            }
+          }
+
+          if (!exists) {
+            groupedReferences[filename].push(reference);
+          }
+        }
+      }
+      setGroupFileReferences(Object.values(groupedReferences));
+    }
+  }, [references]);
+
+  let lastEnd = 0;
+
+  const combinedMarkdown = references?.reduce(
+    (acc, item: ChatReferences, index: number) => {
+      const beforeText = message.slice(lastEnd, item.end);
+
+      const referenceSpan = item["references"]
         .map((item2: ChatReference, index2: number) => {
-          return `<span class='reference-marker' className="w-5 h-5 bg-blue-200 text-sm text-black rounded-full inline-flex items-center justify-center cursor-pointer" data-index='${index}_${index2}'>[${index2 + 1}]</span>`;
+          return `<span class='reference-marker w-5 h-5 bg-blue-200 text-sm text-black rounded-full inline-flex items-center justify-center cursor-pointer' data-index='${index}_${index2}'>[${indexMap[`${item2.asset_id}_${item2.page_number}`]}]</span>`;
         })
-        .join(" ")}`;
-    })
-    .join(""); // Join all sliced texts without any gaps or newlines
+        .join(" ");
+
+      acc += `${beforeText}${referenceSpan}`;
+
+      lastEnd = item.end;
+
+      return acc;
+    },
+    "",
+  );
+
+  const finalMarkdown = combinedMarkdown + message.slice(lastEnd);
 
   // Handle click event on the reference markers
   const handleMarkerClick = (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
-    console.log(target.classList);
     if (target.classList.contains("reference-marker")) {
-      console.log(target.dataset.index);
       const splitted_index = target.dataset.index?.split("_");
-      console.log(splitted_index);
       if (splitted_index && references) {
         const index0 = parseInt(splitted_index[0]);
         const index1 = parseInt(splitted_index[1]);
@@ -72,8 +138,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       }
     }
   };
-
-  const referenceData: string[] = [];
 
   return (
     <ChatBubbleWrapper sender={sender}>
@@ -83,7 +147,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
           >
-            {combinedMarkdown}
+            {finalMarkdown}
           </ReactMarkdown>
         </div>
       ) : (
@@ -94,26 +158,41 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
 
       {references && references.length > 0 && (
         <div className="flex flex-col gap-3">
-          <div className="font-bold">References</div>
-          {references.map((item: ChatReferences, index: number) => {
-            return item["references"].map(
-              (chatref: ChatReference, index2: number) => {
-                if (!referenceData.includes(chatref.filename)) {
-                  referenceData.push(chatref.filename);
-                  return (
-                    <div
-                      key={`fileicons-${index2}`}
-                      className="flex gap-1 text-blue-800 p-2 cursor-pointer hover:underline"
-                      onClick={() => handleReferenceClick(chatref)}
-                    >
-                      <FileIcon />
-                      {chatref.filename}
-                    </div>
-                  );
-                } else {
-                  return null;
-                }
-              },
+          <div className="font-bold ">References</div>
+          {GroupFileReferences.map((item: ChatReference[], index: number) => {
+            return (
+              <div key={`group-${index}`} className="mb-4 flex items-center">
+                {/* File name */}
+                <div
+                  key={`fileicons-${index}`}
+                  className="flex gap-1 text-blue-800 p-2 cursor-pointer hover:underline"
+                  onClick={() => handleReferenceClick(item[0])}
+                >
+                  <FileIcon />
+                  <span
+                    className="max-w-[300px] truncate"
+                    title={item[0].filename}
+                  >
+                    {item[0].filename}
+                  </span>
+                </div>
+
+                <div className="flex gap-1 flex-wrap">
+                  Pages:
+                  {item.map((chatref: ChatReference, index2: number) => {
+                    return (
+                      <div
+                        key={`file-page-${index2}`}
+                        className="text-blue-800 cursor-pointer hover:underline"
+                        onClick={() => handleReferenceClick(chatref)}
+                      >
+                        {chatref.page_number}
+                        {index2 < item.length - 1 && ","}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -121,16 +200,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       {selectedReference && (
         <ChatReferenceDrawer
           isOpen={OpenDrawer}
-          sources={[
-            {
-              source: message.slice(
-                selectedReference.start,
-                selectedReference.end,
-              ),
+          sources={selectedReference.source.map((item) => {
+            return {
+              source: item,
               page_number: selectedReference.page_number,
               filename: selectedReference.filename,
-            },
-          ]}
+            };
+          })}
           filename={selectedReference.filename}
           project_id={selectedReference.project_id}
           onCancel={() => setOpenDrawer(false)}
