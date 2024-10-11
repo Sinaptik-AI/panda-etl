@@ -177,7 +177,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   );
 
   return (
-    <div className="flex flex-col space-y-2 max-w-2xl">
+    <div className="flex flex-col max-w-2xl">
       <ChatBubbleWrapper sender={sender}>
         {references && references.length > 0 ? (
           <div onClick={handleMarkerClick}>
