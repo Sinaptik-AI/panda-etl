@@ -1,4 +1,5 @@
 import { FlattenedSource } from "@/interfaces/processSteps";
+import { removePunctuation } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -52,21 +53,31 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     pageNumber: number,
     sources: HighlightCoordinate[],
   ) => {
-    const pageCanvas = document.querySelector<HTMLCanvasElement>(
-      `#page_${pageNumber} canvas`,
+    const pageContainer = document.querySelector<HTMLDivElement>(
+      `#page_${pageNumber}`,
     );
-    if (!pageCanvas) {
-      console.log("No page canvas found");
+
+    if (!pageContainer) {
+      console.log("No page container found");
       return;
     }
-    const context = pageCanvas.getContext("2d");
-    if (!context) {
-      console.log("No context found");
-      return;
-    }
-    context.fillStyle = "rgba(255, 255, 0, 0.3)";
+
     sources.forEach((source) => {
-      context.fillRect(source.x, source.y, source.width, source.height);
+      const highlightDiv = document.createElement("div");
+
+      // Set the position and size of the highlight
+      highlightDiv.style.position = "absolute";
+      highlightDiv.style.left = `${source.x / 2}px`;
+      highlightDiv.style.top = `${source.y / 2}px`;
+      highlightDiv.style.width = `${source.width / 2}px`;
+      highlightDiv.style.height = `${source.height / 2}px`;
+      highlightDiv.style.backgroundColor = "rgba(255, 255, 0, 0.3)"; // Yellow highlight
+      highlightDiv.style.zIndex = "200"; // Ensure the highlight is above the content
+      highlightDiv.classList.add("highlight-div");
+
+      // Append the highlight div to the page container
+      pageContainer.style.position = "relative"; // Ensure the page container has relative positioning
+      pageContainer.appendChild(highlightDiv);
     });
   };
 
@@ -79,6 +90,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       overlap: "No overlap found",
       position: null,
     };
+
     let maxLength = 0;
 
     // Loop over each possible starting point in sentence1
@@ -157,14 +169,14 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       return;
     }
 
-    let copyText = text.toLowerCase();
+    let copyText = removePunctuation(text.toLowerCase());
 
     let highlightCoordinates: HighlightCoordinate[] = [];
     let found = false;
 
     textContent.items.forEach((item) => {
       if ("str" in item && typeof item.str === "string") {
-        const pdfText = item.str.toLowerCase().trim();
+        const pdfText = removePunctuation(item.str.toLowerCase().trim());
 
         if (pdfText.length == 0 || copyText.length == 0) return;
 
@@ -179,6 +191,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
         if (copyText.length == 0) {
           return;
         }
+
         const isOverlapAtStart = copyText.startsWith(overlap.overlap);
         const isOverlapEqualToPdf = overlap.overlap.length === pdfText.length;
         const isOverlapEqualToCopy = overlap.overlap.length === copyText.length;
@@ -231,7 +244,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           copyText = copyText.replace(overlap.overlap, "").trim();
         } else if (found && copyText.length > 1 && !isOverlapEqualToCopy) {
           highlightCoordinates = [];
-          copyText = text.toLowerCase();
+          copyText = removePunctuation(text.toLowerCase());
           found = false;
         }
       }
@@ -252,16 +265,12 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   }, [numPages]);
 
   useEffect(() => {
-    const highlightTextTimer = setTimeout(() => {
-      highlightSources.forEach(async (highlightSource) => {
-        await highlightTextInPdf(
-          highlightSource.page_number,
-          highlightSource.source,
-        );
-      });
-    }, 6000);
-
-    return () => clearTimeout(highlightTextTimer);
+    highlightSources.forEach(async (highlightSource) => {
+      await highlightTextInPdf(
+        highlightSource.page_number,
+        highlightSource.source,
+      );
+    });
   }, [onScrolled]);
 
   return (
