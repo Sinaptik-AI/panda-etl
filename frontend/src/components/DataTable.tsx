@@ -58,11 +58,17 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
       column: Column<Record<string, any>, unknown>;
     }) => {
       const hasProcessId = !!props.row.___process_step_id;
+      const cellContent = props.row[props.column.key];
+      const showInfoIcon =
+        hasProcessId &&
+        cellContent !== "" &&
+        cellContent !== null &&
+        cellContent !== undefined;
 
       return (
         <div className="relative group h-full flex items-center overflow-hidden">
-          <span className="truncate">{props.row[props.column.key]}</span>
-          {hasProcessId && (
+          <span className="truncate">{cellContent}</span>
+          {showInfoIcon && (
             <div className="absolute inset-y-1 right-1 w-12 bg-gradient-to-l from-[#f9fafb] via-[#f9fafb] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-end">
               <FaInfoCircle
                 className="text-primary cursor-pointer mr-2"
