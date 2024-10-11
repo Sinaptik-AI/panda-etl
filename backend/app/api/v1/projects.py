@@ -371,20 +371,38 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
             raise HTTPException(status_code=404, detail="Project not found")
 
         asset = project_repository.get_asset(db, asset_id)
-
         if asset is None:
-            raise HTTPException(
-                status_code=404, detail="File not found in the database"
-            )
+            raise HTTPException(status_code=404, detail="Asset not found in the database")
+
+        if asset.project_id != project_id:
+            raise HTTPException(status_code=400, detail="Asset does not belong to the specified project")
+
+        # Store asset information before deletion
+        asset_info = {
+            "id": asset.id,
+            "filename": asset.filename,
+            "project_id": asset.project_id
+        }
+
+        try:
+            vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
+            vectorstore.delete_docs(where={"asset_id": str(asset.id)})
+        except Exception as vec_error:
+            logger.error(f"Error deleting from vectorstore: {str(vec_error)}")
+            # Continue with the asset deletion even if vectorstore deletion fails
+
+        # Soft delete the asset
         asset.deleted_at = datetime.now(tz=timezone.utc)
-        vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
-        vectorstore.delete_docs(where={"asset_id": asset.id})
         db.commit()
+        
+        logger.info(f"Asset {asset_info['id']} successfully marked as deleted in the database")
         return {"message": "Asset deleted successfully"}
 
-    except HTTPException:
-        raise
+    except HTTPException as http_error:
+        raise http_error
 
     except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Failed to retrieve file")
+        db.rollback()
+        error_msg = f"Failed to delete asset: {str(e)}"
+        logger.error(f"{error_msg}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=error_msg)
