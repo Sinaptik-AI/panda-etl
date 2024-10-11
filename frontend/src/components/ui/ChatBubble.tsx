@@ -40,9 +40,9 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   >();
   const [OpenDrawer, setOpenDrawer] = useState<boolean>(false);
   const [indexMap, setIndexMap] = useState<{ [key: string]: number }>({});
-  const [GroupFileReferences, setGroupFileReferences] = useState<
-    Array<ChatReference[]>
-  >([]);
+  const [flatChatReferences, setFlatChatReferences] = useState<ChatReference[]>(
+    [],
+  );
 
   const handleReferenceClick = (reference: ChatReference) => {
     setSelectedReference(reference);
@@ -52,7 +52,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   useEffect(() => {
     if (references) {
       const indexMap: { [key: string]: number } = {};
-      let counter = 0;
+      let counter = 1;
       for (const reference_data of references) {
         for (const reference of reference_data["references"]) {
           const identifier = `${reference.asset_id}_${reference.page_number}`;
@@ -67,18 +67,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       setIndexMap(indexMap);
 
       // preprocess doc references
-      const groupedReferences: { [key: string]: ChatReference[] } = {};
+      const flatChatReferences: ChatReference[] = [];
+
       for (const reference_data of references) {
         for (const reference of reference_data["references"]) {
-          const filename = reference.filename;
-
-          if (!groupedReferences[filename]) {
-            groupedReferences[filename] = [];
-          }
-
           var exists = false;
-          for (let i = 0; i < groupedReferences[filename].length; i++) {
-            const ref = groupedReferences[filename][i];
+          for (let i = 0; i < flatChatReferences.length; i++) {
+            const ref = flatChatReferences[i];
 
             if (
               ref.asset_id == reference.asset_id &&
@@ -95,11 +90,11 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
           }
 
           if (!exists) {
-            groupedReferences[filename].push(reference);
+            flatChatReferences.push(reference);
           }
         }
       }
-      setGroupFileReferences(Object.values(groupedReferences));
+      setFlatChatReferences(flatChatReferences);
     }
   }, [references]);
 
@@ -157,40 +152,27 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       )}
 
       {references && references.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <div className="font-bold ">References</div>
-          {GroupFileReferences.map((item: ChatReference[], index: number) => {
+        <div className="flex flex-col">
+          <div className="font-bold">References</div>
+          {flatChatReferences.map((item: ChatReference, index: number) => {
             return (
-              <div key={`group-${index}`} className="mb-4 flex items-center">
-                {/* File name */}
+              <div key={`group-${index}`} className="flex items-center">
+                <div className="text-black">
+                  {indexMap[`${item.asset_id}_${item.page_number}`]}.
+                </div>
                 <div
                   key={`fileicons-${index}`}
                   className="flex gap-1 text-blue-800 p-2 cursor-pointer hover:underline"
-                  onClick={() => handleReferenceClick(item[0])}
+                  onClick={() => handleReferenceClick(item)}
                 >
                   <FileIcon />
                   <span
-                    className="max-w-[300px] truncate"
-                    title={item[0].filename}
+                    className="max-w-[400px] truncate"
+                    title={item.filename}
                   >
-                    {item[0].filename}
+                    {item.filename}
                   </span>
-                </div>
-
-                <div className="flex gap-1 flex-wrap">
-                  Pages:
-                  {item.map((chatref: ChatReference, index2: number) => {
-                    return (
-                      <div
-                        key={`file-page-${index2}`}
-                        className="text-blue-800 cursor-pointer hover:underline"
-                        onClick={() => handleReferenceClick(chatref)}
-                      >
-                        {chatref.page_number}
-                        {index2 < item.length - 1 && ","}
-                      </div>
-                    );
-                  })}
+                  <div className="text-black">Page: {item.page_number}</div>
                 </div>
               </div>
             );
