@@ -249,14 +249,28 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
         )  # Assuming output is a list of dicts
     else:
         headers.append("summary")
+    headers.append("___process_step_id")
+    headers.append("___extraction_index")
     csv_writer.writerow(headers)
+
+    def format_number(value):
+        if value is None:
+            return ""  # or return a default value like "N/A"
+        try:
+            float_value = float(value)
+            if float_value.is_integer():
+                return int(float_value)
+            else:
+                return float_value
+        except ValueError:
+            return value
 
     # Write data rows
     for step in completed_steps:
         if process.type == "extract":
-            for output in step.output:
+            for index, output in enumerate(step.output):
                 row = [step.asset.filename]
-                for key in headers[1:]:  # Skip "Filename" column
+                for key in headers[1:-2]:  # Skip "Filename" column
                     value = output.get(key, "")
                     if key in date_columns:
                         try:
@@ -268,16 +282,13 @@ def download_process(process_id: int, db: Session = Depends(get_db)):
                                 f"Unable to parse date {value}, fallback to extracted text. Error: {e}"
                             )
                     elif key in number_columns:
-                        try:
-                            value = int(value)
-                        except Exception as e:
-                            logger.error(
-                                f"Unable to parse number {value}, fallback to extracted text. Error: {e}"
-                            )
+                        value = format_number(value)
                     row.append(value)
+                row.append(step.id)
+                row.append(index)
                 csv_writer.writerow(row)
         else:
-            row = [step.asset.filename, step.output.get("summary", "")]
+            row = [step.asset.filename, step.output.get("summary", ""), step.id, 0]
             csv_writer.writerow(row)
 
     # Get the CSV content from the buffer
@@ -355,6 +366,19 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
     csv_writer.writerow(headers)
 
     print(completed_steps)
+
+    def format_number(value):
+        if value is None:
+            return ""  # or return a default value like "N/A"
+        try:
+            float_value = float(value)
+            if float_value.is_integer():
+                return int(float_value)
+            else:
+                return float_value
+        except ValueError:
+            return value
+
     # Write data rows
     for step in completed_steps:
         if process.type == "extract":
@@ -372,12 +396,7 @@ def get_csv_content(process_id: int, db: Session = Depends(get_db)):
                                 f"Unable to parse date {value}, fallback to extracted text. Error: {e}"
                             )
                     elif key in number_columns:
-                        try:
-                            value = int(value)
-                        except Exception as e:
-                            logger.error(
-                                f"Unable to parse number {value}, fallback to extracted text. Error: {e}"
-                            )
+                        value = format_number(value)
                     row.append(value)
 
                 row.append(step.id)
