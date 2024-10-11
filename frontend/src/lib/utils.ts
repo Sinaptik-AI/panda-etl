@@ -45,3 +45,7 @@ export const truncateTextFromCenter = (
 export const markify_text = (text: string) => {
   return text.replace(/\n/g, "<br>");
 };
+
+export const removePunctuation = (str: string): string => {
+  return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()"“”'\s]/g, " ");
+};
