@@ -65,11 +65,6 @@ const ExtractReferenceDrawer = ({
 
   return (
     <Drawer isOpen={isOpen} onClose={onCancel} title={column_name}>
-      <div className="text-black bg-gray-50 p-4 rounded-lg">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-          {output && markify_text(output)}
-        </ReactMarkdown>
-      </div>
       {file_url && (
         <HighlightPdfViewer
           file={file_url}

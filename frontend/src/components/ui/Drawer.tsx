@@ -57,7 +57,7 @@ const Drawer: React.FC<DrawerProps> = ({
           onClick={onClose}
         />
         <section
-          className={`absolute inset-y-0  max-w-full flex outline-none`}
+          className={`absolute inset-y-0 max-w-full flex outline-none`}
           aria-labelledby="slide-over-heading"
           style={{
             [position]: 0,
@@ -73,31 +73,35 @@ const Drawer: React.FC<DrawerProps> = ({
                   : "translate-x-full"
             }`}
           >
-            <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
-              <div className="px-4 sm:px-6 py-6 flex items-start justify-between">
-                <h2
-                  id="slide-over-heading"
-                  className="text-lg font-medium text-gray-900"
-                >
-                  {truncateTextFromCenter(title, 40)}
-                </h2>
-                <div className="ml-3 h-7 flex items-center">
-                  <button
-                    onClick={onClose}
-                    className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+            <div className="h-full flex flex-col bg-white shadow-xl">
+              <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+                <div className="px-4 sm:px-6 py-6 flex items-start justify-between">
+                  <h2
+                    id="slide-over-heading"
+                    className="text-lg font-medium text-gray-900"
                   >
-                    <span className="sr-only">Close panel</span>
-                    <X className="h-6 w-6" aria-hidden="true" />
-                  </button>
+                    {truncateTextFromCenter(title, 40)}
+                  </h2>
+                  <div className="ml-3 h-7 flex items-center">
+                    <button
+                      onClick={onClose}
+                      className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <span className="sr-only">Close panel</span>
+                      <X className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="relative flex-1 px-4 sm:px-6">
-                <div
-                  className={`transition-opacity duration-300 ease-in-out ${
-                    isAnimating ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  {children}
+              <div className="relative flex-1 overflow-y-auto">
+                <div className="px-4 sm:px-6">
+                  <div
+                    className={`transition-opacity duration-300 ease-in-out ${
+                      isAnimating ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    {children}
+                  </div>
                 </div>
               </div>
             </div>
