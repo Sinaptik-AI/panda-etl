@@ -37,4 +37,5 @@ export interface Source {
 export interface FlattenedSource {
   source: string;
   page_number: number;
+  filename?: string;
 }

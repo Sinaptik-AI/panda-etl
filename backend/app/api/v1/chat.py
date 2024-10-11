@@ -1,3 +1,5 @@
+from collections import defaultdict
+import re
 import traceback
 from typing import Optional
 from app.database import get_db
@@ -24,22 +26,60 @@ class ChatRequest(BaseModel):
 logger = Logger()
 
 
+def group_by_start_end(references):
+    grouped_references = defaultdict(
+        lambda: {"start": None, "end": None, "references": []}
+    )
+
+    for ref in references:
+        key = (ref["start"], ref["end"])
+
+        # Initialize start and end if not already set
+        if grouped_references[key]["start"] is None:
+            grouped_references[key]["start"] = ref["start"]
+            grouped_references[key]["end"] = ref["end"]
+
+        # Check if a reference with the same asset_id already exists
+        existing_ref = None
+        for existing in grouped_references[key]["references"]:
+            if (
+                existing["asset_id"] == ref["asset_id"]
+                and existing["page_number"] == ref["page_number"]
+            ):
+                existing_ref = existing
+                break
+
+        if existing_ref:
+            # Append the source if asset_id already exists
+            existing_ref["source"].extend(ref["source"])
+        else:
+            # Otherwise, add the new reference
+            grouped_references[key]["references"].append(ref)
+
+    return list(grouped_references.values())
+
+
 @chat_router.post("/project/{project_id}", status_code=200)
 def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
-        docs = vectorstore.get_relevant_docs(
+
+        docs, doc_ids, _ = vectorstore.get_relevant_segments(
             chat_request.query, settings.max_relevant_docs
         )
 
-        file_names = project_repository.get_assets_filename(
-            db, [metadata["doc_id"] for metadata in docs["metadatas"][0]]
-        )
-        extracted_documents = docs["documents"][0]
+        unique_doc_ids = list(set(doc_ids))
+        file_names = project_repository.get_assets_filename(db, unique_doc_ids)
+
+        doc_id_to_filename = {
+            doc_id: filename for doc_id, filename in zip(unique_doc_ids, file_names)
+        }
+
+        ordered_file_names = [doc_id_to_filename[doc_id] for doc_id in doc_ids]
 
         docs_formatted = [
             {"filename": filename, "quote": quote}
-            for filename, quote in zip(file_names, extracted_documents)
+            for filename, quote in zip(ordered_file_names, docs)
         ]
 
         api_key = user_repository.get_user_api_key(db)
@@ -63,11 +103,72 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             )
             conversation_id = str(conversation.id)
 
+        content = response["response"]
+        text_reference = None
+        text_references = []
+
+        for reference in response["references"]:
+            sentence = reference["sentence"]
+
+            closest_docs = []
+            closest_metdatas = []
+            reference_contexts = []
+            for reference_content in reference["references"]:
+
+                doc_sent, _, doc_metadata = vectorstore.get_relevant_segments(
+                    reference_content["sentence"], k=3, num_surrounding_sentences=0
+                )
+                closest_docs.extend(doc_sent)
+                closest_metdatas.extend(doc_metadata)
+                reference_contexts.extend(
+                    [reference_content["sentence"]] * len(doc_sent)
+                )
+
+            if not closest_docs:
+                continue
+
+            for iter, _ in enumerate(closest_docs):
+
+                metadata = closest_metdatas[iter]
+
+                if (
+                    text_reference is None
+                    or text_reference["asset_id"] != metadata["asset_id"]
+                ):
+                    if text_reference is not None:
+                        text_references.append(text_reference)
+
+                    index = content.find(sentence)
+                    if index != -1:
+                        text_reference = {
+                            "asset_id": metadata["asset_id"],
+                            "project_id": metadata["project_id"],
+                            "page_number": metadata["page_number"],
+                            "filename": (
+                                metadata["filename"]
+                                if "filename" in metadata
+                                else project_repository.get_assets_filename(
+                                    db, [metadata["asset_id"]]
+                                )[0]
+                            ),
+                            "source": [reference_contexts[iter]],
+                        }
+
+                        text_reference["start"] = index
+                        text_reference["end"] = index + len(sentence)
+
+                elif text_reference["asset_id"] == metadata["asset_id"]:
+                    index = content.find(sentence)
+                    text_reference["end"] = index + len(sentence)
+
+        # group text references based on start and end
+        refs = group_by_start_end(text_references)
+
         conversation_repository.create_conversation_message(
             db,
             conversation_id=conversation_id,
             query=chat_request.query,
-            response=response["response"],
+            response=content,
         )
 
         return {
@@ -75,7 +176,8 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             "message": "chat response successfully returned!",
             "data": {
                 "conversation_id": conversation_id,
-                "response": response["response"],
+                "response": content,
+                "response_references": refs,
             },
         }
 

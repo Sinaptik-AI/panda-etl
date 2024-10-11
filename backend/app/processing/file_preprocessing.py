@@ -22,7 +22,7 @@ def process_file(asset_id: int):
     file_preprocessor.submit(preprocess_file, asset_id)
 
 
-def process_segmentation(project_id: int, asset_content_id: int, api_key: str):
+def process_segmentation(project_id: int, asset_content_id: int, asset_file_name: str):
     try:
         with SessionLocal() as db:
             asset_content = project_repository.get_asset_content(db, asset_content_id)
@@ -37,6 +37,7 @@ def process_segmentation(project_id: int, asset_content_id: int, api_key: str):
             metadatas=[
                 {
                     "asset_id": asset_content.asset_id,
+                    "filename": asset_file_name,
                     "project_id": project_id,
                     "page_number": asset_content.content["page_number_data"][index],
                 }
@@ -117,7 +118,7 @@ def preprocess_file(asset_id: int):
                     process_segmentation,
                     asset.project_id,
                     asset_content.id,
-                    api_key,
+                    asset.filename,
                 )
 
     except Exception as e:
