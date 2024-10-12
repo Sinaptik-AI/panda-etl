@@ -94,7 +94,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
             user = user_repository.get_users(db)[
                 0
-            ]  # Always pick the first user as of now
+            ] # Always pick the first user as of now
             conversation = conversation_repository.create_new_conversation(
                 db,
                 project_id=project_id,
@@ -104,62 +104,36 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             conversation_id = str(conversation.id)
 
         content = response["response"]
-        text_reference = None
         text_references = []
 
         for reference in response["references"]:
             sentence = reference["sentence"]
 
-            closest_docs = []
-            closest_metdatas = []
-            reference_contexts = []
             for reference_content in reference["references"]:
+                original_filename = reference_content["file"]
+                original_sentence = reference_content["sentence"]
 
-                doc_sent, _, doc_metadata = vectorstore.get_relevant_segments(
-                    reference_content["sentence"], k=3, num_surrounding_sentences=0
+                doc_sent, doc_ids, doc_metadata = vectorstore.get_relevant_segments(
+                    original_sentence,
+                    k=1,
+                    num_surrounding_sentences=0,
+                    # TODO: uncomment this when we fix the filename in the metadata
+                    # metadata_filter={"filename": original_filename}
                 )
-                closest_docs.extend(doc_sent)
-                closest_metdatas.extend(doc_metadata)
-                reference_contexts.extend(
-                    [reference_content["sentence"]] * len(doc_sent)
-                )
 
-            if not closest_docs:
-                continue
-
-            for iter, _ in enumerate(closest_docs):
-
-                metadata = closest_metdatas[iter]
-
-                if (
-                    text_reference is None
-                    or text_reference["asset_id"] != metadata["asset_id"]
-                ):
-                    if text_reference is not None:
-                        text_references.append(text_reference)
-
+                for sent, id, metadata in zip(doc_sent, doc_ids, doc_metadata):
                     index = content.find(sentence)
                     if index != -1:
                         text_reference = {
                             "asset_id": metadata["asset_id"],
                             "project_id": metadata["project_id"],
                             "page_number": metadata["page_number"],
-                            "filename": (
-                                metadata["filename"]
-                                if "filename" in metadata
-                                else project_repository.get_assets_filename(
-                                    db, [metadata["asset_id"]]
-                                )[0]
-                            ),
-                            "source": [reference_contexts[iter]],
+                            "filename": original_filename,
+                            "source": [sent],
+                            "start": index,
+                            "end": index + len(sentence),
                         }
-
-                        text_reference["start"] = index
-                        text_reference["end"] = index + len(sentence)
-
-                elif text_reference["asset_id"] == metadata["asset_id"]:
-                    index = content.find(sentence)
-                    text_reference["end"] = index + len(sentence)
+                        text_references.append(text_reference)
 
         # group text references based on start and end
         refs = group_by_start_end(text_references)

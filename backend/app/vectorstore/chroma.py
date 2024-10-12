@@ -146,12 +146,14 @@ class ChromaDB(VectorStore):
         question: str,
         k: int = None,
         num_surrounding_sentences: int = 3,
+        metadata_filter: Optional[dict] = None,
     ) -> list[dict]:
         k = k or self._max_samples
 
         relevant_docs = self.get_relevant_docs(
             question,
             k=k,
+            where=metadata_filter,
         )
 
         segments = []
