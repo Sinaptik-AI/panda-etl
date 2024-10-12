@@ -1,0 +1,76 @@
+.pdfViewer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.pdfViewer :global(.react-pdf__Document) {
+  line-height: initial;
+}
+
+.pdfViewer :global(.react-pdf__message) {
+  display: none !important;
+}
+
+.pageContainer {
+  margin: 0;
+  padding: 0;
+  page-break-inside: avoid;
+  min-height: 100vh;
+}
+
+.pdfPage {
+  margin: 0;
+  padding: 0;
+}
+
+.pdfPage :global(.react-pdf__Page__textContent) {
+  display: none;
+}
+
+.pdfPage :global(.react-pdf__Page__annotations) {
+  display: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Hide all possible loading messages */
+.pdfViewer :global(.react-pdf__message),
+.pdfViewer :global(.react-pdf__Page__loading),
+.pdfViewer :global(.react-pdf__Document__loading) {
+  display: none !important;
+}
+
+/* Loader styles */
+.loaderContainer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  color: #3498db;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

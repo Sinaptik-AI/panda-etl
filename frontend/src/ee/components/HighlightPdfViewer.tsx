@@ -4,6 +4,8 @@ import React, { useRef, useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import styles from "./HighlightPdfViewer.module.css";
+import { Loader2 } from "lucide-react";
 
 // Define types for the highlight source
 interface HighlightCoordinate {
@@ -24,6 +26,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [onScrolled, setOnScrolled] = useState<boolean>(false);
+  const [visiblePages, setVisiblePages] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const viewerRef = useRef<HTMLDivElement>(null);
 
   const activePage =
@@ -39,6 +43,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
+    setVisiblePages([activePage]);
+    setIsLoading(false);
   };
 
   const scrollToPage = (pageNumber: number) => {
@@ -273,17 +279,58 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     });
   }, [onScrolled]);
 
+  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      const pageNumber = parseInt(entry.target.id.split("_")[1]);
+      if (entry.isIntersecting) {
+        setVisiblePages((prev) =>
+          prev.includes(pageNumber) ? prev : [...prev, pageNumber],
+        );
+      }
+    });
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleIntersection, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.1,
+    });
+
+    document.querySelectorAll('[id^="page_"]').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [numPages]);
+
   return (
-    <div ref={viewerRef}>
-      <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+    <div ref={viewerRef} className={styles.pdfViewer}>
+      {isLoading && (
+        <div className={styles.loaderContainer}>
+          <Loader2 className={styles.loader} />
+        </div>
+      )}
+      <Document
+        file={file}
+        onLoadSuccess={onDocumentLoadSuccess}
+        loading={<div className={styles.hidden}></div>}
+      >
         {Array.from(new Array(numPages || 0), (el, index) => {
+          const pageNumber = index + 1;
           return (
             <div
-              id={`page_${index + 1}`}
-              key={`page_${index + 1}`}
-              style={{ margin: 0, padding: 0, pageBreakInside: "avoid" }}
+              id={`page_${pageNumber}`}
+              key={`page_${pageNumber}`}
+              className={styles.pageContainer}
             >
-              <Page pageNumber={index + 1} />
+              {visiblePages.includes(pageNumber) && (
+                <Page
+                  pageNumber={pageNumber}
+                  loading={<div className={styles.hidden}></div>}
+                  className={styles.pdfPage}
+                />
+              )}
             </div>
           );
         })}
