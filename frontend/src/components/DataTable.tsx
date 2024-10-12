@@ -64,7 +64,8 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         hasProcessId &&
         cellContent !== "" &&
         cellContent !== null &&
-        cellContent !== undefined;
+        cellContent !== undefined &&
+        props.column.key !== "Filename";
       const cellId = `${props.row.id}-${props.column.key}`;
 
       return (
