@@ -68,6 +68,10 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       return;
     }
 
+    const highlightLayer = document.createElement("div");
+    highlightLayer.className = styles.highlightLayer;
+    pageContainer.appendChild(highlightLayer);
+
     sources.forEach((source) => {
       const highlightDiv = document.createElement("div");
 
@@ -78,12 +82,10 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       highlightDiv.style.width = `${source.width / 2}px`;
       highlightDiv.style.height = `${source.height / 2}px`;
       highlightDiv.style.backgroundColor = "rgba(255, 255, 0, 0.3)"; // Yellow highlight
-      highlightDiv.style.zIndex = "200"; // Ensure the highlight is above the content
-      highlightDiv.classList.add("highlight-div");
+      highlightDiv.style.pointerEvents = "none"; // Allow interactions with underlying text
+      highlightDiv.classList.add(styles.highlightDiv);
 
-      // Append the highlight div to the page container
-      pageContainer.style.position = "relative"; // Ensure the page container has relative positioning
-      pageContainer.appendChild(highlightDiv);
+      highlightLayer.appendChild(highlightDiv);
     });
   };
 
@@ -156,6 +158,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
   // Function to search for text and highlight it
   const highlightTextInPdf = async (pageNumber: number, text: string) => {
+    console.log(`Searching for text on page ${pageNumber}:`, text); // Add this line
+
     const loadingTask = pdfjs.getDocument(file);
     const pdfDocument = await loadingTask.promise;
 
@@ -271,6 +275,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   }, [numPages]);
 
   useEffect(() => {
+    console.log("Starting to highlight sources:", highlightSources); // Add this line
     highlightSources.forEach(async (highlightSource) => {
       await highlightTextInPdf(
         highlightSource.page_number,

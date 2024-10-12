@@ -17,6 +17,7 @@
   padding: 0;
   page-break-inside: avoid;
   min-height: 100vh;
+  position: relative;
 }
 
 .pdfPage {
@@ -25,11 +26,32 @@
 }
 
 .pdfPage :global(.react-pdf__Page__textContent) {
-  display: none;
+  display: block !important;
+  opacity: 0.2;
+  color: transparent;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .pdfPage :global(.react-pdf__Page__annotations) {
   display: none;
+}
+
+.highlightLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.highlightDiv {
+  position: absolute;
+  background-color: rgba(255, 255, 0, 0.3);
+  pointer-events: none;
 }
 
 .hidden {
