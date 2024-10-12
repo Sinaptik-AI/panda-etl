@@ -5,14 +5,9 @@ import rehypeRaw from "rehype-raw";
 import { markify_text } from "@/lib/utils";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import ChatReferenceDrawer from "../ChatReferenceDrawer";
-import {
-  FileIcon,
-  BookOpen,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-} from "lucide-react";
+import { FileIcon, BookOpen, ChevronDown, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import MessageWithReferences from "./MessageWithReferences";
 
 interface ChatBubbleProps {
   message: string;
@@ -59,88 +54,38 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   useEffect(() => {
     if (references) {
-      const indexMap: { [key: string]: number } = {};
+      const newIndexMap: { [key: string]: number } = {};
+      const newFlatChatReferences: ChatReference[] = [];
       let counter = 1;
-      for (const reference_data of references) {
-        for (const reference of reference_data["references"]) {
+
+      references.forEach((referenceData) => {
+        referenceData.references.forEach((reference) => {
           const identifier = `${reference.asset_id}_${reference.page_number}`;
-          if (identifier in indexMap) {
-            continue;
-          } else {
-            indexMap[identifier] = counter;
-            counter += 1;
+          if (!(identifier in newIndexMap)) {
+            newIndexMap[identifier] = counter++;
           }
-        }
-      }
-      setIndexMap(indexMap);
 
-      // preprocess doc references
-      const flatChatReferences: ChatReference[] = [];
+          const existingRefIndex = newFlatChatReferences.findIndex(
+            (ref) =>
+              ref.asset_id === reference.asset_id &&
+              ref.page_number === reference.page_number,
+          );
 
-      for (const reference_data of references) {
-        for (const reference of reference_data["references"]) {
-          var exists = false;
-          for (let i = 0; i < flatChatReferences.length; i++) {
-            const ref = flatChatReferences[i];
-
-            if (
-              ref.asset_id == reference.asset_id &&
-              ref.page_number == reference.page_number
-            ) {
-              if (ref.source.includes(reference.source[0])) {
-                exists = true;
-                break;
-              }
-              ref.source.push(reference.source[0]);
-              exists = true;
-              break;
+          if (existingRefIndex === -1) {
+            newFlatChatReferences.push(reference);
+          } else {
+            const existingRef = newFlatChatReferences[existingRefIndex];
+            if (!existingRef.source.includes(reference.source[0])) {
+              existingRef.source.push(reference.source[0]);
             }
           }
+        });
+      });
 
-          if (!exists) {
-            flatChatReferences.push(reference);
-          }
-        }
-      }
-      setFlatChatReferences(flatChatReferences);
+      setIndexMap(newIndexMap);
+      setFlatChatReferences(newFlatChatReferences);
     }
   }, [references]);
-
-  let lastEnd = 0;
-
-  const combinedMarkdown = references?.reduce(
-    (acc, item: ChatReferences, index: number) => {
-      const beforeText = message.slice(lastEnd, item.end);
-
-      const referenceSpan = item["references"]
-        .map((item2: ChatReference, index2: number) => {
-          return `<span class='reference-marker w-5 h-5 bg-blue-200 text-sm text-black rounded-full inline-flex items-center justify-center cursor-pointer' data-index='${index}_${index2}'>[${indexMap[`${item2.asset_id}_${item2.page_number}`]}]</span>`;
-        })
-        .join(" ");
-
-      acc += `${beforeText}${referenceSpan}`;
-
-      lastEnd = item.end;
-
-      return acc;
-    },
-    "",
-  );
-
-  const finalMarkdown = combinedMarkdown + message.slice(lastEnd);
-
-  // Handle click event on the reference markers
-  const handleMarkerClick = (event: React.MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (target.classList.contains("reference-marker")) {
-      const splitted_index = target.dataset.index?.split("_");
-      if (splitted_index && references) {
-        const index0 = parseInt(splitted_index[0]);
-        const index1 = parseInt(splitted_index[1]);
-        handleReferenceClick(references[index0]["references"][index1]);
-      }
-    }
-  };
 
   const renderReferenceItem = useCallback(
     (item: ChatReference, index: number) => (
@@ -180,14 +125,12 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
     <div className="flex flex-col max-w-2xl">
       <ChatBubbleWrapper sender={sender}>
         {references && references.length > 0 ? (
-          <div onClick={handleMarkerClick}>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw]}
-            >
-              {finalMarkdown}
-            </ReactMarkdown>
-          </div>
+          <MessageWithReferences
+            message={message}
+            references={references}
+            indexMap={indexMap}
+            onReferenceClick={handleReferenceClick}
+          />
         ) : (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
