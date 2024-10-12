@@ -26,7 +26,8 @@ export const chat = async (projectId: string, data: ChatRequest) => {
     } else {
       return {
         conversation_id: data.conversation_id,
-        response: "Failed to chat data. Please try again!",
+        response:
+          "My apologies, I encountered an unexpected issue. Could you please rephrase your question?",
       };
     }
   }
