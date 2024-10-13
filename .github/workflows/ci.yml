@@ -58,10 +58,18 @@ jobs:
           cd backend
           poetry install --all-extras --with dev --verbose
 
-      - name: Run python tests
+      - name: Run python tests with coverage
         run: |
           cd backend
-          poetry run pytest
+          poetry run pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
 
       - name: Run Ruff
         run: |

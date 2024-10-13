@@ -21,6 +21,7 @@ chromadb = "^0.5.5"
 pytest = "^8.3.2"
 pytest-asyncio = "^0.23.8"
 ruff = "^0.3.4"
+pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -29,3 +30,22 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+
+[tool.pytest.ini_options]
+addopts = "--cov=app --cov-report=xml --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+    "except ImportError:",
+]

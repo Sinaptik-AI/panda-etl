@@ -24,3 +24,26 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: poetry run pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: ["-v", "--cov=app", "--cov-report=term-missing"]
+        types: [python]
+        stages: [commit]
+
+  - repo: local
+    hooks:
+      - id: coverage-check
+        name: coverage-check
+        entry: poetry run coverage report --fail-under=80
+        language: system
+        pass_filenames: false
+        always_run: true
+        types: [python]
+        stages: [commit]
