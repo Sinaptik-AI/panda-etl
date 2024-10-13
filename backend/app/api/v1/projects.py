@@ -394,7 +394,7 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
         asset.deleted_at = datetime.now(tz=timezone.utc)
         db.commit()
         
-        logger.info(f"Asset {asset_info['id']} successfully marked as deleted in the database")
+        logger.log("info", f"Asset {asset_info['id']} successfully marked as deleted in the database")
         return {"message": "Asset deleted successfully"}
 
     except HTTPException as http_error:
