@@ -2,10 +2,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
 
 from app.main import app
-from app.repositories import project_repository
 from app.database import get_db
 
 # Test client setup

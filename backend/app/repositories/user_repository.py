@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from app import models
-from app.schemas.user import APIKeyRequest, UpdateAPIKeyRequest, UserUpdateRequest
+from app.schemas.user import APIKeyRequest, UserUpdateRequest
 
 
 def create_user(db: Session, user: APIKeyRequest) -> models.User:

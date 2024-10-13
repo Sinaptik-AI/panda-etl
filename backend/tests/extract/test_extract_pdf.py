@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.main import app
 from app.api.v1.extract import ExtractFields

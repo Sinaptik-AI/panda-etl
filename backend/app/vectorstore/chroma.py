@@ -1,6 +1,5 @@
-import os
 import uuid
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Callable, Iterable, List, Optional
 
 import chromadb
 from chromadb import config
@@ -8,7 +7,6 @@ from chromadb.utils import embedding_functions
 
 from app.vectorstore import VectorStore
 from app.config import settings
-import time
 
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()

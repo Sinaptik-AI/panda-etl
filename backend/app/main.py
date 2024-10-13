@@ -7,13 +7,10 @@ from .database import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from app.processing.file_preprocessing import process_file
 from .config import settings
+from .api import v1_router
 
 # Initialize the FastAPI app
 app = FastAPI()
-
-# Import and include the routes with the /v1 prefix
-from .api import v1_router
-
 
 def startup_file_preprocessing():
     try:

@@ -2,7 +2,6 @@ import os
 from typing import List
 from app.database import SessionLocal
 from app.exceptions import CreditLimitExceededException
-from app.models import Process, ProcessStep
 from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
@@ -44,7 +43,6 @@ def process_step_task(
     try:
         # Initial DB operations (open and fetch relevant data)
         with SessionLocal() as db:
-
             process = process_repository.get_process(db, process_id)
             process_step = process_repository.get_process_step(db, process_step_id)
 
@@ -139,7 +137,6 @@ def process_step_task(
                         and asset_content.content
                         and asset_content.content["word_count"] > 500
                     ):
-
                         for field in process.details["fields"]:
                             relevant_docs = vectorstore.get_relevant_docs(
                                 field["key"],
@@ -222,14 +219,14 @@ def process_step_task(
 
                 success = True
 
-            except CreditLimitExceededException as e:
+            except CreditLimitExceededException:
                 with SessionLocal() as db:
                     process = process_repository.get_process(db, process_id)
                     process_repository.update_process_status(
                         db, process, ProcessStatus.STOPPED
                     )
 
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
                 retries += 1
                 if retries == settings.max_retries:
@@ -241,7 +238,7 @@ def process_step_task(
 
         return True
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.format_exc())
         return False
 
@@ -287,7 +284,7 @@ def process_task(process_id: int):
             "show_final_summary" in process.details
             and process.details["show_final_summary"]
         ):
-            logger.log(f"Extracting summary from summaries")
+            logger.log("Extracting summary from summaries")
 
             if process.output:
                 return
@@ -297,7 +294,7 @@ def process_task(process_id: int):
                 api_key, summaries, process.details["transformation_prompt"]
             )
             summary_of_summaries = data.get("summary", "")
-            logger.log(f"Extracting summary from summaries completed")
+            logger.log("Extracting summary from summaries completed")
 
         # Step 4: After all steps are processed, update the process status and output in the DB
         with SessionLocal() as db:

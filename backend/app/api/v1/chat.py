@@ -1,5 +1,4 @@
 from collections import defaultdict
-import re
 import traceback
 from typing import Optional
 from app.database import get_db
@@ -158,7 +157,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
     except HTTPException:
         raise
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=400, detail="Unable to process query!")
 
@@ -192,6 +191,6 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=400, detail="Unable to process query!")

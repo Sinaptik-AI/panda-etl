@@ -1,14 +1,12 @@
 import os
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile
 from io import BytesIO
 
 from app.main import app
-from app.repositories import project_repository
-from app.models import Asset
 from app.config import settings
 from app.database import get_db
 

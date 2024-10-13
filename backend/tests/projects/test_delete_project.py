@@ -4,8 +4,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.main import app
-from app.repositories import project_repository
-from app.models import Asset, Process
 from app.database import get_db
 
 # Test client setup

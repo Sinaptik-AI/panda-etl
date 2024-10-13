@@ -63,6 +63,11 @@ jobs:
           cd backend
           poetry run pytest
 
+      - name: Run Ruff
+        run: |
+          cd backend
+          poetry run ruff check .
+
       - name: Install frontend dependencies
         run: |
           cd frontend

@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.api.v1.projects import create_project
 from app.schemas.project import ProjectCreate
-from app.repositories import project_repository
 
 
 # Test client setup

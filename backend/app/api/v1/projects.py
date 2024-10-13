@@ -16,7 +16,6 @@ from app.logger import Logger
 from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
 from app.schemas.asset import UrlAssetCreate
 from app.vectorstore.chroma import ChromaDB
-import time
 
 
 project_router = APIRouter()
@@ -66,7 +65,7 @@ def get_projects(
             "page": page,
             "page_size": page_size,
         }
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
@@ -91,7 +90,7 @@ def get_project(id: int, db: Session = Depends(get_db)):
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
@@ -126,7 +125,7 @@ def get_assets(
             "page": page,
             "page_size": page_size,
         }
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
@@ -189,7 +188,7 @@ async def upload_files(
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         print(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
@@ -243,7 +242,7 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         print(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
@@ -308,7 +307,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to fetch response")
 
@@ -329,7 +328,7 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
@@ -358,7 +357,7 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.print_exc())
         raise HTTPException(status_code=500, detail="Failed to delete!")
 
