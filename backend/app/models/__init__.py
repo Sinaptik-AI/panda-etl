@@ -4,7 +4,7 @@ from .asset import Asset
 from .asset_content import AssetContent
 from .api_key import APIKey
 from .process import Process, ProcessStatus
-from .process_step import ProcessStep
+from .process_step import ProcessStep, ProcessStepStatus
 from .conversation_message import ConversationMessage
 from .conversation import Conversation
 
@@ -15,6 +15,7 @@ __all__ = [
     "APIKey",
     "Process",
     "ProcessStep",
+    "ProcessStepStatus",
     "ProcessStatus",
     "AssetContent",
     "ConversationMessage",
