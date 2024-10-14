@@ -146,7 +146,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
         return {
             "status": "success",
-            "message": "chat response successfully returned!",
+            "message": "Chat response successfully generated.",
             "data": {
                 "conversation_id": conversation_id,
                 "response": content,
@@ -158,14 +158,13 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=400, detail="Unable to process query!")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Unable to process the chat query. Please try again.")
 
 
 @chat_router.get("/project/{project_id}/status", status_code=200)
 def chat_status(project_id: int, db: Session = Depends(get_db)):
     try:
-
         asset_contents = project_repository.get_assets_without_content(
             db=db, project_id=project_id
         )
@@ -184,7 +183,7 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
 
         return {
             "status": "success",
-            "message": "Chat response successfully returned!",
+            "message": "Chat message successfully generated.",
             "data": {"status": status},
         }
 
@@ -192,5 +191,5 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=400, detail="Unable to process query!")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Unable to process the chat query. Please try again.")
