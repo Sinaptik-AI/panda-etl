@@ -8,11 +8,11 @@ import { GetRequest } from "@/lib/requests";
 export const processStepApiUrl = "/process_steps";
 
 export const GetProcessStep = async (
-  processStepId: number,
+  processStepId: number
 ): Promise<ProcessStepResponse> => {
   try {
     const response = await GetRequest<{ data: ProcessStepData }>(
-      `${processStepApiUrl}/${processStepId}`,
+      `${processStepApiUrl}/${processStepId}`
     );
     return response.data;
   } catch (error) {
@@ -21,11 +21,11 @@ export const GetProcessStep = async (
 };
 
 export const GetProcessStepReferences = async (
-  processStepId: number | string,
+  processStepId: number | string
 ): Promise<ProcessStepOutputRef> => {
   try {
     const response = await GetRequest<{ data: ProcessStepOutputRef }>(
-      `${processStepApiUrl}/${processStepId}/references`,
+      `${processStepApiUrl}/${processStepId}/references`
     );
     return response.data.data;
   } catch (error) {

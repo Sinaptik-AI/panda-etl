@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 
 export async function GetRequest<T>(
   url: string,
-  options?: AxiosRequestConfig,
+  options?: AxiosRequestConfig
 ): Promise<AxiosResponse> {
   try {
     const response = await axiosInstance.get<T>(url, options);
@@ -25,7 +25,7 @@ export async function PostRequest<T>(
   url: string,
   requestData: object | null,
   headers = {},
-  timeout?: number,
+  timeout?: number
 ): Promise<AxiosResponse> {
   try {
     const isFormData = requestData instanceof FormData;
@@ -45,7 +45,7 @@ export async function PostRequest<T>(
 
 export async function PutRequest(
   url: string,
-  data: object,
+  data: object
 ): Promise<AxiosResponse<any, any>> {
   try {
     const response = await axiosInstance.put(url, data);
@@ -56,7 +56,7 @@ export async function PutRequest(
 }
 
 export async function DeleteRequest(
-  url: string,
+  url: string
 ): Promise<AxiosResponse<any, any>> {
   try {
     const response = await axiosInstance.delete(url);

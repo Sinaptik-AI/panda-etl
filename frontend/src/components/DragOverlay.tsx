@@ -39,7 +39,7 @@ const DragOverlay: React.FC<DragOverlayProps> = ({ onFileDrop, accept }) => {
         onFileDrop(droppedFiles);
       }
     },
-    [onFileDrop],
+    [onFileDrop]
   );
 
   useEffect(() => {

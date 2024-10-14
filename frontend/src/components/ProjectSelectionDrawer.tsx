@@ -19,7 +19,7 @@ export const ProcessSelectionDrawer: React.FC<ProcessSelectionDrawerProps> = ({
   onSubmit,
 }) => {
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(
-    null,
+    null
   );
 
   const { data: projects, isLoading } = useQuery({

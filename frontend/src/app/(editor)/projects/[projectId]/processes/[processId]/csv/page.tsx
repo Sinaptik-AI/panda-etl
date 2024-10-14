@@ -34,7 +34,7 @@ const ProcessPage = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_API_URL}/${processApiUrl}/${processId}/get-csv`,
+        `${BASE_API_URL}/${processApiUrl}/${processId}/get-csv`
       );
       const {
         data: { csv },
@@ -64,7 +64,7 @@ const ProcessPage = () => {
   const handleDownloadCsv = useCallback(async () => {
     try {
       const response = await fetch(
-        `${BASE_API_URL}/${processApiUrl}/${processId}/download-csv`,
+        `${BASE_API_URL}/${processApiUrl}/${processId}/download-csv`
       );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
