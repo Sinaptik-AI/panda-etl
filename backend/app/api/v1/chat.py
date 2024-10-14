@@ -147,7 +147,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
                     not_exact_matched_refs.append(no_exact_reference)
 
         # group text references based on start and end
-        if len(text_references) == 0:
+        if len(text_references) > 0:
             refs = group_by_start_end(text_references)
         else:
             refs = group_by_start_end(not_exact_matched_refs)
