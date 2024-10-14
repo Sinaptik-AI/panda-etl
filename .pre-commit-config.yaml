@@ -32,7 +32,8 @@ repos:
         entry: bash -c 'cd backend && poetry run pytest'
         language: system
         pass_filenames: false
-        always_run: true
+        always_run: false
+        files: ^(backend/|tests/)
         types: [python]
 
       - id: coverage-check
@@ -40,5 +41,6 @@ repos:
         entry: bash -c 'cd backend && poetry run coverage erase && poetry run coverage run -m pytest && poetry run coverage report -m && poetry run coverage xml'
         language: system
         pass_filenames: false
-        always_run: true
+        always_run: false
+        files: ^(backend/|tests/)
         types: [python]

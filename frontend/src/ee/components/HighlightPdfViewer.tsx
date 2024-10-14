@@ -57,10 +57,10 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   // Highlighting logic for both custom coordinates and text
   const highlightText = (
     pageNumber: number,
-    sources: HighlightCoordinate[],
+    sources: HighlightCoordinate[]
   ) => {
     const pageContainer = document.querySelector<HTMLDivElement>(
-      `#page_${pageNumber}`,
+      `#page_${pageNumber}`
     );
 
     if (!pageContainer) {
@@ -143,7 +143,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   const constructCoordinates = (
     item: any,
     viewHeight: number,
-    viewWidth: number,
+    viewWidth: number
   ) => {
     const { transform, width, height } = item;
     const x = 2 * transform[4];
@@ -166,7 +166,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     const page = await pdfDocument.getPage(pageNumber);
     const textContent = await page.getTextContent();
     const pageCanvas = document.querySelector<HTMLCanvasElement>(
-      `#page_${pageNumber} canvas`,
+      `#page_${pageNumber} canvas`
     );
 
     if (!pageCanvas) return;
@@ -210,7 +210,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -222,7 +222,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -235,7 +235,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -248,7 +248,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -275,13 +275,15 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   }, [numPages]);
 
   useEffect(() => {
-    console.log("Starting to highlight sources:", highlightSources); // Add this line
-    highlightSources.forEach(async (highlightSource) => {
-      await highlightTextInPdf(
-        highlightSource.page_number,
-        highlightSource.source,
-      );
-    });
+    const highlightAllSources = async () => {
+      for (const highlightSource of highlightSources) {
+        await highlightTextInPdf(
+          highlightSource.page_number,
+          highlightSource.source
+        );
+      }
+    };
+    highlightAllSources();
   }, [onScrolled]);
 
   const handleIntersection = (entries: IntersectionObserverEntry[]) => {
@@ -289,7 +291,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       const pageNumber = parseInt(entry.target.id.split("_")[1]);
       if (entry.isIntersecting) {
         setVisiblePages((prev) =>
-          prev.includes(pageNumber) ? prev : [...prev, pageNumber],
+          prev.includes(pageNumber) ? prev : [...prev, pageNumber]
         );
       }
     });
