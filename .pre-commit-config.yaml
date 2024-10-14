@@ -7,40 +7,32 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
 
-  - repo: https://github.com/psf/black
-    rev: 24.3.0
-    hooks:
-      - id: black
-        language_version: python3.11
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile", "black"]
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
+      - id: frontend-lint
+        name: Frontend Lint
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+
+      - id: backend-lint
+        name: Backend Lint
+        entry: bash -c 'cd backend && poetry run ruff check .'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+
+      - id: backend-test
+        name: Backend Test
         entry: bash -c 'cd backend && poetry run pytest'
         language: system
+        files: ^backend/
         pass_filenames: false
-        always_run: false
-        files: ^(backend/|tests/)
-        types: [python]
 
-      - id: coverage-check
-        name: coverage-check
+      - id: backend-coverage
+        name: Backend Coverage
         entry: bash -c 'cd backend && poetry run coverage erase && poetry run coverage run -m pytest && poetry run coverage report -m && poetry run coverage xml'
         language: system
+        files: ^backend/
         pass_filenames: false
-        always_run: false
-        files: ^(backend/|tests/)
-        types: [python]

@@ -17,21 +17,29 @@ PandaETL is an open-source, no-code ETL (Extract, Transform, Load) tool designed
 
 ### 📋 Prerequisites
 
-- Node.js
-- yarn
-- Python (for backend)
-- Poetry (for Python dependency management)
+- Node.js and npm (or yarn)
+- Python 3.x
+- Conda
+- Poetry (Python package manager)
 
-### 🖥️ Frontend Setup
+### 🖥️ Project Setup
 
 1. Clone the repository:
 
    ```bash
    git clone https://github.com/yourusername/panda-etl.git
-   cd panda-etl/frontend/
+   cd panda-etl
    ```
 
-2. Install dependencies:
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies (including Husky):
 
    ```bash
    yarn install
@@ -44,47 +52,67 @@ PandaETL is an open-source, no-code ETL (Extract, Transform, Load) tool designed
    NEXT_PUBLIC_STORAGE_URL=http://localhost:3000/api/assets
    ```
 
-   or
-
-   copy the `.env.example` file to `.env`
+   or copy the `.env.example` file to `.env`
 
 4. Run the development server:
 
    ```bash
+   npm run dev
+   # or
    yarn dev
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 🛠️ Backend Setup
+### Backend Setup
 
 1. Navigate to the backend directory:
 
    ```bash
-   cd ../backend
+   cd backend
    ```
 
-2. Create an environment file from the example:
+2. Create and activate a Conda environment:
 
    ```bash
-   cp .env.example .env
+   conda create -n pandaetl python=3.x
+   conda activate pandaetl
    ```
 
-3. Install dependencies:
+3. Install Poetry within the Conda environment:
+
+   ```bash
+   conda install poetry
+   ```
+
+4. Install dependencies using Poetry (including pre-commit):
 
    ```bash
    poetry install
    ```
 
-4. Apply database migrations:
+5. Set up pre-commit hooks:
 
    ```bash
-   make migrate
+   poetry run pre-commit install
    ```
 
-5. Start the backend server:
+6. Create an environment file from the example:
+
    ```bash
-   make run
+   cp .env.example .env
+   ```
+
+7. Apply database migrations:
+
+   ```bash
+   poetry run make migrate
+   ```
+
+8. Start the backend server:
+
+   ```bash
+   poetry run make run
    ```
 
 ## 📚 Usage
@@ -125,3 +153,13 @@ We would like to thank all the contributors and the open-source community for th
 ## 📞 Contact
 
 For any questions or feedback, please open an issue on GitHub.
+
+## Development Setup
+
+This project uses pre-commit hooks in the backend and Husky in the frontend to ensure code quality and consistency.
+
+### Frontend (Husky)
+
+Husky is set up in the frontend to run linting checks before each commit.
+
+To manually run the frontend linting:

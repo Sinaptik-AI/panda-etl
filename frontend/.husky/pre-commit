@@ -1,2 +1,5 @@
-cd frontend && npx lint-staged
-cd ../backend && poetry run ruff check .
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run pre-commit hooks
+pre-commit run --hook-stage pre-commit --files $(git diff --cached --name-only)
