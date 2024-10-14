@@ -1,19 +1,21 @@
-from collections import defaultdict
 import traceback
 from typing import Optional
+
+from app.config import settings
 from app.database import get_db
 from app.logger import Logger
 from app.models.asset_content import AssetProcessingStatus
-from app.repositories import project_repository, user_repository
-from app.repositories import conversation_repository
+from app.repositories import (
+    conversation_repository,
+    project_repository,
+    user_repository,
+)
 from app.requests import chat_query
 from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.config import settings
-
 
 chat_router = APIRouter()
 
@@ -27,35 +29,21 @@ logger = Logger()
 
 
 def group_by_start_end(references):
-    grouped_references = defaultdict(
-        lambda: {"start": None, "end": None, "references": []}
-    )
-
+    grouped_references = {}
     for ref in references:
         key = (ref["start"], ref["end"])
-
-        # Initialize start and end if not already set
-        if grouped_references[key]["start"] is None:
-            grouped_references[key]["start"] = ref["start"]
-            grouped_references[key]["end"] = ref["end"]
-
-        # Check if a reference with the same asset_id already exists
-        existing_ref = None
-        for existing in grouped_references[key]["references"]:
+        grouped_ref = grouped_references.setdefault(
+            key, {"start": ref["start"], "end": ref["end"], "references": []}
+        )
+        for existing_ref in grouped_ref["references"]:
             if (
-                existing["asset_id"] == ref["asset_id"]
-                and existing["page_number"] == ref["page_number"]
+                existing_ref["asset_id"] == ref["asset_id"]
+                and existing_ref["page_number"] == ref["page_number"]
             ):
-                existing_ref = existing
+                existing_ref["source"].extend(ref["source"])
                 break
-
-        if existing_ref:
-            # Append the source if asset_id already exists
-            existing_ref["source"].extend(ref["source"])
         else:
-            # Otherwise, add the new reference
-            grouped_references[key]["references"].append(ref)
-
+            grouped_ref["references"].append(ref)
     return list(grouped_references.values())
 
 

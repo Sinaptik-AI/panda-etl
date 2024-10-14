@@ -1,13 +1,11 @@
 import uuid
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Iterable, List, Optional, Tuple
 
 import chromadb
+from app.config import settings
+from app.vectorstore import VectorStore
 from chromadb import config
 from chromadb.utils import embedding_functions
-
-from app.vectorstore import VectorStore
-from app.config import settings
-
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
 
@@ -145,7 +143,7 @@ class ChromaDB(VectorStore):
         k: int = None,
         num_surrounding_sentences: int = 3,
         metadata_filter: Optional[dict] = None,
-    ) -> list[dict]:
+    ) -> Tuple[List[str], List[str], List[dict]]:
         k = k or self._max_samples
 
         relevant_docs = self.get_relevant_docs(

@@ -7,7 +7,7 @@ import ExtractReferenceDrawer from "./ExtractReferenceDrawer";
 
 function calculateColumnWidth(
   title: string,
-  data: Record<string, any>[],
+  data: Record<string, any>[]
 ): number {
   const minWidth = 100;
   const maxWidth = 250;
@@ -43,7 +43,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     Column<Record<string, any>, unknown>[]
   >([]);
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-    new Set(),
+    new Set()
   );
 
   const [selectRowColumn, setSelectRowColumn] =
@@ -98,7 +98,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         </div>
       );
     },
-    [hoveredCell],
+    [hoveredCell]
   );
 
   useEffect(() => {

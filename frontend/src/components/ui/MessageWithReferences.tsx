@@ -1,7 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import TooltipWrapper from "./Tooltip";
 
@@ -26,21 +26,16 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
       const beforeText = message.slice(lastEnd, item.end);
       parts.push(
         <React.Fragment key={`text-${index}`}>
-          {beforeText.split("\n").map((line, lineIndex) => (
-            <React.Fragment key={`line-${index}-${lineIndex}`}>
-              {lineIndex > 0 && <br />}
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
-                components={{
-                  p: ({ children }) => <span>{children}</span>,
-                }}
-              >
-                {line}
-              </ReactMarkdown>
-            </React.Fragment>
-          ))}
-        </React.Fragment>,
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
+            components={{
+              p: ({ children }) => <span>{children}</span>,
+            }}
+          >
+            {beforeText}
+          </ReactMarkdown>
+        </React.Fragment>
       );
 
       item.references.forEach((reference: ChatReference, refIndex: number) => {
@@ -55,7 +50,7 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
                 {indexMap[`${reference.asset_id}_${reference.page_number}`]}
               </span>
             </TooltipWrapper>
-          </React.Fragment>,
+          </React.Fragment>
         );
       });
 
@@ -66,21 +61,16 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
       const remainingText = message.slice(lastEnd);
       parts.push(
         <React.Fragment key="text-final">
-          {remainingText.split("\n").map((line, lineIndex) => (
-            <React.Fragment key={`line-final-${lineIndex}`}>
-              {lineIndex > 0 && <br />}
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
-                components={{
-                  p: ({ children }) => <span>{children}</span>,
-                }}
-              >
-                {line}
-              </ReactMarkdown>
-            </React.Fragment>
-          ))}
-        </React.Fragment>,
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
+            components={{
+              p: ({ children }) => <span>{children}</span>,
+            }}
+          >
+            {remainingText}
+          </ReactMarkdown>
+        </React.Fragment>
       );
     }
 

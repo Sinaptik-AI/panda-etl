@@ -63,7 +63,7 @@ def test_get_field_descriptions_success(
     assert response.status_code == 200
     assert response.json() == {
         "status": "success",
-        "message": "File processed successfully",
+        "message": "Field descriptions generated successfully.",
         "data": {"field1": "description1", "field2": "description2"},
     }
 
@@ -85,8 +85,8 @@ def test_get_field_descriptions_project_not_found(
         "/v1/extract/1/field-descriptions", json=field_description_request.dict()
     )
 
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Project doesn't exists"}
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Project not found."}  # Note the period at the end
 
     mock_get_project.assert_called_once_with(db=mock_db, project_id=1)
     mock_db.commit.assert_not_called()
@@ -113,7 +113,9 @@ def test_get_field_descriptions_exception(
     )
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Unable to fetch AI Field Descriptions"}
+    assert response.json() == {
+        "detail": "Unable to generate AI field descriptions. Please try again later."
+    }
 
     mock_get_project.assert_called_once_with(db=mock_db, project_id=1)
     mock_get_user_api_key.assert_called_once_with(mock_db)

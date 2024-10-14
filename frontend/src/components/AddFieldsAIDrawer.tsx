@@ -32,14 +32,14 @@ const AddFieldsAIDrawer = ({
     setError(null);
 
     const standardizedFieldsList = fieldsList.map((field) =>
-      field.replace(/\s+/g, "_"),
+      field.replace(/\s+/g, "_")
     );
 
     if (standardizedFieldsList.length > 0) {
       try {
         const { data } = await GetAIFieldDescriptions(
           project_id,
-          standardizedFieldsList,
+          standardizedFieldsList
         );
         setIsLoading(false);
         onSubmit(data.data);

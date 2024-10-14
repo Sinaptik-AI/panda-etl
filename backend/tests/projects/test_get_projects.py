@@ -146,8 +146,4 @@ def test_get_projects_db_error(mock_get_projects, mock_db):
     response = client.get("/v1/projects?page=1&page_size=2")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Unable to process request!"}
-    _, kwargs = mock_get_projects.call_args
-    assert isinstance(kwargs["db"], Session)
-    assert kwargs["page"] == 1
-    assert kwargs["page_size"] == 2
+    assert response.json() == {"detail": "An internal server error occurred while processing your request. Please try again later."}

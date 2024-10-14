@@ -280,7 +280,7 @@ def extract_process(api_key, process, process_step, asset_content):
             or not process.details["multiple_fields"]
         )
         and asset_content.content
-        and asset_content.content["word_count"] > 500
+        and asset_content.content.get("word_count", 0) > 500
     ):
         for field in process.details["fields"]:
             relevant_docs = vectorstore.get_relevant_docs(

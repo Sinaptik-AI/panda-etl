@@ -15,7 +15,7 @@ export const ReactQueryClientProvider = ({
             staleTime: 60 * 1000,
           },
         },
-      }),
+      })
   );
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

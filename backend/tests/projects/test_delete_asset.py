@@ -67,7 +67,7 @@ def test_delete_asset_project_not_found(mock_get_project, mock_db):
     response = client.delete("/v1/projects/999/assets/1")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Project not found"}
+    assert response.json() == {"detail": "The specified project could not be found."}
 
     mock_get_project.assert_called_once_with(mock_db, 999)
     mock_db.commit.assert_not_called()
@@ -85,7 +85,7 @@ def test_delete_asset_not_found(mock_get_asset, mock_get_project, mock_db):
     response = client.delete("/v1/projects/1/assets/999")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Asset not found in the database"}
+    assert response.json() == {"detail": "The specified asset could not be found in the database."}
 
     mock_get_project.assert_called_once_with(mock_db, 1)
     mock_get_asset.assert_called_once_with(mock_db, 999)
@@ -108,7 +108,7 @@ def test_delete_asset_db_error(mock_chroma, mock_get_asset, mock_get_project, mo
     response = client.delete("/v1/projects/1/assets/1")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Failed to delete asset: Database error"}
+    assert response.json() == {"detail": "An error occurred while deleting the asset. Please try again later."}
 
     mock_get_project.assert_called_once_with(mock_db, 1)
     mock_get_asset.assert_called_once_with(mock_db, 1)
@@ -128,7 +128,7 @@ def test_delete_asset_wrong_project(mock_get_asset, mock_get_project, mock_db):
     response = client.delete("/v1/projects/1/assets/1")
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Asset does not belong to the specified project"}
+    assert response.json() == {"detail": "The specified asset does not belong to the given project."}
 
     mock_get_project.assert_called_once_with(mock_db, 1)
     mock_get_asset.assert_called_once_with(mock_db, 1)

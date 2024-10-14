@@ -15,7 +15,7 @@ const projectsApiUrl = "/projects";
 export const GetProject = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProjectData }>(
-      `${projectsApiUrl}/${projectId}`,
+      `${projectsApiUrl}/${projectId}`
     );
     return response;
   } catch (error) {
@@ -25,7 +25,7 @@ export const GetProject = async (projectId: string) => {
 
 export const GetProjects = async (
   page: number | null = null,
-  pageSize: number | null = null,
+  pageSize: number | null = null
 ) => {
   try {
     const url =
@@ -47,7 +47,7 @@ export const CreateProject = async (data: {
   try {
     const response = await PostRequest<{ data: ProjectData }>(
       projectsApiUrl,
-      data,
+      data
     );
     return response;
   } catch (error) {
@@ -58,7 +58,7 @@ export const CreateProject = async (data: {
 export const GetProjectAssets = async (
   projectId: string,
   page: number | null = null,
-  pageSize: number | null = null,
+  pageSize: number | null = null
 ) => {
   try {
     const uri =
@@ -74,21 +74,21 @@ export const GetProjectAssets = async (
 
 export const GetProjectAssetURL = (
   projectId: string,
-  assetId: string | null,
+  assetId: string | null
 ) => {
   return `${BASE_API_URL}/${projectsApiUrl}/${projectId}/assets/${assetId}`;
 };
 
 export const FetchAssetFile = async (
   projectId: string,
-  assetId: string,
+  assetId: string
 ): Promise<Blob> => {
   try {
     const response: AxiosResponse<Blob> = await GetRequest<Blob>(
       `${projectsApiUrl}/${projectId}/assets/${assetId}`,
       {
         responseType: "blob",
-      },
+      }
     );
     return response.data;
   } catch (error) {
@@ -105,7 +105,7 @@ export const AddProjectAsset = async (projectId: string, file: File) => {
       `${projectsApiUrl}/${projectId}/assets`,
       formData,
       {},
-      300000, // Longer time for uploading big files
+      300000 // Longer time for uploading big files
     );
     return response;
   } catch (error) {
@@ -119,7 +119,7 @@ export const AddProjectURLAsset = async (projectId: string, urls: string[]) => {
       `${projectsApiUrl}/${projectId}/assets/url`,
       { url: urls },
       {},
-      300000, // Longer time for uploading big files
+      300000 // Longer time for uploading big files
     );
     return response;
   } catch (error) {
@@ -130,7 +130,7 @@ export const AddProjectURLAsset = async (projectId: string, urls: string[]) => {
 export const GetProjectProcesses = async (projectId: string) => {
   try {
     const response = await GetRequest<{ data: ProcessData[] }>(
-      `${projectsApiUrl}/${projectId}/processes`,
+      `${projectsApiUrl}/${projectId}/processes`
     );
     return response;
   } catch (error) {
@@ -150,7 +150,7 @@ export const DeleteProject = async (projectId: string) => {
 export const DeleteAssets = async (projectId: string, assetId: string) => {
   try {
     const response = await DeleteRequest(
-      `${projectsApiUrl}/${projectId}/assets/${assetId}`,
+      `${projectsApiUrl}/${projectId}/assets/${assetId}`
     );
     return response;
   } catch (error) {
@@ -161,7 +161,7 @@ export const DeleteAssets = async (projectId: string, assetId: string) => {
 // Add this new function to update a project
 export const UpdateProject = async (
   projectId: string,
-  data: { name: string; description: string },
+  data: { name: string; description: string }
 ) => {
   try {
     const response = await PutRequest(`${projectsApiUrl}/${projectId}`, data);

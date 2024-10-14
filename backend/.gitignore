@@ -23,3 +23,8 @@ __pycache__/
 !/instance/
 uploads/
 processed/
+
+
+# coverage
+.coverage
+coverage.xml
