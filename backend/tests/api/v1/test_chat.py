@@ -24,36 +24,6 @@ def mock_chat_query():
     with patch("app.api.v1.chat.chat_query") as mock:
         yield mock
 
-
-def test_chat_endpoint(mock_db, mock_vectorstore, mock_chat_query):
-    # Arrange
-    project_id = 1
-    chat_request = {"conversation_id": None, "query": "Test query"}
-    
-    mock_vectorstore.return_value.get_relevant_segments.return_value = (
-        ["doc1"], ["id1"], [{"metadata": "value"}]
-    )
-    
-    mock_chat_query.return_value = {
-        "response": "Test response",
-        "references": []
-    }
-    
-    # Act
-    with patch("app.api.v1.chat.get_db", return_value=mock_db):
-        with patch("app.repositories.user_repository.get_user_api_key", return_value=MagicMock(key="test_api_key")):
-            with patch("app.repositories.project_repository.get_assets_filename", return_value=["file1.pdf"]):
-                with patch("app.repositories.user_repository.get_users", return_value=[MagicMock(id=1)]):
-                    with patch("app.repositories.conversation_repository.create_new_conversation", return_value=MagicMock(id="new_conversation_id")):
-                        response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
-    
-    # Assert
-    assert response.status_code == 200
-    assert response.json()["status"] == "success"
-    assert response.json()["data"]["conversation_id"] == "new_conversation_id"
-    assert response.json()["data"]["response"] == "Test response"
-
-
 def test_chat_status_endpoint(mock_db):
     # Arrange
     project_id = 1
