@@ -7,7 +7,7 @@ import ExtractReferenceDrawer from "./ExtractReferenceDrawer";
 
 function calculateColumnWidth(
   title: string,
-  data: Record<string, any>[],
+  data: Record<string, any>[]
 ): number {
   const minWidth = 100;
   const maxWidth = 250;
@@ -43,12 +43,13 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     Column<Record<string, any>, unknown>[]
   >([]);
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-    new Set(),
+    new Set()
   );
 
   const [selectRowColumn, setSelectRowColumn] =
     useState<SelectRowColumnType | null>(null);
   const [displayDrawer, setDisplayDrawer] = useState<boolean>(false);
+  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -63,15 +64,23 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         hasProcessId &&
         cellContent !== "" &&
         cellContent !== null &&
-        cellContent !== undefined;
+        cellContent !== undefined &&
+        props.column.key !== "Filename";
+      const cellId = `${props.row.id}-${props.column.key}`;
 
       return (
-        <div className="relative group h-full flex items-center overflow-hidden">
+        <div
+          className="relative group h-full flex items-center overflow-hidden"
+          onMouseEnter={() => {
+            setTimeout(() => setHoveredCell(cellId), 200);
+          }}
+          onMouseLeave={() => setHoveredCell(null)}
+        >
           <span className="truncate">{cellContent}</span>
-          {showInfoIcon && (
-            <div className="absolute inset-y-1 right-1 w-12 bg-gradient-to-l from-[#f9fafb] via-[#f9fafb] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-end">
+          {showInfoIcon && hoveredCell === cellId && (
+            <div className="absolute inset-y-1 right-1 w-12 bg-gradient-to-l from-[#f9fafb] via-[#f9fafb] to-transparent flex items-center justify-end transition-opacity duration-300 ease-in-out">
               <FaInfoCircle
-                className="text-primary cursor-pointer mr-2"
+                className="text-primary cursor-pointer mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
                 size={14}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -89,7 +98,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
         </div>
       );
     },
-    [],
+    [hoveredCell]
   );
 
   useEffect(() => {

@@ -36,10 +36,10 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
     useState<AssetData | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fields, setFields] = useState<ExtractionField[]>(
-    templateData ?? [{ key: "", description: "", type: "text" }],
+    templateData ?? [{ key: "", description: "", type: "text" }]
   );
   const [extractionFields, setExtractionFields] = useState<ExtractionField[]>(
-    [],
+    []
   );
   const [extractionResult, setExtractionResult] =
     useState<ExtractionResult | null>(null);
@@ -59,7 +59,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
       const { data } = await Extract(
         project.id,
         assets[currentFileIndex].id,
-        fields,
+        fields
       );
       if (Array.isArray(data.data)) {
         setExtractionResult(data.data[0]);
@@ -72,7 +72,7 @@ export const ExtractionStep: React.FC<ExtractionStepProps> = ({
 
   const handleProcessStart = async (
     fields: ExtractionField[],
-    multiFields: boolean,
+    multiFields: boolean
   ) => {
     try {
       const { data } = await StartProcess({

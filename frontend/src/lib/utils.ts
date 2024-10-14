@@ -26,7 +26,7 @@ export const isValidURL = (url: string): boolean => {
 
 export const truncateTextFromCenter = (
   text?: string,
-  maxLength: number = 50,
+  maxLength: number = 50
 ): string | undefined => {
   if (!text || typeof text !== "string") {
     return text;
@@ -44,4 +44,8 @@ export const truncateTextFromCenter = (
 
 export const markify_text = (text: string) => {
   return text.replace(/\n/g, "<br>");
+};
+
+export const removePunctuation = (str: string): string => {
+  return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()"“”'\s]/g, " ");
 };

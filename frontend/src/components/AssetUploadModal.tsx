@@ -13,7 +13,7 @@ interface IProps {
   onCancel: () => void;
   onSubmit: (
     type: string,
-    data: string[] | FileList | null,
+    data: string[] | FileList | null
   ) => Promise<boolean>;
   isOpen: boolean;
 }

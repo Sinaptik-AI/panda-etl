@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.main import app
 from app.api.v1.extract import ExtractFields
@@ -71,7 +70,7 @@ def test_extract_success(
     assert response.status_code == 200
     assert response.json() == {
         "status": "success",
-        "message": "File processed successfully",
+        "message": "Data extracted successfully from the file.",
         "data": {"extracted_field1": "value1", "extracted_field2": "value2"},
     }
 
@@ -95,7 +94,7 @@ def test_extract_asset_permission_error(mock_get_asset, extract_fields, mock_db)
     response = client.post("/v1/extract/1", json=extract_fields.dict())
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Check asset permission doesn't exists"}
+    assert response.json() == {"detail": "Asset does not belong to the specified project."}
 
     mock_get_asset.assert_called_once_with(db=mock_db, asset_id=1)
     mock_db.commit.assert_not_called()
@@ -150,7 +149,9 @@ def test_extract_exception(
     response = client.post("/v1/extract/1", json=extract_fields.dict())
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Unable to process file!"}
+    assert response.json() == {
+        "detail": "An error occurred while processing the file. Please try again or contact support if the issue persists."
+    }
 
     mock_get_asset.assert_called_once_with(db=mock_db, asset_id=1)
     mock_get_user_api_key.assert_called_once_with(mock_db)

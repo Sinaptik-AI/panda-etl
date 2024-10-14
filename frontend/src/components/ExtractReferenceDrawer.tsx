@@ -3,10 +3,6 @@ import React from "react";
 import Drawer from "./ui/Drawer";
 import { GetProcessStepReferences } from "@/services/processSteps";
 import { useQuery } from "@tanstack/react-query";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import { markify_text } from "@/lib/utils";
 import HighlightPdfViewer from "../ee/components/HighlightPdfViewer";
 import { FlattenedSource, Source } from "@/interfaces/processSteps";
 import { BASE_STORAGE_URL } from "@/constants";
@@ -38,7 +34,7 @@ const ExtractReferenceDrawer = ({
   const output = data?.output_reference?.[index]?.[column_name] ?? null;
 
   const filtered_output = data?.output_reference?.[index].filter(
-    (item: Source) => item.name == column_name,
+    (item: Source) => item.name == column_name
   );
 
   const filteredSourceDetails: FlattenedSource[] = [];
@@ -58,18 +54,16 @@ const ExtractReferenceDrawer = ({
     }
   });
 
-  let file_url = null;
-  if (data?.project_id) {
-    file_url = `${BASE_STORAGE_URL}/${data?.project_id}/${filename}`;
+  const file_url =
+    data?.project_id && filename
+      ? `${BASE_STORAGE_URL}/${data?.project_id}/${filename}`
+      : null;
+  if (!filename) {
+    console.error("Filename is required to display the reference");
   }
 
   return (
     <Drawer isOpen={isOpen} onClose={onCancel} title={column_name}>
-      <div className="text-black bg-gray-50 p-4 rounded-lg">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-          {output && markify_text(output)}
-        </ReactMarkdown>
-      </div>
       {file_url && (
         <HighlightPdfViewer
           file={file_url}

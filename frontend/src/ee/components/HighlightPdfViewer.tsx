@@ -1,8 +1,11 @@
 import { FlattenedSource } from "@/interfaces/processSteps";
+import { removePunctuation } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import styles from "./HighlightPdfViewer.module.css";
+import { Loader2 } from "lucide-react";
 
 // Define types for the highlight source
 interface HighlightCoordinate {
@@ -23,6 +26,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [onScrolled, setOnScrolled] = useState<boolean>(false);
+  const [visiblePages, setVisiblePages] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const viewerRef = useRef<HTMLDivElement>(null);
 
   const activePage =
@@ -38,6 +43,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
+    setVisiblePages([activePage]);
+    setIsLoading(false);
   };
 
   const scrollToPage = (pageNumber: number) => {
@@ -50,23 +57,34 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   // Highlighting logic for both custom coordinates and text
   const highlightText = (
     pageNumber: number,
-    sources: HighlightCoordinate[],
+    sources: HighlightCoordinate[]
   ) => {
-    const pageCanvas = document.querySelector<HTMLCanvasElement>(
-      `#page_${pageNumber} canvas`,
+    const pageContainer = document.querySelector<HTMLDivElement>(
+      `#page_${pageNumber}`
     );
-    if (!pageCanvas) {
-      console.log("No page canvas found");
+
+    if (!pageContainer) {
       return;
     }
-    const context = pageCanvas.getContext("2d");
-    if (!context) {
-      console.log("No context found");
-      return;
-    }
-    context.fillStyle = "rgba(255, 255, 0, 0.3)";
+
+    const highlightLayer = document.createElement("div");
+    highlightLayer.className = styles.highlightLayer;
+    pageContainer.appendChild(highlightLayer);
+
     sources.forEach((source) => {
-      context.fillRect(source.x, source.y, source.width, source.height);
+      const highlightDiv = document.createElement("div");
+
+      // Set the position and size of the highlight
+      highlightDiv.style.position = "absolute";
+      highlightDiv.style.left = `${source.x / 2}px`;
+      highlightDiv.style.top = `${source.y / 2}px`;
+      highlightDiv.style.width = `${source.width / 2}px`;
+      highlightDiv.style.height = `${source.height / 2}px`;
+      highlightDiv.style.backgroundColor = "rgba(255, 255, 0, 0.3)"; // Yellow highlight
+      highlightDiv.style.pointerEvents = "none"; // Allow interactions with underlying text
+      highlightDiv.classList.add(styles.highlightDiv);
+
+      highlightLayer.appendChild(highlightDiv);
     });
   };
 
@@ -79,6 +97,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       overlap: "No overlap found",
       position: null,
     };
+
     let maxLength = 0;
 
     // Loop over each possible starting point in sentence1
@@ -123,7 +142,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   const constructCoordinates = (
     item: any,
     viewHeight: number,
-    viewWidth: number,
+    viewWidth: number
   ) => {
     const { transform, width, height } = item;
     const x = 2 * transform[4];
@@ -138,13 +157,15 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
   // Function to search for text and highlight it
   const highlightTextInPdf = async (pageNumber: number, text: string) => {
+    console.log(`Searching for text on page ${pageNumber}:`, text); // Add this line
+
     const loadingTask = pdfjs.getDocument(file);
     const pdfDocument = await loadingTask.promise;
 
     const page = await pdfDocument.getPage(pageNumber);
     const textContent = await page.getTextContent();
     const pageCanvas = document.querySelector<HTMLCanvasElement>(
-      `#page_${pageNumber} canvas`,
+      `#page_${pageNumber} canvas`
     );
 
     if (!pageCanvas) return;
@@ -157,14 +178,14 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       return;
     }
 
-    let copyText = text.toLowerCase();
+    let copyText = removePunctuation(text.toLowerCase());
 
     let highlightCoordinates: HighlightCoordinate[] = [];
     let found = false;
 
     textContent.items.forEach((item) => {
       if ("str" in item && typeof item.str === "string") {
-        const pdfText = item.str.toLowerCase().trim();
+        const pdfText = removePunctuation(item.str.toLowerCase().trim());
 
         if (pdfText.length == 0 || copyText.length == 0) return;
 
@@ -179,6 +200,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
         if (copyText.length == 0) {
           return;
         }
+
         const isOverlapAtStart = copyText.startsWith(overlap.overlap);
         const isOverlapEqualToPdf = overlap.overlap.length === pdfText.length;
         const isOverlapEqualToCopy = overlap.overlap.length === copyText.length;
@@ -187,7 +209,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -199,7 +221,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -212,7 +234,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -225,13 +247,13 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth,
+            viewWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
         } else if (found && copyText.length > 1 && !isOverlapEqualToCopy) {
           highlightCoordinates = [];
-          copyText = text.toLowerCase();
+          copyText = removePunctuation(text.toLowerCase());
           found = false;
         }
       }
@@ -252,29 +274,69 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   }, [numPages]);
 
   useEffect(() => {
-    const highlightTextTimer = setTimeout(() => {
-      highlightSources.forEach(async (highlightSource) => {
+    const highlightAllSources = async () => {
+      for (const highlightSource of highlightSources) {
         await highlightTextInPdf(
           highlightSource.page_number,
-          highlightSource.source,
+          highlightSource.source
         );
-      });
-    }, 6000);
-
-    return () => clearTimeout(highlightTextTimer);
+      }
+    };
+    highlightAllSources();
   }, [onScrolled]);
 
+  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      const pageNumber = parseInt(entry.target.id.split("_")[1]);
+      if (entry.isIntersecting) {
+        setVisiblePages((prev) =>
+          prev.includes(pageNumber) ? prev : [...prev, pageNumber]
+        );
+      }
+    });
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleIntersection, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.1,
+    });
+
+    document.querySelectorAll('[id^="page_"]').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [numPages]);
+
   return (
-    <div ref={viewerRef}>
-      <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+    <div ref={viewerRef} className={styles.pdfViewer}>
+      {isLoading && (
+        <div className={styles.loaderContainer}>
+          <Loader2 className={styles.loader} />
+        </div>
+      )}
+      <Document
+        file={file}
+        onLoadSuccess={onDocumentLoadSuccess}
+        loading={<div className={styles.hidden}></div>}
+      >
         {Array.from(new Array(numPages || 0), (el, index) => {
+          const pageNumber = index + 1;
           return (
             <div
-              id={`page_${index + 1}`}
-              key={`page_${index + 1}`}
-              style={{ margin: 0, padding: 0, pageBreakInside: "avoid" }}
+              id={`page_${pageNumber}`}
+              key={`page_${pageNumber}`}
+              className={styles.pageContainer}
             >
-              <Page pageNumber={index + 1} />
+              {visiblePages.includes(pageNumber) && (
+                <Page
+                  pageNumber={pageNumber}
+                  loading={<div className={styles.hidden}></div>}
+                  className={styles.pdfPage}
+                />
+              )}
             </div>
           );
         })}

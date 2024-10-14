@@ -3,7 +3,6 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     JSON,
-    DateTime,
     Enum as SQLAlchemyEnum,
 )
 from sqlalchemy.orm import relationship

@@ -21,7 +21,7 @@ const TabList: React.FC<TabListProps> = ({
   actions,
 }) => {
   const [activeTab, setActiveTab] = useState<string>(
-    defaultActiveTab || tabs[0].id,
+    defaultActiveTab || tabs[0].id
   );
 
   const handleTabClick = (tabId: string) => {

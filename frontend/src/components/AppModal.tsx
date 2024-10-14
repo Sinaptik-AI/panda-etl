@@ -75,7 +75,7 @@ export const AppModal = ({
             )}
           </Card>
         </div>,
-        document.body,
+        document.body
       )}
     </>
   );

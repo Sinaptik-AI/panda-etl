@@ -8,6 +8,7 @@ import ChatLoader from "./ChatLoader";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import ChatBubble from "@/components/ui/ChatBubble";
+import { ChatReferences } from "@/interfaces/chat";
 
 export const NoChatPlaceholder = ({ isLoading }: { isLoading: boolean }) => {
   return (
@@ -31,6 +32,7 @@ export const NoChatPlaceholder = ({ isLoading }: { isLoading: boolean }) => {
 interface ChatMessage {
   sender: string;
   text: string;
+  references?: Array<ChatReferences>;
   timestamp: Date;
 }
 
@@ -81,6 +83,7 @@ const ChatBox = ({
     const bot_response = {
       sender: "bot",
       text: response.response,
+      references: response.response_references || [],
       timestamp: new Date(),
     };
     setLoading(false);
@@ -121,6 +124,7 @@ const ChatBox = ({
                 <ChatBubble
                   message={message.text}
                   timestamp={message.timestamp}
+                  references={message.references}
                   sender={message.sender as "user" | "bot"}
                 />
               </motion.div>

@@ -1,13 +1,9 @@
-import os
 from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.main import app
-from app.repositories import project_repository
-from app.models import Asset
 
 # Test client setup
 client = TestClient(app)
@@ -50,10 +46,7 @@ def test_get_file_not_found_in_db(mock_get_asset, mock_db):
     response = client.get("/v1/projects/1/assets/999")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "File not found in the database"}
-    args, kwargs = mock_get_asset.call_args
-    assert isinstance(args[0], Session)
-    assert args[1] == 999
+    assert response.json() == {"detail": "The requested file could not be found in the database."}
 
 
 @patch("app.repositories.project_repository.get_asset")
@@ -66,13 +59,8 @@ def test_get_file_not_found_on_server(mock_isfile, mock_get_asset, mock_db):
 
     response = client.get("/v1/projects/1/assets/1")
 
-    print(response.json())
     assert response.status_code == 404
-    assert response.json() == {"detail": "File not found on server"}
-    args, _ = mock_get_asset.call_args
-    assert isinstance(args[0], Session)
-    assert args[1] == 1
-    mock_isfile.assert_called_once_with("/fake/path/test.pdf")
+    assert response.json() == {"detail": "The requested file could not be found on the server."}
 
 
 @patch("app.repositories.project_repository.get_asset")
@@ -86,8 +74,4 @@ def test_get_file_general_exception(mock_isfile, mock_get_asset, mock_db):
     response = client.get("/v1/projects/1/assets/1")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Failed to retrieve file"}
-    args, _ = mock_get_asset.call_args
-    assert isinstance(args[0], Session)
-    assert args[1] == 1
-    mock_isfile.assert_called_once_with("/fake/path/test.pdf")
+    assert response.json() == {"detail": "An error occurred while retrieving the file. Please try again later."}

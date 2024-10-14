@@ -7,14 +7,14 @@ const extractApiUrl = "/extract";
 export const Extract = async (
   projectId: string,
   assetId: string,
-  fields: ExtractionField[],
+  fields: ExtractionField[]
 ) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}`,
       { fields, assetId },
       {},
-      300000,
+      300000
     );
     return response;
   } catch (error) {
@@ -28,14 +28,14 @@ export const Extract = async (
 
 export const GetAIFieldDescriptions = async (
   projectId: string,
-  fields: string[],
+  fields: string[]
 ) => {
   try {
     const response = await PostRequest<ExtractionResult>(
       `${extractApiUrl}/${projectId}/field-descriptions`,
       { fields },
       {},
-      300000,
+      300000
     );
     return response;
   } catch (error) {

@@ -1,17 +1,21 @@
 import traceback
 from typing import Optional
+
+from app.config import settings
 from app.database import get_db
 from app.logger import Logger
 from app.models.asset_content import AssetProcessingStatus
-from app.repositories import project_repository, user_repository
-from app.repositories import conversation_repository
+from app.repositories import (
+    conversation_repository,
+    project_repository,
+    user_repository,
+)
 from app.requests import chat_query
+from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.config import settings
-
 
 chat_router = APIRouter()
 
@@ -24,22 +28,46 @@ class ChatRequest(BaseModel):
 logger = Logger()
 
 
+def group_by_start_end(references):
+    grouped_references = {}
+    for ref in references:
+        key = (ref["start"], ref["end"])
+        grouped_ref = grouped_references.setdefault(
+            key, {"start": ref["start"], "end": ref["end"], "references": []}
+        )
+        for existing_ref in grouped_ref["references"]:
+            if (
+                existing_ref["asset_id"] == ref["asset_id"]
+                and existing_ref["page_number"] == ref["page_number"]
+            ):
+                existing_ref["source"].extend(ref["source"])
+                break
+        else:
+            grouped_ref["references"].append(ref)
+    return list(grouped_references.values())
+
+
 @chat_router.post("/project/{project_id}", status_code=200)
 def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
-        docs = vectorstore.get_relevant_docs(
+
+        docs, doc_ids, _ = vectorstore.get_relevant_segments(
             chat_request.query, settings.max_relevant_docs
         )
 
-        file_names = project_repository.get_assets_filename(
-            db, [metadata["doc_id"] for metadata in docs["metadatas"][0]]
-        )
-        extracted_documents = docs["documents"][0]
+        unique_doc_ids = list(set(doc_ids))
+        file_names = project_repository.get_assets_filename(db, unique_doc_ids)
+
+        doc_id_to_filename = {
+            doc_id: filename for doc_id, filename in zip(unique_doc_ids, file_names)
+        }
+
+        ordered_file_names = [doc_id_to_filename[doc_id] for doc_id in doc_ids]
 
         docs_formatted = [
             {"filename": filename, "quote": quote}
-            for filename, quote in zip(file_names, extracted_documents)
+            for filename, quote in zip(ordered_file_names, docs)
         ]
 
         api_key = user_repository.get_user_api_key(db)
@@ -63,34 +91,98 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             )
             conversation_id = str(conversation.id)
 
+        content = response["response"]
+        content_length = len(content)
+        clean_content = clean_text(content)
+        text_references = []
+        not_exact_matched_refs = []
+
+        for reference in response["references"]:
+            sentence = reference["sentence"]
+
+            for reference_content in reference["references"]:
+                original_filename = reference_content["file"]
+                original_sentence = reference_content["sentence"]
+
+                doc_sent, doc_ids, doc_metadata = vectorstore.get_relevant_segments(
+                    original_sentence,
+                    k=5,
+                    num_surrounding_sentences=0,
+                    metadata_filter={"filename": original_filename},
+                )
+
+                # Search for exact match
+                best_match_index = 0
+
+                for index, sent in enumerate(doc_sent):
+                    if clean_text(original_sentence) in clean_text(sent):
+                        best_match_index = index
+
+                metadata = doc_metadata[best_match_index]
+                sent = doc_sent[best_match_index]
+
+                index = clean_content.find(clean_text(sentence))
+
+                if index != -1:
+                    text_reference = {
+                        "asset_id": metadata["asset_id"],
+                        "project_id": metadata["project_id"],
+                        "page_number": metadata["page_number"],
+                        "filename": original_filename,
+                        "source": [sent],
+                        "start": index,
+                        "end": index + len(sentence),
+                    }
+                    text_references.append(text_reference)
+                else:
+                    no_exact_reference = {
+                        "asset_id": metadata["asset_id"],
+                        "project_id": metadata["project_id"],
+                        "page_number": metadata["page_number"],
+                        "filename": original_filename,
+                        "source": [sent],
+                        "start": 0,
+                        "end": content_length,
+                    }
+                    not_exact_matched_refs.append(no_exact_reference)
+
+        # group text references based on start and end
+        if len(text_references) > 0:
+            refs = group_by_start_end(text_references)
+        else:
+            refs = group_by_start_end(not_exact_matched_refs)
+
         conversation_repository.create_conversation_message(
             db,
             conversation_id=conversation_id,
             query=chat_request.query,
-            response=response["response"],
+            response=content,
         )
 
         return {
             "status": "success",
-            "message": "chat response successfully returned!",
+            "message": "Chat response successfully generated.",
             "data": {
                 "conversation_id": conversation_id,
-                "response": response["response"],
+                "response": content,
+                "response_references": refs,
             },
         }
 
     except HTTPException:
         raise
 
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=400, detail="Unable to process query!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process the chat query. Please try again.",
+        )
 
 
 @chat_router.get("/project/{project_id}/status", status_code=200)
 def chat_status(project_id: int, db: Session = Depends(get_db)):
     try:
-
         asset_contents = project_repository.get_assets_without_content(
             db=db, project_id=project_id
         )
@@ -109,13 +201,16 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
 
         return {
             "status": "success",
-            "message": "Chat response successfully returned!",
+            "message": "Chat message successfully generated.",
             "data": {"status": status},
         }
 
     except HTTPException:
         raise
 
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=400, detail="Unable to process query!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process the chat query. Please try again.",
+        )

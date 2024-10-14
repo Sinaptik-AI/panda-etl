@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from app.main import app
 import pytest
-from io import BytesIO
 
 from app.database import get_db
 

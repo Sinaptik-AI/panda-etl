@@ -14,7 +14,7 @@ class SoftDeleteQuery(BaseQuery):
 
     def from_self(self, *ent):
         # Filter out soft deleted records
-        return self.enable_assertions(False).filter(self.model.deleted_at == None)
+        return self.enable_assertions(False).filter(self.model.deleted_at is None)
 
     def _get(self, ident):
         # Filter out soft deleted records

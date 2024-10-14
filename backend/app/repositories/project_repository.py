@@ -26,7 +26,7 @@ def get_projects(db: Session, page: int = 1, page_size: int = 20):
             models.Project,
             func.count(models.Asset.id).label("asset_count"),  # Count the assets
         )
-        .filter(models.Project.deleted_at == None)
+        .filter(models.Project.deleted_at.is_(None))
         .outerjoin(models.Asset, models.Project.id == models.Asset.project_id)
         .group_by(models.Project.id)
         .offset((page - 1) * page_size)

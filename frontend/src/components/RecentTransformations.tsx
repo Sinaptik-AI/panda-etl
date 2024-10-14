@@ -23,7 +23,7 @@ const RecentTransformations = ({ projectId }: { projectId?: string }) => {
 
   const completedProcesses =
     processes?.filter(
-      (process: ProcessData) => process.status === ProcessStatus.COMPLETED,
+      (process: ProcessData) => process.status === ProcessStatus.COMPLETED
     ) || [];
 
   if (completedProcesses.length === 0) {

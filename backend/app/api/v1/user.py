@@ -61,7 +61,7 @@ def get_user_api_key(db: Session = Depends(get_db)):
 
 
 @user_router.get("/getme", status_code=200)
-def get_user_api_key(db: Session = Depends(get_db)):
+def get_me(db: Session = Depends(get_db)):
     user_email = "john.doe@example.com"
     user = user_repository.get_user(db, user_email)
 
@@ -104,7 +104,7 @@ async def get_user_usage(db: Session = Depends(get_db)):
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=500, detail="Failed to retrieve user usage data"
         )

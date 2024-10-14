@@ -107,7 +107,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
   }, [assets, project, currentFileIndex]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -134,7 +134,7 @@ export const ExtractiveSummary: React.FC<ExtractiveSummaryProps> = ({
 
   const handleTopicKeyDown = (
     e: KeyboardEvent<HTMLInputElement>,
-    type: "positive" | "negative",
+    type: "positive" | "negative"
   ) => {
     if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
       e.preventDefault();

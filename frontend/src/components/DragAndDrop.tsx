@@ -27,7 +27,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
       setFiles(selectedFiles);
       onFileSelect(selectedFiles);
     },
-    [onFileSelect],
+    [onFileSelect]
   );
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -57,15 +57,15 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
     const validFiles = Array.from(files).filter(
       (file) =>
         file.size <= MAX_FILE_SIZE &&
-        acceptedTypes.some((type) => file.type.match(type)),
+        acceptedTypes.some((type) => file.type.match(type))
     );
 
     const invalidFileFormat = Array.from(files).filter(
-      (file) => !acceptedTypes.some((type) => file.type.match(type)),
+      (file) => !acceptedTypes.some((type) => file.type.match(type))
     );
 
     const invalidFileSize = Array.from(files).filter(
-      (file) => file.size > MAX_FILE_SIZE,
+      (file) => file.size > MAX_FILE_SIZE
     );
 
     if (invalidFileSize.length > 0) {
@@ -73,7 +73,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         .map((file) => file.name)
         .join("\n");
       toast.error(
-        `Max file size is 20 MB, unable to upload files: \n${invalidFileNames}`,
+        `Max file size is 20 MB, unable to upload files: \n${invalidFileNames}`
       );
     }
 
@@ -82,7 +82,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         .map((file) => file.name)
         .join("\n");
       toast.error(
-        `Invalid file format, unable to upload files: \n${invalidFileNames}`,
+        `Invalid file format, unable to upload files: \n${invalidFileNames}`
       );
     }
 
@@ -100,7 +100,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         handleFiles(e.dataTransfer.files);
       }
     },
-    [accept, onFilesChange],
+    [accept, onFilesChange]
   );
 
   const removeFiles = useCallback(
@@ -109,7 +109,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
       setFiles(null);
       onFileSelect(null);
     },
-    [onFileSelect],
+    [onFileSelect]
   );
 
   const handleClick = useCallback(() => {
@@ -122,7 +122,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({ onFileSelect, accept }) => {
         handleFiles(e.target.files);
       }
     },
-    [onFilesChange],
+    [onFilesChange]
   );
 
   return (

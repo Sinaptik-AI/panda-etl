@@ -1,0 +1,98 @@
+.pdfViewer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.pdfViewer :global(.react-pdf__Document) {
+  line-height: initial;
+}
+
+.pdfViewer :global(.react-pdf__message) {
+  display: none !important;
+}
+
+.pageContainer {
+  margin: 0;
+  padding: 0;
+  page-break-inside: avoid;
+  min-height: 100vh;
+  position: relative;
+}
+
+.pdfPage {
+  margin: 0;
+  padding: 0;
+}
+
+.pdfPage :global(.react-pdf__Page__textContent) {
+  display: block !important;
+  opacity: 0.2;
+  color: transparent;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.pdfPage :global(.react-pdf__Page__annotations) {
+  display: none;
+}
+
+.highlightLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.highlightDiv {
+  position: absolute;
+  background-color: rgba(255, 255, 0, 0.3);
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Hide all possible loading messages */
+.pdfViewer :global(.react-pdf__message),
+.pdfViewer :global(.react-pdf__Page__loading),
+.pdfViewer :global(.react-pdf__Document__loading) {
+  display: none !important;
+}
+
+/* Loader styles */
+.loaderContainer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  color: #3498db;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

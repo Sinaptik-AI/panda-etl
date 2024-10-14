@@ -1,8 +1,8 @@
+from functools import wraps
 import os
 from typing import List
 from app.database import SessionLocal
 from app.exceptions import CreditLimitExceededException
-from app.models import Process, ProcessStep
 from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
@@ -13,7 +13,7 @@ from app.requests import (
     highlight_sentences_in_pdf,
 )
 from datetime import datetime
-
+from app.requests import extract_summary
 from app.models.process_step import ProcessStepStatus
 from app.repositories import user_repository
 from app.config import settings
@@ -21,6 +21,7 @@ import concurrent.futures
 from app.logger import Logger
 import traceback
 
+from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 
 
@@ -44,7 +45,6 @@ def process_step_task(
     try:
         # Initial DB operations (open and fetch relevant data)
         with SessionLocal() as db:
-
             process = process_repository.get_process(db, process_id)
             process_step = process_repository.get_process_step(db, process_step_id)
 
@@ -57,9 +57,7 @@ def process_step_task(
                 return True
 
             # Mark step as in progress
-            process_repository.update_process_step_status(
-                db, process_step, ProcessStepStatus.IN_PROGRESS
-            )
+            update_process_step_status(db, process_step, ProcessStepStatus.IN_PROGRESS)
 
             retries = 0
             success = False
@@ -71,148 +69,28 @@ def process_step_task(
         while retries < settings.max_retries and not success:
             try:
                 if process.type == "extractive_summary":
-                    # Extract summary
-                    from app.requests import extract_summary
-
-                    data = extract_summary(
-                        api_token=api_key,
-                        config=process.details,
-                        file_path=(
-                            process_step.asset.path
-                            if not asset_content or not asset_content.content
-                            else None
-                        ),
-                        pdf_content=(
-                            asset_content.content
-                            if asset_content and asset_content.content
-                            else None
-                        ),
+                    data = extractive_summary_process(
+                        api_key, process, process_step, asset_content
                     )
 
-                    summary = data.get("summary", "")
-                    summary_sentences = data.get("summary_sentences", "")
-
-                    # Create directory for highlighted PDF
-                    highlighted_file_dir = os.path.join(
-                        settings.process_dir, str(process.id), str(process_step.id)
-                    )
-                    os.makedirs(highlighted_file_dir, exist_ok=True)
-
-                    highlighted_file_path = os.path.join(
-                        highlighted_file_dir,
-                        f"highlighted_{process_step.asset.filename}",
-                    )
-
-                    # Highlight sentences in PDF (expensive operation)
-                    highlight_sentences_in_pdf(
-                        api_token=api_key,
-                        sentences=summary_sentences,
-                        file_path=process_step.asset.path,
-                        output_path=highlighted_file_path,
-                    )
-
-                    data = {
-                        "highlighted_pdf": highlighted_file_path,
-                        "summary": summary,
-                    }
-
-                    if summary:
-                        summaries.append(summary)
+                    if data["summary"]:
+                        summaries.append(data["summary"])
 
                     # Update process step output outside the expensive operations
                     with SessionLocal() as db:
-                        process_repository.update_process_step_status(
+                        update_process_step_status(
                             db, process_step, ProcessStepStatus.COMPLETED, output=data
                         )
 
-                else:
+                elif process.type == "extract":
                     # Handle non-extractive summary process
-                    pdf_content = ""
-                    vectorstore = ChromaDB(
-                        f"panda-etl-{process.project_id}", similary_threshold=3
+                    data = extract_process(
+                        api_key, process, process_step, asset_content
                     )
-                    if (
-                        (
-                            "multiple_fields" not in process.details
-                            or not process.details["multiple_fields"]
-                        )
-                        and asset_content.content
-                        and asset_content.content["word_count"] > 500
-                    ):
-
-                        for field in process.details["fields"]:
-                            relevant_docs = vectorstore.get_relevant_docs(
-                                field["key"],
-                                where={
-                                    "$and": [
-                                        {"asset_id": process_step.asset.id},
-                                        {"project_id": process.project_id},
-                                    ]
-                                },
-                                k=5,
-                            )
-                            for index, metadata in enumerate(
-                                relevant_docs["metadatas"][0]
-                            ):
-                                segment_data = [relevant_docs["documents"][0][index]]
-                                if metadata["previous_sentence_id"] != -1:
-                                    prev_sentence = vectorstore.get_relevant_docs_by_id(
-                                        ids=[metadata["previous_sentence_id"]]
-                                    )
-                                    segment_data = [
-                                        prev_sentence["documents"][0]
-                                    ] + segment_data
-
-                                if metadata["next_sentence_id"] != -1:
-                                    next_sentence = vectorstore.get_relevant_docs_by_id(
-                                        ids=[metadata["next_sentence_id"]]
-                                    )
-                                    segment_data.append(next_sentence["documents"][0])
-
-                                pdf_content += "\n" + " ".join(segment_data)
-
-                    if not pdf_content:
-                        pdf_content = (
-                            "\n".join(asset_content.content["content"])
-                            if asset_content.content
-                            else None
-                        )
-
-                    # Extract data (expensive operation)
-                    data = extract_data(
-                        api_key,
-                        process.details,
-                        file_path=(
-                            process_step.asset.path if not pdf_content else None
-                        ),
-                        pdf_content=pdf_content if pdf_content else None,
-                    )
-
-                    for context in data["context"]:
-                        for sources in context:
-                            page_numbers = []
-                            for source in sources["sources"]:
-                                relevant_docs = vectorstore.get_relevant_docs(
-                                    source,
-                                    where={
-                                        "$and": [
-                                            {"asset_id": process_step.asset.id},
-                                            {"project_id": process.project_id},
-                                        ]
-                                    },
-                                    k=1,
-                                )
-
-                                if len(relevant_docs["metadatas"][0]) > 0:
-                                    page_numbers.append(
-                                        relevant_docs["metadatas"][0][0]["page_number"]
-                                    )
-
-                            sources["page_numbers"] = page_numbers
 
                     # Update process step output outside the expensive operations
                     with SessionLocal() as db:
-                        process_repository.update_process_step_status(
+                        update_process_step_status(
                             db,
                             process_step,
                             ProcessStepStatus.COMPLETED,
@@ -222,26 +100,26 @@ def process_step_task(
 
                 success = True
 
-            except CreditLimitExceededException as e:
+            except CreditLimitExceededException:
                 with SessionLocal() as db:
                     process = process_repository.get_process(db, process_id)
                     process_repository.update_process_status(
                         db, process, ProcessStatus.STOPPED
                     )
 
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
                 retries += 1
                 if retries == settings.max_retries:
                     failed_docs.append(process_step.asset.id)
                     with SessionLocal() as db:
-                        process_repository.update_process_step_status(
+                        update_process_step_status(
                             db, process_step, ProcessStepStatus.FAILED
                         )
 
         return True
 
-    except Exception as e:
+    except Exception:
         logger.error(traceback.format_exc())
         return False
 
@@ -287,7 +165,7 @@ def process_task(process_id: int):
             "show_final_summary" in process.details
             and process.details["show_final_summary"]
         ):
-            logger.log(f"Extracting summary from summaries")
+            logger.log("Extracting summary from summaries")
 
             if process.output:
                 return
@@ -297,7 +175,7 @@ def process_task(process_id: int):
                 api_key, summaries, process.details["transformation_prompt"]
             )
             summary_of_summaries = data.get("summary", "")
-            logger.log(f"Extracting summary from summaries completed")
+            logger.log("Extracting summary from summaries completed")
 
         # Step 4: After all steps are processed, update the process status and output in the DB
         with SessionLocal() as db:
@@ -323,3 +201,185 @@ def process_task(process_id: int):
             process.status = ProcessStatus.FAILED
             process.message = str(e)
             db.commit()
+
+
+def handle_exceptions(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except CreditLimitExceededException:
+            logger.error("Credit limit exceeded")
+            raise
+        except Exception as e:
+            logger.error(f"Error in {func.__name__}: {str(e)}")
+            logger.error(traceback.format_exc())
+            raise
+
+    return wrapper
+
+
+@handle_exceptions
+def extractive_summary_process(api_key, process, process_step, asset_content):
+    try:
+        data = extract_summary(
+            api_token=api_key,
+            config=process.details,
+            file_path=(
+                process_step.asset.path
+                if not asset_content or not asset_content.content
+                else None
+            ),
+            pdf_content=(
+                asset_content.content
+                if asset_content and asset_content.content
+                else None
+            ),
+        )
+    except Exception as e:
+        logger.error(f"Error in extract_summary: {str(e)}")
+        return {
+            "highlighted_pdf": None,
+            "summary": "",
+        }
+
+    summary = data.get("summary", "")
+    summary_sentences = data.get("summary_sentences", "")
+
+    # Create directory for highlighted PDF
+    highlighted_file_dir = os.path.join(
+        settings.process_dir, str(process.id), str(process_step.id)
+    )
+    os.makedirs(highlighted_file_dir, exist_ok=True)
+
+    highlighted_file_path = os.path.join(
+        highlighted_file_dir,
+        f"highlighted_{process_step.asset.filename}",
+    )
+
+    highlight_sentences_in_pdf(
+        api_token=api_key,
+        sentences=summary_sentences,
+        file_path=process_step.asset.path,
+        output_path=highlighted_file_path,
+    )
+
+    return {
+        "highlighted_pdf": highlighted_file_path,
+        "summary": summary,
+    }
+
+
+@handle_exceptions
+def extract_process(api_key, process, process_step, asset_content):
+    pdf_content = ""
+    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
+    if (
+        (
+            "multiple_fields" not in process.details
+            or not process.details["multiple_fields"]
+        )
+        and asset_content.content
+        and asset_content.content.get("word_count", 0) > 500
+    ):
+        for field in process.details["fields"]:
+            relevant_docs = vectorstore.get_relevant_docs(
+                field["key"],
+                where={
+                    "$and": [
+                        {"asset_id": process_step.asset.id},
+                        {"project_id": process.project_id},
+                    ]
+                },
+                k=5,
+            )
+
+            for index, metadata in enumerate(relevant_docs["metadatas"][0]):
+                segment_data = [relevant_docs["documents"][0][index]]
+                if metadata["previous_sentence_id"] != -1:
+                    prev_sentence = vectorstore.get_relevant_docs_by_id(
+                        ids=[metadata["previous_sentence_id"]]
+                    )
+                    segment_data = [prev_sentence["documents"][0]] + segment_data
+
+                if metadata["next_sentence_id"] != -1:
+                    next_sentence = vectorstore.get_relevant_docs_by_id(
+                        ids=[metadata["next_sentence_id"]]
+                    )
+                    segment_data.append(next_sentence["documents"][0])
+
+                pdf_content += "\n" + " ".join(segment_data)
+
+    if not pdf_content:
+        pdf_content = (
+            "\n".join(asset_content.content["content"])
+            if asset_content.content
+            else None
+        )
+
+    data = extract_data(
+        api_key,
+        process.details,
+        file_path=(process_step.asset.path if not pdf_content else None),
+        pdf_content=pdf_content if pdf_content else None,
+    )
+
+    for context in data["context"]:
+        for sources in context:
+            page_numbers = []
+            for source_index, source in enumerate(sources["sources"]):
+
+                relevant_docs = vectorstore.get_relevant_docs(
+                    source,
+                    where={
+                        "$and": [
+                            {"asset_id": process_step.asset.id},
+                            {"project_id": process.project_id},
+                        ]
+                    },
+                    k=5,
+                )
+
+                most_relevant_index = 0
+                match = False
+                clean_source = clean_text(source)
+                # search for exact match Index
+                for index, relevant_doc in enumerate(relevant_docs["documents"][0]):
+                    if clean_source in clean_text(relevant_doc):
+                        most_relevant_index = index
+                        match = True
+
+                if not match and len(relevant_docs["documents"][0]) > 0:
+                    sources["sources"][source_index] = relevant_docs["documents"][0][0]
+
+                if len(relevant_docs["metadatas"][0]) > 0:
+                    page_numbers.append(
+                        relevant_docs["metadatas"][0][most_relevant_index][
+                            "page_number"
+                        ]
+                    )
+
+            sources["page_numbers"] = page_numbers
+
+    return {
+        "fields": data["fields"],
+        "context": data["context"],
+    }
+
+
+def update_process_step_status(
+    db, process_step, status, output=None, output_references=None
+):
+    """
+    Update the status of a process step.
+
+    Args:
+    db: Database session
+    process_step: The process step to update
+    status: The new status
+    output: Optional output data
+    output_references: Optional output references
+    """
+    process_repository.update_process_step_status(
+        db, process_step, status, output=output, output_references=output_references
+    )

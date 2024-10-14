@@ -14,7 +14,7 @@ export const chat = async (projectId: string, data: ChatRequest) => {
       `${chatApiUrl}/project/${projectId}`,
       { ...data },
       {},
-      300000,
+      300000
     );
     return response.data.data;
   } catch (error) {
@@ -26,7 +26,8 @@ export const chat = async (projectId: string, data: ChatRequest) => {
     } else {
       return {
         conversation_id: data.conversation_id,
-        response: "Failed to chat data. Please try again!",
+        response:
+          "My apologies, I encountered an unexpected issue. Could you please rephrase your question?",
       };
     }
   }
@@ -35,7 +36,7 @@ export const chat = async (projectId: string, data: ChatRequest) => {
 export const chatStatus = async (projectId: string) => {
   try {
     const response = await GetRequest<ChatStatusResponse>(
-      `${chatApiUrl}/project/${projectId}/status`,
+      `${chatApiUrl}/project/${projectId}/status`
     );
     return response.data.data;
   } catch (error) {

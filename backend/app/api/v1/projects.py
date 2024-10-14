@@ -16,7 +16,6 @@ from app.logger import Logger
 from app.utils import fetch_html_and_save, generate_unique_filename, is_valid_url
 from app.schemas.asset import UrlAssetCreate
 from app.vectorstore.chroma import ChromaDB
-import time
 
 
 project_router = APIRouter()
@@ -27,7 +26,9 @@ logger = Logger()
 @project_router.post("/", status_code=201)
 def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
     if not project.name.strip():
-        raise HTTPException(status_code=400, detail="Project title is required")
+        raise HTTPException(
+            status_code=400, detail="Project name is required and cannot be empty."
+        )
 
     db_project = project_repository.create_project(db=db, project=project)
     return {
@@ -40,7 +41,7 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 @project_router.get("/")
 def get_projects(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     try:
@@ -66,9 +67,12 @@ def get_projects(
             "page": page,
             "page_size": page_size,
         }
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Unable to process request!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An internal server error occurred while processing your request. Please try again later.",
+        )
 
 
 @project_router.get("/{id}")
@@ -76,7 +80,9 @@ def get_project(id: int, db: Session = Depends(get_db)):
     try:
         project = project_repository.get_project(db=db, project_id=id)
         if project is None:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The requested project could not be found."
+            )
 
         return {
             "status": "success",
@@ -91,9 +97,12 @@ def get_project(id: int, db: Session = Depends(get_db)):
         }
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Unable to process request!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An internal server error occurred while retrieving the project. Please try again later.",
+        )
 
 
 @project_router.get("/{id}/assets")
@@ -126,9 +135,12 @@ def get_assets(
             "page": page,
             "page_size": page_size,
         }
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Unable to process request!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An internal server error occurred while retrieving assets. Please try again later.",
+        )
 
 
 @project_router.post("/{id}/assets")
@@ -138,7 +150,9 @@ async def upload_files(
     try:
         project = project_repository.get_project(db=db, project_id=id)
         if project is None:
-            raise HTTPException(status_code=400, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The specified project could not be found."
+            )
 
         # Ensure the upload directory exists
         os.makedirs(os.path.join(settings.upload_dir, str(id)), exist_ok=True)
@@ -148,14 +162,15 @@ async def upload_files(
             # Check if the uploaded file is a PDF
             if file.content_type != "application/pdf":
                 raise HTTPException(
-                    status_code=400, detail=f"The file {file.filename} is not a PDF"
+                    status_code=400,
+                    detail=f"The file '{file.filename}' is not a valid PDF. Please upload only PDF files.",
                 )
 
             # Check if the file size is greater than 20MB
             if file.size > settings.MAX_FILE_SIZE:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"The file {file.filename} exceeds the size limit of 20MB",
+                    detail=f"The file '{file.filename}' exceeds the maximum allowed size of 20MB. Please upload a smaller file.",
                 )
 
             # Generate a secure filename
@@ -189,9 +204,12 @@ async def upload_files(
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
         raise
-    except Exception as e:
-        print(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Failed to upload files")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while uploading files. Please try again later.",
+        )
 
 
 @project_router.post("/{id}/assets/url")
@@ -200,14 +218,22 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
         urls = data.url
         project = project_repository.get_project(db=db, project_id=id)
         if project is None:
-            raise HTTPException(status_code=400, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The specified project could not be found."
+            )
 
         if not urls:
-            raise HTTPException(status_code=400, detail="Invalid Url")
+            raise HTTPException(
+                status_code=400,
+                detail="No URLs provided. Please provide at least one valid URL.",
+            )
 
         for url in urls:
             if not is_valid_url(url):
-                raise HTTPException(status_code=400, detail="Invalid Url")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid URL format: {url}. Please provide a valid URL.",
+                )
 
         url_assets = []
         for url in urls:
@@ -243,9 +269,12 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
         return JSONResponse(content="Successfully uploaded the files")
     except HTTPException:
         raise
-    except Exception as e:
-        print(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Failed to upload files")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while processing the URL asset. Please try again later.",
+        )
 
 
 @project_router.get("/{id}/assets/{asset_id}")
@@ -255,14 +284,18 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
 
         if asset is None:
             raise HTTPException(
-                status_code=404, detail="File not found in the database"
+                status_code=404,
+                detail="The requested file could not be found in the database.",
             )
 
         filepath = asset.path
 
         # Check if the file exists
         if not os.path.isfile(filepath):
-            raise HTTPException(status_code=404, detail="File not found on server")
+            raise HTTPException(
+                status_code=404,
+                detail="The requested file could not be found on the server.",
+            )
 
         # Return the file
         return FileResponse(
@@ -272,8 +305,11 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Failed to retrieve file")
+        logger.error(f"Error retrieving file: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while retrieving the file. Please try again later.",
+        )
 
 
 @project_router.get("/{id}/processes")
@@ -308,8 +344,8 @@ def get_processes(id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
 
-    except Exception as e:
-        logger.error(traceback.print_exc())
+    except Exception:
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to fetch response")
 
 
@@ -318,7 +354,9 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
     try:
         db_project = project_repository.get_project(db=db, project_id=id)
         if db_project is None:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The specified project could not be found."
+            )
         updated_project = project_repository.update_project(
             db=db, project_id=id, project=project
         )
@@ -329,9 +367,12 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
         }
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Unable to process request!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while updating the project. Please try again later.",
+        )
 
 
 @project_router.delete("/{project_id}")
@@ -339,7 +380,9 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
     try:
         project = project_repository.get_project(db, project_id)
         if not project:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The specified project could not be found."
+            )
 
         project.deleted_at = datetime.now(tz=timezone.utc)
 
@@ -358,9 +401,12 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
 
-    except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Failed to delete!")
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while deleting the project. Please try again later.",
+        )
 
 
 @project_router.delete("/{project_id}/assets/{asset_id}")
@@ -368,23 +414,55 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
     try:
         project = project_repository.get_project(db, project_id)
         if not project:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(
+                status_code=404, detail="The specified project could not be found."
+            )
 
         asset = project_repository.get_asset(db, asset_id)
-
         if asset is None:
             raise HTTPException(
-                status_code=404, detail="File not found in the database"
+                status_code=404,
+                detail="The specified asset could not be found in the database.",
             )
+
+        if asset.project_id != project_id:
+            raise HTTPException(
+                status_code=400,
+                detail="The specified asset does not belong to the given project.",
+            )
+
+        # Store asset information before deletion
+        asset_info = {
+            "id": asset.id,
+            "filename": asset.filename,
+            "project_id": asset.project_id,
+        }
+
+        try:
+            vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
+            vectorstore.delete_docs(where={"asset_id": str(asset.id)})
+        except Exception as vec_error:
+            logger.error(f"Error deleting from vectorstore: {str(vec_error)}")
+            # Continue with the asset deletion even if vectorstore deletion fails
+
+        # Soft delete the asset
         asset.deleted_at = datetime.now(tz=timezone.utc)
-        vectorstore = ChromaDB(f"panda-etl-{asset.project_id}")
-        vectorstore.delete_docs(where={"asset_id": asset.id})
         db.commit()
+
+        logger.log(
+            "info",
+            f"Asset {asset_info['id']} successfully marked as deleted in the database",
+        )
         return {"message": "Asset deleted successfully"}
 
-    except HTTPException:
-        raise
+    except HTTPException as http_error:
+        raise http_error
 
     except Exception as e:
-        logger.error(traceback.print_exc())
-        raise HTTPException(status_code=500, detail="Failed to retrieve file")
+        db.rollback()
+        error_msg = f"An error occurred while deleting the asset: {str(e)}"
+        logger.error(f"{error_msg}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while deleting the asset. Please try again later.",
+        )

@@ -1,14 +1,12 @@
 import os
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile
 from io import BytesIO
 
 from app.main import app
-from app.repositories import project_repository
-from app.models import Asset
 from app.config import settings
 from app.database import get_db
 
@@ -66,6 +64,8 @@ def test_upload_files_success(
     """Test uploading files successfully"""
     mock_get_project.return_value = MagicMock(id=1)
     mock_open.return_value.__enter__.return_value.write = MagicMock()
+    mock_os_path.normcase.return_value = "normalized/path"
+    mock_os_path.join.return_value = "joined/path"
 
     response = client.post(
         "/v1/projects/1/assets",
@@ -91,8 +91,8 @@ def test_upload_files_project_not_found(mock_get_project, mock_file, mock_db):
         files={"files": ("test.pdf", mock_file.file, "application/pdf")},
     )
 
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Project not found"}
+    assert response.status_code == 404
+    assert response.json() == {"detail": "The specified project could not be found."}
 
 
 @patch("app.repositories.project_repository.get_project")
@@ -106,4 +106,4 @@ def test_upload_files_non_pdf(mock_get_project, mock_non_pdf_file, mock_db):
     )
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "The file test.txt is not a PDF"}
+    assert response.json() == {"detail": "The file 'test.txt' is not a valid PDF. Please upload only PDF files."}
