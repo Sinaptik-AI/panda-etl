@@ -45,9 +45,9 @@ def test_chat_success(mock_db, mock_vectorstore, mock_chat_query):
         (["sent1"], ["id3"], [{"asset_id": 1, "project_id": 1, "page_number": 1}]),
     ]
 
-    mock_db.query.return_value.filter.return_value.first.return_value = MagicMock(
-        key="test_api_key"
-    )
+    # Mock the API key query
+    mock_api_key = MagicMock(key="test_api_key")
+    mock_db.query.return_value.filter.return_value.first.return_value = mock_api_key
 
     mock_chat_query.return_value = {
         "response": "Test response",
@@ -69,8 +69,10 @@ def test_chat_success(mock_db, mock_vectorstore, mock_chat_query):
         return_value=MagicMock(id="new_conversation_id")
     )
 
-    # Act
-    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+    # Mock the get_user_api_key function
+    with patch("app.repositories.user_repository.get_user_api_key", return_value=mock_api_key):
+        # Act
+        response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
 
     # Assert
     assert response.status_code == 200
@@ -354,3 +356,4 @@ def test_group_by_start_end_large_values():
     assert len(result) == 1
     assert result[0]["start"] == 1000000 and result[0]["end"] == 1000010
     assert len(result[0]["references"]) == 2
+
