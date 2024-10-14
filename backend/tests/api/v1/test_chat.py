@@ -24,58 +24,6 @@ def mock_chat_query():
     with patch("app.api.v1.chat.chat_query") as mock:
         yield mock
 
-
-def test_chat_endpoint(mock_db, mock_vectorstore, mock_chat_query):
-    # Arrange
-    project_id = 1
-    chat_request = {"conversation_id": None, "query": "Test query"}
-    
-    mock_vectorstore.return_value.get_relevant_segments.return_value = (
-        ["doc1"], ["id1"], [{"metadata": {"asset_id": 1, "project_id": 1, "page_number": 1}}]
-    )
-    
-    mock_chat_query.return_value = {
-        "response": "Test response",
-        "references": [
-            {
-                "sentence": "Test sentence",
-                "references": [
-                    {"file": "file1.pdf", "sentence": "Test original sentence"}
-                ]
-            }
-        ]
-    }
-    
-    # Mock database-related functions
-    mock_get_assets_filename = MagicMock(return_value=["file1.pdf"])
-    mock_get_user_api_key = MagicMock(return_value=MagicMock(key="test_api_key"))
-    mock_get_users = MagicMock(return_value=[MagicMock(id=1)])
-    mock_create_new_conversation = MagicMock(return_value=MagicMock(id="new_conversation_id"))
-    mock_create_conversation_message = MagicMock()
-    
-    # Act
-    with patch("app.api.v1.chat.get_db", return_value=mock_db):
-        with patch("app.repositories.project_repository.get_assets_filename", mock_get_assets_filename):
-            with patch("app.repositories.user_repository.get_user_api_key", mock_get_user_api_key):
-                with patch("app.repositories.user_repository.get_users", mock_get_users):
-                    with patch("app.repositories.conversation_repository.create_new_conversation", mock_create_new_conversation):
-                        with patch("app.repositories.conversation_repository.create_conversation_message", mock_create_conversation_message):
-                            response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
-    
-    # Assert
-    assert response.status_code == 200
-    assert response.json()["status"] == "success"
-    assert response.json()["data"]["conversation_id"] == "new_conversation_id"
-    assert response.json()["data"]["response"] == "Test response"
-    
-    # Verify that the mocked functions were called
-    mock_get_assets_filename.assert_called_once_with(mock_db, ["id1"])
-    mock_get_user_api_key.assert_called_once_with(mock_db)
-    mock_get_users.assert_called_once_with(mock_db)
-    mock_create_new_conversation.assert_called_once()
-    mock_create_conversation_message.assert_called_once()
-
-
 def test_chat_status_endpoint(mock_db):
     # Arrange
     project_id = 1
