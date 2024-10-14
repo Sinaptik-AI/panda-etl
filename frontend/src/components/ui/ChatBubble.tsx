@@ -43,7 +43,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
   const [indexMap, setIndexMap] = useState<{ [key: string]: number }>({});
   const [flatChatReferences, setFlatChatReferences] = useState<ChatReference[]>(
-    [],
+    []
   );
   const [isReferencesExpanded, setIsReferencesExpanded] = useState(false);
 
@@ -68,7 +68,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
           const existingRefIndex = newFlatChatReferences.findIndex(
             (ref) =>
               ref.asset_id === reference.asset_id &&
-              ref.page_number === reference.page_number,
+              ref.page_number === reference.page_number
           );
 
           if (existingRefIndex === -1) {
@@ -90,7 +90,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   const renderReferenceItem = useCallback(
     (item: ChatReference, index: number) => (
       <motion.div
-        key={`reference-${index}`}
+        key={`reference-${item.asset_id}_${item.page_number}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -118,7 +118,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         <ExternalLink className="w-4 h-4 text-gray-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
       </motion.div>
     ),
-    [indexMap, handleReferenceClick],
+    [indexMap, handleReferenceClick]
   );
 
   return (
