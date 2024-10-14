@@ -39,7 +39,7 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 @project_router.get("/")
 def get_projects(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     try:
@@ -371,16 +371,20 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
 
         asset = project_repository.get_asset(db, asset_id)
         if asset is None:
-            raise HTTPException(status_code=404, detail="Asset not found in the database")
+            raise HTTPException(
+                status_code=404, detail="Asset not found in the database"
+            )
 
         if asset.project_id != project_id:
-            raise HTTPException(status_code=400, detail="Asset does not belong to the specified project")
+            raise HTTPException(
+                status_code=400, detail="Asset does not belong to the specified project"
+            )
 
         # Store asset information before deletion
         asset_info = {
             "id": asset.id,
             "filename": asset.filename,
-            "project_id": asset.project_id
+            "project_id": asset.project_id,
         }
 
         try:
@@ -393,8 +397,11 @@ async def delete_asset(project_id: int, asset_id: int, db: Session = Depends(get
         # Soft delete the asset
         asset.deleted_at = datetime.now(tz=timezone.utc)
         db.commit()
-        
-        logger.log("info", f"Asset {asset_info['id']} successfully marked as deleted in the database")
+
+        logger.log(
+            "info",
+            f"Asset {asset_info['id']} successfully marked as deleted in the database",
+        )
         return {"message": "Asset deleted successfully"}
 
     except HTTPException as http_error:

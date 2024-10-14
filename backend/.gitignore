@@ -1,6 +1,7 @@
 # credentials
 .env
 .venv
+.vscode
 
 # virtualenv
 venv

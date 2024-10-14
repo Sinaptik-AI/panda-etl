@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 import uuid
 import requests
 import re
+import string
 
 
 def generate_unique_filename(url, extension=".html"):
@@ -26,6 +27,16 @@ def is_valid_url(url):
     )
 
     return re.match(regex, url) is not None
+
+
+def clean_text(text):
+    # Remove newline characters
+    text = text.replace("\n", " ")
+
+    # Remove punctuation
+    text = text.translate(str.maketrans("", "", string.punctuation))
+
+    return text
 
 
 def fetch_html_and_save(url, file_path):
