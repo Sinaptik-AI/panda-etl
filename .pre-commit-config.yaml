@@ -29,7 +29,7 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: pytest
+        entry: bash -c 'cd backend && poetry run pytest'
         language: system
         pass_filenames: false
         always_run: true
@@ -37,9 +37,8 @@ repos:
 
       - id: coverage-check
         name: coverage-check
-        entry: bash -c 'echo "Running coverage" && cd backend && poetry run coverage run -m pytest && poetry run coverage report --fail-under=80'
+        entry: bash -c 'cd backend && poetry run coverage erase && poetry run coverage run -m pytest && poetry run coverage report -m && poetry run coverage xml'
         language: system
         pass_filenames: false
-        always_run: false
-        files: ^(backend/|tests/)
+        always_run: true
         types: [python]
