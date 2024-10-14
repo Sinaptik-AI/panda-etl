@@ -158,7 +158,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Unable to process query!")
 
 
@@ -192,5 +192,5 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Unable to process query!")

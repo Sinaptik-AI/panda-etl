@@ -66,7 +66,7 @@ def get_projects(
             "page_size": page_size,
         }
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
@@ -91,7 +91,7 @@ def get_project(id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
@@ -126,7 +126,7 @@ def get_assets(
             "page_size": page_size,
         }
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
@@ -308,7 +308,7 @@ def get_processes(id: int, db: Session = Depends(get_db)):
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to fetch response")
 
 
@@ -329,7 +329,7 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
     except HTTPException:
         raise
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Unable to process request!")
 
 
@@ -358,7 +358,7 @@ async def delete_project(project_id: int, db: Session = Depends(get_db)):
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to delete!")
 
 

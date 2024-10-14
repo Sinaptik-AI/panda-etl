@@ -68,7 +68,7 @@ async def extract(
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Unable to process file!")
 
 
@@ -112,5 +112,5 @@ async def get_field_descriptions(
         raise
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Unable to process file!")
