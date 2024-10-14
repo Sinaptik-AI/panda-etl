@@ -1,7 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import TooltipWrapper from "./Tooltip";
 
@@ -31,7 +31,7 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
               {lineIndex > 0 && <br />}
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
+                rehypePlugins={[rehypeSanitize]}
                 components={{
                   p: ({ children }) => <span>{children}</span>,
                 }}
@@ -40,7 +40,7 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
               </ReactMarkdown>
             </React.Fragment>
           ))}
-        </React.Fragment>,
+        </React.Fragment>
       );
 
       item.references.forEach((reference: ChatReference, refIndex: number) => {
@@ -55,7 +55,7 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
                 {indexMap[`${reference.asset_id}_${reference.page_number}`]}
               </span>
             </TooltipWrapper>
-          </React.Fragment>,
+          </React.Fragment>
         );
       });
 
@@ -80,7 +80,7 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
               </ReactMarkdown>
             </React.Fragment>
           ))}
-        </React.Fragment>,
+        </React.Fragment>
       );
     }
 

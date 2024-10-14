@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import { markify_text } from "@/lib/utils";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import ChatReferenceDrawer from "../ChatReferenceDrawer";
@@ -134,7 +134,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         ) : (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
+            rehypePlugins={[rehypeSanitize]}
           >
             {markify_text(message)}
           </ReactMarkdown>
