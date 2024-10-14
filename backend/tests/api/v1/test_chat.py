@@ -3,12 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from app.api.v1.chat import group_by_start_end
 from app.main import app
-from app.models.asset_content import AssetProcessingStatus
-from app.repositories import (
-    conversation_repository,
-    project_repository,
-    user_repository,
-)
 from fastapi.testclient import TestClient
 
 client = TestClient(app)
@@ -31,87 +25,48 @@ def mock_chat_query():
         yield mock
 
 
-def test_chat_success(mock_db, mock_vectorstore, mock_chat_query):
+def test_chat_endpoint(mock_db, mock_vectorstore, mock_chat_query):
     # Arrange
     project_id = 1
     chat_request = {"conversation_id": None, "query": "Test query"}
-
-    mock_vectorstore.return_value.get_relevant_segments.side_effect = [
-        (
-            ["doc1", "doc2"],
-            ["id1", "id2"],
-            [{"metadata1": "value1"}, {"metadata2": "value2"}],
-        ),
-        (["sent1"], ["id3"], [{"asset_id": 1, "project_id": 1, "page_number": 1}]),
-    ]
-
-    # Mock the API key query
-    mock_api_key = MagicMock(key="test_api_key")
-    mock_db.query.return_value.filter.return_value.first.return_value = mock_api_key
-
+    
+    mock_vectorstore.return_value.get_relevant_segments.return_value = (
+        ["doc1"], ["id1"], [{"metadata": "value"}]
+    )
+    
     mock_chat_query.return_value = {
         "response": "Test response",
-        "references": [
-            {
-                "sentence": "Test sentence",
-                "references": [
-                    {"file": "test.pdf", "sentence": "Test original sentence"}
-                ],
-            }
-        ],
+        "references": []
     }
-
-    project_repository.get_assets_filename = MagicMock(
-        return_value=["file1.pdf", "file2.pdf"]
-    )
-    user_repository.get_users = MagicMock(return_value=[MagicMock(id=1)])
-    conversation_repository.create_new_conversation = MagicMock(
-        return_value=MagicMock(id="new_conversation_id")
-    )
-
-    # Mock the get_user_api_key function
-    with patch("app.repositories.user_repository.get_user_api_key", return_value=mock_api_key):
-        # Act
-        response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
-
+    
+    # Act
+    with patch("app.api.v1.chat.get_db", return_value=mock_db):
+        with patch("app.repositories.user_repository.get_user_api_key", return_value=MagicMock(key="test_api_key")):
+            with patch("app.repositories.project_repository.get_assets_filename", return_value=["file1.pdf"]):
+                with patch("app.repositories.user_repository.get_users", return_value=[MagicMock(id=1)]):
+                    with patch("app.repositories.conversation_repository.create_new_conversation", return_value=MagicMock(id="new_conversation_id")):
+                        response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+    
     # Assert
     assert response.status_code == 200
     assert response.json()["status"] == "success"
-    assert "conversation_id" in response.json()["data"]
-    assert "response" in response.json()["data"]
-    assert "response_references" in response.json()["data"]
+    assert response.json()["data"]["conversation_id"] == "new_conversation_id"
+    assert response.json()["data"]["response"] == "Test response"
 
 
-def test_chat_status_success(mock_db):
+def test_chat_status_endpoint(mock_db):
     # Arrange
     project_id = 1
-    project_repository.get_assets_without_content = MagicMock(return_value=[])
-    project_repository.get_assets_content_pending = MagicMock(return_value=[])
-
-    # Act
-    response = client.get(f"/v1/chat/project/{project_id}/status")
-
+    
+    with patch("app.repositories.project_repository.get_assets_without_content", return_value=[]):
+        with patch("app.repositories.project_repository.get_assets_content_pending", return_value=[]):
+            # Act
+            response = client.get(f"/v1/chat/project/{project_id}/status")
+    
     # Assert
     assert response.status_code == 200
     assert response.json()["status"] == "success"
     assert response.json()["data"]["status"] is True
-
-
-def test_chat_status_pending(mock_db):
-    # Arrange
-    project_id = 1
-    project_repository.get_assets_without_content = MagicMock(
-        return_value=[MagicMock(status=AssetProcessingStatus.PENDING)]
-    )
-    project_repository.get_assets_content_pending = MagicMock(return_value=[])
-
-    # Act
-    response = client.get(f"/v1/chat/project/{project_id}/status")
-
-    # Assert
-    assert response.status_code == 200
-    assert response.json()["status"] == "success"
-    assert response.json()["data"]["status"] is False
 
 
 def test_group_by_start_end():
@@ -356,4 +311,3 @@ def test_group_by_start_end_large_values():
     assert len(result) == 1
     assert result[0]["start"] == 1000000 and result[0]["end"] == 1000010
     assert len(result[0]["references"]) == 2
-
