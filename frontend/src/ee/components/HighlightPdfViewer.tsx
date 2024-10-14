@@ -64,7 +64,6 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     );
 
     if (!pageContainer) {
-      console.log("No page container found");
       return;
     }
 
