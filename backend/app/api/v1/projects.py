@@ -189,7 +189,7 @@ async def upload_files(
     except HTTPException:
         raise
     except Exception:
-        print(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
 
@@ -243,7 +243,7 @@ async def add_url_asset(id: int, data: UrlAssetCreate, db: Session = Depends(get
     except HTTPException:
         raise
     except Exception:
-        print(traceback.print_exc())
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to upload files")
 
 
