@@ -38,7 +38,7 @@ const ExtractReferenceDrawer = ({
   const output = data?.output_reference?.[index]?.[column_name] ?? null;
 
   const filtered_output = data?.output_reference?.[index].filter(
-    (item: Source) => item.name == column_name,
+    (item: Source) => item.name == column_name
   );
 
   const filteredSourceDetails: FlattenedSource[] = [];
@@ -58,9 +58,12 @@ const ExtractReferenceDrawer = ({
     }
   });
 
-  let file_url = null;
-  if (data?.project_id) {
-    file_url = `${BASE_STORAGE_URL}/${data?.project_id}/${filename}`;
+  const file_url =
+    data?.project_id && filename
+      ? `${BASE_STORAGE_URL}/${data?.project_id}/${filename}`
+      : null;
+  if (!filename) {
+    console.error("Filename is required to display the reference");
   }
 
   return (
