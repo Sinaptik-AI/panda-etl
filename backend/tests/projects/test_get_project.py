@@ -72,7 +72,7 @@ def test_get_project_not_found(mock_get_project, mock_db):
     response = client.get("/v1/projects/999")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Project not found"}
+    assert response.json() == {"detail": "The requested project could not be found."}
 
     # Check that the correct parameters were passed, and that db is an instance of Session
     _, kwargs = mock_get_project.call_args
@@ -88,7 +88,7 @@ def test_get_project_db_error(mock_get_project, mock_db):
     response = client.get("/v1/projects/1")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Unable to process request!"}
+    assert response.json() == {"detail": "An internal server error occurred while retrieving the project. Please try again later."}
 
     # Check that the correct parameters were passed, and that db is an instance of Session
     _, kwargs = mock_get_project.call_args

@@ -159,7 +159,7 @@ def test_get_assets_db_error(mock_get_assets, mock_db):
     response = client.get("/v1/projects/1/assets?page=1&page_size=2")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Unable to process request!"}
+    assert response.json() == {"detail": "An internal server error occurred while retrieving assets. Please try again later."}
 
     # Check that the correct parameters were passed, and that db is an instance of Session
     _, kwargs = mock_get_assets.call_args

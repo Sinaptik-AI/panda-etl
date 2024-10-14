@@ -57,7 +57,7 @@ def test_update_project_not_found(mock_get_project, mock_db):
         update_project(id=project_id, project=project_data, db=mock_db)
 
     assert excinfo.value.status_code == 404
-    assert excinfo.value.detail == "Project not found"
+    assert excinfo.value.detail == "The specified project could not be found."
 
 
 @patch("app.repositories.project_repository.update_project")
@@ -74,7 +74,7 @@ def test_update_project_db_error(mock_get_project, mock_update_project, mock_db)
         update_project(id=project_id, project=project_data, db=mock_db)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.detail == "Unable to process request!"
+    assert excinfo.value.detail == "An error occurred while updating the project. Please try again later."
 
 
 # Integration Test
@@ -116,7 +116,7 @@ def test_update_project_api_not_found(mock_get_project):
         f"/v1/projects/{project_id}", json={"name": "Updated Project"}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Project not found"}
+    assert response.json() == {"detail": "The specified project could not be found."}
 
 
 @patch("app.repositories.project_repository.get_project")
@@ -130,4 +130,4 @@ def test_update_project_api_db_error(mock_get_project):
     )
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Unable to process request!"}
+    assert response.json() == {"detail": "An error occurred while updating the project. Please try again later."}

@@ -74,7 +74,7 @@ def test_delete_project_not_found(mock_get_project, mock_delete_process_steps, m
     response = client.delete("/v1/projects/999")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Project not found"}
+    assert response.json() == {"detail": "The specified project could not be found."}
 
     mock_get_project.assert_called_once_with(mock_db, 999)
     mock_delete_process_steps.assert_not_called()
@@ -95,7 +95,7 @@ def test_delete_project_db_error(
     response = client.delete("/v1/projects/1")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Failed to delete!"}
+    assert response.json() == {"detail": "An error occurred while deleting the project. Please try again later."}
 
     mock_get_project.assert_called_once_with(mock_db, 1)
     mock_get_assets.assert_called_once_with(mock_db, 1)
@@ -110,19 +110,17 @@ def test_delete_project_process_steps_failure(
     mock_get_assets, mock_get_project, mock_delete_process_steps, mock_db
 ):
     """Test deletion when delete_process_steps fails"""
-    # Mock project and assets
     mock_project = MagicMock(id=1, deleted_at=None)
     mock_get_project.return_value = mock_project
     mock_asset = MagicMock(id=1, deleted_at=None)
     mock_get_assets.return_value = ([mock_asset], 1)
 
-    # Simulate delete_process_steps raising an exception
     mock_delete_process_steps.side_effect = Exception("Process steps deletion failed")
 
     response = client.delete("/v1/projects/1")
 
     assert response.status_code == 500
-    assert response.json() == {"detail": "Failed to delete!"}
+    assert response.json() == {"detail": "An error occurred while deleting the project. Please try again later."}
 
     mock_get_project.assert_called_once_with(mock_db, 1)
     mock_get_assets.assert_called_once_with(mock_db, 1)

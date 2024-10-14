@@ -43,7 +43,7 @@ def test_create_project_empty_name(mock_db):
         create_project(project=project_data, db=mock_db)
 
     assert excinfo.value.status_code == 400
-    assert excinfo.value.detail == "Project title is required"
+    assert excinfo.value.detail == "Project name is required and cannot be empty."
 
 
 def test_create_project_whitespace_name(mock_db):
@@ -54,7 +54,7 @@ def test_create_project_whitespace_name(mock_db):
         create_project(project=project_data, db=mock_db)
 
     assert excinfo.value.status_code == 400
-    assert excinfo.value.detail == "Project title is required"
+    assert excinfo.value.detail == "Project name is required and cannot be empty."
 
 
 @patch("app.repositories.project_repository.create_project")
@@ -91,7 +91,7 @@ def test_create_project_api_empty_name():
     response = client.post("/v1/projects/", json={"name": ""})
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Project title is required"}
+    assert response.json() == {"detail": "Project name is required and cannot be empty."}
 
 
 def test_create_project_api_whitespace_name():
@@ -99,4 +99,4 @@ def test_create_project_api_whitespace_name():
     response = client.post("/v1/projects/", json={"name": "   "})
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Project title is required"}
+    assert response.json() == {"detail": "Project name is required and cannot be empty."}
