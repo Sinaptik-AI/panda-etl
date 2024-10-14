@@ -41,7 +41,7 @@ async def extract(
 
         if asset.project_id != project_id:
             raise HTTPException(
-                status_code=400, detail="Check asset permission doesn't exists"
+                status_code=400, detail="Asset does not belong to the specified project."
             )
 
         api_key = user_repository.get_user_api_key(db)
@@ -60,7 +60,7 @@ async def extract(
 
         return {
             "status": "success",
-            "message": "File processed successfully",
+            "message": "Data extracted successfully from the file.",
             "data": data["fields"],
         }
 
@@ -69,7 +69,7 @@ async def extract(
 
     except Exception:
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=400, detail="Unable to process file!")
+        raise HTTPException(status_code=400, detail="An error occurred while processing the file. Please try again or contact support if the issue persists.")
 
 
 @extract_router.post("/{project_id}/field-descriptions", status_code=200)
@@ -80,7 +80,7 @@ async def get_field_descriptions(
         project = project_repository.get_project(db=db, project_id=project_id)
 
         if not project:
-            raise HTTPException(status_code=400, detail="Project doesn't exists")
+            raise HTTPException(status_code=404, detail="Project not found.")
 
         api_key = user_repository.get_user_api_key(db)
 
@@ -95,17 +95,17 @@ async def get_field_descriptions(
                 success = True
                 return {
                     "status": "success",
-                    "message": "File processed successfully",
+                    "message": "Field descriptions generated successfully.",
                     "data": data,
                 }
 
             except Exception as e:
                 logger.error(e)
-                logger.log("Retrying AI Field Extraction!")
+                logger.log("Retrying AI field description generation.")
                 retries += 1
 
         raise HTTPException(
-            status_code=400, detail="Unable to fetch AI Field Descriptions"
+            status_code=400, detail="Unable to generate AI field descriptions. Please try again later."
         )
 
     except HTTPException:
@@ -113,4 +113,4 @@ async def get_field_descriptions(
 
     except Exception:
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=400, detail="Unable to process file!")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again or contact support if the issue persists.")
