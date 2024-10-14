@@ -32,7 +32,7 @@ def get_processes(db: Session):
             ).label("completed_steps_count"),
         )
         .filter(
-            models.Process.deleted_at is None,
+            models.Process.deleted_at.is_(None),
         )
         .outerjoin(
             completed_steps_count_subquery,
