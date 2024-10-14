@@ -22,10 +22,10 @@ def process_file(asset_id: int):
     file_preprocessor.submit(preprocess_file, asset_id)
 
 
-def process_segmentation(project_id: int, asset_content_id: int, asset_file_name: str):
+def process_segmentation(project_id: int, asset_id: int, asset_file_name: str):
     try:
         with SessionLocal() as db:
-            asset_content = project_repository.get_asset_content(db, asset_content_id)
+            asset_content = project_repository.get_asset_content(db, asset_id)
 
         # segmentation = extract_file_segmentation(
         #     api_token=api_key, pdf_content=asset_content.content
@@ -36,7 +36,7 @@ def process_segmentation(project_id: int, asset_content_id: int, asset_file_name
             docs=asset_content.content["content"],
             metadatas=[
                 {
-                    "asset_id": asset_content.asset_id,
+                    "asset_id": asset_id,
                     "filename": asset_file_name,
                     "project_id": project_id,
                     "page_number": asset_content.content["page_number_data"][index],
@@ -47,16 +47,16 @@ def process_segmentation(project_id: int, asset_content_id: int, asset_file_name
 
         project_repository.update_asset_content_status(
             db,
-            asset_content_id=asset_content_id,
+            asset_id=asset_id,
             status=AssetProcessingStatus.COMPLETED,
         )
 
     except Exception as e:
-        logger.error(f"Error during segmentation for asset {asset_content_id}: {e}")
+        logger.error(f"Error during segmentation for asset {asset_id}: {e}")
         with SessionLocal() as db:
             project_repository.update_asset_content_status(
                 db,
-                asset_content_id=asset_content_id,
+                asset_id=asset_id,
                 status=AssetProcessingStatus.FAILED,
             )
 
@@ -117,7 +117,7 @@ def preprocess_file(asset_id: int):
                 file_segmentation_executor.submit(
                     process_segmentation,
                     asset.project_id,
-                    asset_content.id,
+                    asset_content.asset_id,
                     asset.filename,
                 )
 

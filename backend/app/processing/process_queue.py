@@ -21,6 +21,7 @@ import concurrent.futures
 from app.logger import Logger
 import traceback
 
+from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 
 
@@ -68,7 +69,9 @@ def process_step_task(
         while retries < settings.max_retries and not success:
             try:
                 if process.type == "extractive_summary":
-                    data = extractive_summary_process(api_key, process, process_step, asset_content)
+                    data = extractive_summary_process(
+                        api_key, process, process_step, asset_content
+                    )
 
                     if data["summary"]:
                         summaries.append(data["summary"])
@@ -81,7 +84,9 @@ def process_step_task(
 
                 elif process.type == "extract":
                     # Handle non-extractive summary process
-                    data = extract_process(api_key, process, process_step, asset_content)
+                    data = extract_process(
+                        api_key, process, process_step, asset_content
+                    )
 
                     # Update process step output outside the expensive operations
                     with SessionLocal() as db:
@@ -197,6 +202,7 @@ def process_task(process_id: int):
             process.message = str(e)
             db.commit()
 
+
 def handle_exceptions(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -209,7 +215,9 @@ def handle_exceptions(func):
             logger.error(f"Error in {func.__name__}: {str(e)}")
             logger.error(traceback.format_exc())
             raise
+
     return wrapper
+
 
 @handle_exceptions
 def extractive_summary_process(api_key, process, process_step, asset_content):
@@ -265,11 +273,12 @@ def extractive_summary_process(api_key, process, process_step, asset_content):
 @handle_exceptions
 def extract_process(api_key, process, process_step, asset_content):
     pdf_content = ""
-    vectorstore = ChromaDB(
-        f"panda-etl-{process.project_id}", similary_threshold=3
-    )
+    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
     if (
-        ("multiple_fields" not in process.details or not process.details["multiple_fields"])
+        (
+            "multiple_fields" not in process.details
+            or not process.details["multiple_fields"]
+        )
         and asset_content.content
         and asset_content.content.get("word_count", 0) > 500
     ):
@@ -284,6 +293,7 @@ def extract_process(api_key, process, process_step, asset_content):
                 },
                 k=5,
             )
+
             for index, metadata in enumerate(relevant_docs["metadatas"][0]):
                 segment_data = [relevant_docs["documents"][0][index]]
                 if metadata["previous_sentence_id"] != -1:
@@ -317,7 +327,8 @@ def extract_process(api_key, process, process_step, asset_content):
     for context in data["context"]:
         for sources in context:
             page_numbers = []
-            for source in sources["sources"]:
+            for source_index, source in enumerate(sources["sources"]):
+
                 relevant_docs = vectorstore.get_relevant_docs(
                     source,
                     where={
@@ -326,12 +337,26 @@ def extract_process(api_key, process, process_step, asset_content):
                             {"project_id": process.project_id},
                         ]
                     },
-                    k=1,
+                    k=5,
                 )
+
+                most_relevant_index = 0
+                match = False
+                clean_source = clean_text(source)
+                # search for exact match Index
+                for index, relevant_doc in enumerate(relevant_docs["documents"][0]):
+                    if clean_source in clean_text(relevant_doc):
+                        most_relevant_index = index
+                        match = True
+
+                if not match and len(relevant_docs["documents"][0]) > 0:
+                    sources["sources"][source_index] = relevant_docs["documents"][0][0]
 
                 if len(relevant_docs["metadatas"][0]) > 0:
                     page_numbers.append(
-                        relevant_docs["metadatas"][0][0]["page_number"]
+                        relevant_docs["metadatas"][0][most_relevant_index][
+                            "page_number"
+                        ]
                     )
 
             sources["page_numbers"] = page_numbers
@@ -341,10 +366,13 @@ def extract_process(api_key, process, process_step, asset_content):
         "context": data["context"],
     }
 
-def update_process_step_status(db, process_step, status, output=None, output_references=None):
+
+def update_process_step_status(
+    db, process_step, status, output=None, output_references=None
+):
     """
     Update the status of a process step.
-    
+
     Args:
     db: Database session
     process_step: The process step to update
@@ -353,9 +381,5 @@ def update_process_step_status(db, process_step, status, output=None, output_ref
     output_references: Optional output references
     """
     process_repository.update_process_step_status(
-        db, 
-        process_step, 
-        status, 
-        output=output, 
-        output_references=output_references
+        db, process_step, status, output=output, output_references=output_references
     )

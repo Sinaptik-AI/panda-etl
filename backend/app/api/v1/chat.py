@@ -11,6 +11,7 @@ from app.repositories import (
     user_repository,
 )
 from app.requests import chat_query
+from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -91,7 +92,10 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
             conversation_id = str(conversation.id)
 
         content = response["response"]
+        content_length = len(content)
+        clean_content = clean_text(content)
         text_references = []
+        not_exact_matched_refs = []
 
         for reference in response["references"]:
             sentence = reference["sentence"]
@@ -102,28 +106,51 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
                 doc_sent, doc_ids, doc_metadata = vectorstore.get_relevant_segments(
                     original_sentence,
-                    k=1,
+                    k=5,
                     num_surrounding_sentences=0,
-                    # TODO: uncomment this when we fix the filename in the metadata
-                    # metadata_filter={"filename": original_filename}
+                    metadata_filter={"filename": original_filename},
                 )
 
-                for sent, id, metadata in zip(doc_sent, doc_ids, doc_metadata):
-                    index = content.find(sentence)
-                    if index != -1:
-                        text_reference = {
-                            "asset_id": metadata["asset_id"],
-                            "project_id": metadata["project_id"],
-                            "page_number": metadata["page_number"],
-                            "filename": original_filename,
-                            "source": [sent],
-                            "start": index,
-                            "end": index + len(sentence),
-                        }
-                        text_references.append(text_reference)
+                # Search for exact match
+                best_match_index = 0
+
+                for index, sent in enumerate(doc_sent):
+                    if clean_text(original_sentence) in clean_text(sent):
+                        best_match_index = index
+
+                metadata = doc_metadata[best_match_index]
+                sent = doc_sent[best_match_index]
+
+                index = clean_content.find(clean_text(sentence))
+
+                if index != -1:
+                    text_reference = {
+                        "asset_id": metadata["asset_id"],
+                        "project_id": metadata["project_id"],
+                        "page_number": metadata["page_number"],
+                        "filename": original_filename,
+                        "source": [sent],
+                        "start": index,
+                        "end": index + len(sentence),
+                    }
+                    text_references.append(text_reference)
+                else:
+                    no_exact_reference = {
+                        "asset_id": metadata["asset_id"],
+                        "project_id": metadata["project_id"],
+                        "page_number": metadata["page_number"],
+                        "filename": original_filename,
+                        "source": [sent],
+                        "start": 0,
+                        "end": content_length,
+                    }
+                    not_exact_matched_refs.append(no_exact_reference)
 
         # group text references based on start and end
-        refs = group_by_start_end(text_references)
+        if len(text_references) > 0:
+            refs = group_by_start_end(text_references)
+        else:
+            refs = group_by_start_end(not_exact_matched_refs)
 
         conversation_repository.create_conversation_message(
             db,
