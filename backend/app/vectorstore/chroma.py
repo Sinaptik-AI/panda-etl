@@ -63,7 +63,7 @@ class ChromaDB(VectorStore):
         docs: Iterable[str],
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
-        batch_size=50,
+        batch_size=5,
     ) -> List[str]:
         """
         Add docs to the training set
