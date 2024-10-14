@@ -1,5 +1,6 @@
 import io
 import os
+import traceback
 import zipfile
 
 from app.processing.process_queue import submit_process
@@ -510,7 +511,7 @@ async def get_file(step_id: int, db: Session = Depends(get_db)):
         )
 
     except Exception as e:
-        print(e)
+        logger.error(f"Error retrieving file: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Failed to retrieve file")
 
 
@@ -528,5 +529,5 @@ def get_process_suggestion(
         }
 
     except Exception as e:
-        print(e)
+        logger.error(f"Error retrieving file: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Failed to retrieve file")

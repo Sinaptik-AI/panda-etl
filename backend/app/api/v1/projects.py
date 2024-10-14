@@ -271,7 +271,7 @@ async def get_file(asset_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        print(e)
+        logger.error(f"Error retrieving file: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="An error occurred while retrieving the file. Please try again later.")
 
 
