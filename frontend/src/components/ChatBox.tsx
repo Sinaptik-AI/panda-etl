@@ -83,7 +83,7 @@ const ChatBox = ({
     const bot_response = {
       sender: "bot",
       text: response.response,
-      references: response.response_references,
+      references: response.response_references || [],
       timestamp: new Date(),
     };
     setLoading(false);
