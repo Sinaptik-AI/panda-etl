@@ -16,7 +16,6 @@
   margin: 0;
   padding: 0;
   page-break-inside: avoid;
-  min-height: 100vh;
   position: relative;
 }
 
