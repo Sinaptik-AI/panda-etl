@@ -157,7 +157,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     return {
       x: x,
       y: y,
-      width: width / scaleFactorHeight,
+      width: width / scaleFactorWidth,
       height: height / scaleFactorHeight,
     };
   };
@@ -356,7 +356,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
               id={`page_${pageNumber}`}
               key={`page_${pageNumber}`}
               className={styles.pageContainer}
-              style={{ width: "600px", margin: "0 auto" }}
+              style={{ margin: "0 auto" }}
             >
               {visiblePages.includes(pageNumber) && (
                 <Page
