@@ -1,7 +1,36 @@
-.pdfViewer {
-  width: 100%;
+.pdfViewerContainer {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  position: relative;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  background-color: #f0f0f0;
+}
+
+.magnifierToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.magnifierToggle:hover {
+  background-color: #e0e0e0;
+}
+
+.magnifierToggle.active {
+  background-color: #d0d0d0;
+}
+
+.pdfViewer {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .pdfViewer :global(.react-pdf__Document) {

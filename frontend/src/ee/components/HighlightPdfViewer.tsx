@@ -1,11 +1,11 @@
 import { FlattenedSource } from "@/interfaces/processSteps";
 import { removePunctuation } from "@/lib/utils";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import styles from "./HighlightPdfViewer.module.css";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 
 // Define types for the highlight source
 interface HighlightCoordinate {
@@ -15,9 +15,21 @@ interface HighlightCoordinate {
   height: number;
 }
 
+// Extend the FlattenedSource interface
+interface ExtendedFlattenedSource extends FlattenedSource {
+  coordinates?: HighlightCoordinate[];
+}
+
 interface PdfViewerProps {
   file: string;
-  highlightSources: FlattenedSource[];
+  highlightSources: ExtendedFlattenedSource[];
+}
+
+interface MagnifierProps {
+  mousePosition: { x: number; y: number };
+  pageNumber: number;
+  scale: number;
+  highlightSources: ExtendedFlattenedSource[];
 }
 
 const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
@@ -30,6 +42,15 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [viewerWidth, setViewerWidth] = useState<number | null>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [magnifierPosition, setMagnifierPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [activeMagnifierPage, setActiveMagnifierPage] = useState<number | null>(
+    null
+  );
+  const [isMagnifierEnabled, setIsMagnifierEnabled] = useState(false);
 
   const activePage =
     highlightSources && highlightSources.length > 0
@@ -388,39 +409,215 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     return () => observer.disconnect();
   }, [numPages]);
 
+  const toggleMagnifier = () => {
+    setIsMagnifierEnabled((prev) => !prev);
+    if (isMagnifierEnabled) {
+      setMagnifierPosition(null);
+      setActiveMagnifierPage(null);
+    }
+  };
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>, pageNumber: number) => {
+      if (!isMagnifierEnabled) return;
+
+      const target = event.currentTarget;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      setMagnifierPosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+      setActiveMagnifierPage(pageNumber);
+    },
+    [isMagnifierEnabled]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    if (isMagnifierEnabled) {
+      setMagnifierPosition(null);
+      setActiveMagnifierPage(null);
+    }
+  }, [isMagnifierEnabled]);
+
   return (
-    <div ref={viewerRef} className={styles.pdfViewer}>
-      {isLoading && (
-        <div className={styles.loaderContainer}>
-          <Loader2 className={styles.loader} />
-        </div>
-      )}
-      <Document
-        file={file}
-        onLoadSuccess={onDocumentLoadSuccess}
-        loading={<div className={styles.hidden}></div>}
-      >
-        {Array.from(new Array(numPages || 0), (el, index) => {
-          const pageNumber = index + 1;
-          return (
-            <div
-              id={`page_${pageNumber}`}
-              key={`page_${pageNumber}`}
-              className={styles.pageContainer}
-              style={{ margin: "0 auto" }}
-            >
-              {visiblePages.includes(pageNumber) && (
-                <Page
-                  pageNumber={pageNumber}
-                  loading={<div className={styles.hidden}></div>}
-                  className={styles.pdfPage}
-                  width={viewerWidth || undefined}
-                />
-              )}
-            </div>
-          );
-        })}
-      </Document>
+    <div className={styles.pdfViewerContainer}>
+      <div className={styles.toolbar}>
+        <button
+          className={`${styles.magnifierToggle} ${
+            isMagnifierEnabled ? styles.active : ""
+          }`}
+          onClick={toggleMagnifier}
+          title={isMagnifierEnabled ? "Disable Magnifier" : "Enable Magnifier"}
+        >
+          <Search size={20} />
+        </button>
+      </div>
+      <div ref={viewerRef} className={styles.pdfViewer}>
+        {isLoading && (
+          <div className={styles.loaderContainer}>
+            <Loader2 className={styles.loader} />
+          </div>
+        )}
+        <Document
+          file={file}
+          onLoadSuccess={onDocumentLoadSuccess}
+          loading={<div className={styles.hidden}></div>}
+        >
+          {Array.from(new Array(numPages || 0), (el, index) => {
+            const pageNumber = index + 1;
+            return (
+              <div
+                id={`page_${pageNumber}`}
+                key={`page_${pageNumber}`}
+                className={styles.pageContainer}
+                style={{ margin: "0 auto", position: "relative" }}
+                onMouseMove={(e) => handleMouseMove(e, pageNumber)}
+                onMouseLeave={handleMouseLeave}
+              >
+                {visiblePages.includes(pageNumber) && (
+                  <>
+                    <Page
+                      pageNumber={pageNumber}
+                      loading={<div className={styles.hidden}></div>}
+                      className={styles.pdfPage}
+                      width={viewerWidth || undefined}
+                      scale={scale}
+                    />
+                    {isMagnifierEnabled &&
+                      magnifierPosition &&
+                      activeMagnifierPage === pageNumber && (
+                        <Magnifier
+                          mousePosition={magnifierPosition}
+                          pageNumber={pageNumber}
+                          scale={scale}
+                          highlightSources={highlightSources}
+                        />
+                      )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </Document>
+      </div>
+    </div>
+  );
+};
+
+const Magnifier: React.FC<MagnifierProps> = ({
+  mousePosition,
+  pageNumber,
+  scale,
+  highlightSources,
+}) => {
+  const magnifierWidth = 300;
+  const magnifierHeight = 200; // 3:2 ratio
+  const zoom = 1;
+  const positionMultiplier = 2;
+
+  const magnifierStyle: React.CSSProperties = {
+    position: "absolute",
+    left: mousePosition.x - magnifierWidth / 2,
+    top: mousePosition.y - magnifierHeight / 2,
+    width: `${magnifierWidth}px`,
+    height: `${magnifierHeight}px`,
+    border: "2px solid #ccc",
+    pointerEvents: "none",
+    overflow: "hidden",
+    zIndex: 1000,
+  };
+
+  useEffect(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      `#page_${pageNumber} canvas`
+    );
+    const magnifierCanvas = document.querySelector<HTMLCanvasElement>(
+      `#magnifier-canvas-${pageNumber}`
+    );
+
+    if (canvas && magnifierCanvas) {
+      const ctx = magnifierCanvas.getContext("2d");
+      if (ctx) {
+        magnifierCanvas.width = magnifierWidth;
+        magnifierCanvas.height = magnifierHeight;
+
+        const sourceWidth = magnifierWidth / zoom;
+        const sourceHeight = magnifierHeight / zoom;
+
+        let sourceX =
+          (mousePosition.x * positionMultiplier) / scale - sourceWidth / 2;
+        let sourceY =
+          (mousePosition.y * positionMultiplier) / scale - sourceHeight / 2;
+
+        sourceX = Math.max(
+          0,
+          Math.min(sourceX, canvas.width / scale - sourceWidth)
+        );
+        sourceY = Math.max(
+          0,
+          Math.min(sourceY, canvas.height / scale - sourceHeight)
+        );
+
+        // Draw the magnified content
+        ctx.drawImage(
+          canvas,
+          sourceX * scale,
+          sourceY * scale,
+          sourceWidth * scale,
+          sourceHeight * scale,
+          0,
+          0,
+          magnifierWidth,
+          magnifierHeight
+        );
+
+        // Apply highlights
+        const highlightsForPage = highlightSources.filter(
+          (source) => source.page_number === pageNumber
+        );
+
+        highlightsForPage.forEach((highlight) => {
+          if (highlight.coordinates && Array.isArray(highlight.coordinates)) {
+            highlight.coordinates.forEach((coord) => {
+              const highlightX = (coord.x - sourceX * scale) * zoom;
+              const highlightY = (coord.y - sourceY * scale) * zoom;
+              const highlightWidth = coord.width * zoom;
+              const highlightHeight = coord.height * zoom;
+
+              if (
+                highlightX < magnifierWidth &&
+                highlightY < magnifierHeight &&
+                highlightX + highlightWidth > 0 &&
+                highlightY + highlightHeight > 0
+              ) {
+                ctx.fillStyle = "rgba(255, 255, 0, 0.3)";
+                ctx.fillRect(
+                  highlightX,
+                  highlightY,
+                  highlightWidth,
+                  highlightHeight
+                );
+              }
+            });
+          }
+        });
+      }
+    }
+  }, [
+    mousePosition,
+    pageNumber,
+    scale,
+    magnifierWidth,
+    magnifierHeight,
+    zoom,
+    highlightSources,
+  ]);
+
+  return (
+    <div style={magnifierStyle}>
+      <canvas id={`magnifier-canvas-${pageNumber}`} />
     </div>
   );
 };
