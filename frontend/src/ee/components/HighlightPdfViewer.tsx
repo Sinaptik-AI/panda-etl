@@ -142,16 +142,23 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   const constructCoordinates = (
     item: any,
     viewHeight: number,
-    viewWidth: number
+    viewWidth: number,
+    scaleFactorHeight: number,
+    scaleFactorWidth: number
   ) => {
     const { transform, width, height } = item;
-    const x = 2 * transform[4];
-    const y = viewHeight - 2 * transform[5] - 2 * height;
+
+    const x = transform[4] / scaleFactorWidth;
+    const y =
+      viewHeight -
+      transform[5] / scaleFactorHeight -
+      height / scaleFactorHeight;
+
     return {
       x: x,
       y: y,
-      width: 2 * width,
-      height: 2 * height,
+      width: width / scaleFactorHeight,
+      height: height / scaleFactorHeight,
     };
   };
 
@@ -163,6 +170,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     const pdfDocument = await loadingTask.promise;
 
     const page = await pdfDocument.getPage(pageNumber);
+    const viewPort = page.getViewport({ scale: 1 });
+
     const textContent = await page.getTextContent();
     const pageCanvas = document.querySelector<HTMLCanvasElement>(
       `#page_${pageNumber} canvas`
@@ -172,6 +181,18 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
     let viewHeight = pageCanvas?.height;
     let viewWidth = pageCanvas?.width;
+
+    // Calculate the scaling factor for width and height
+    let scaleFactorWidth = viewPort.width / viewWidth;
+    let scaleFactorHeight = viewPort.height / viewHeight;
+
+    // Scale factor will never be zero sanity check to make sure it never crash application
+    if (scaleFactorWidth == 0) {
+      scaleFactorWidth = 1;
+    }
+    if (scaleFactorHeight == 0) {
+      scaleFactorHeight = 1;
+    }
 
     if (!viewWidth || !viewHeight || !numPages) {
       console.log("No view width or height found");
@@ -191,7 +212,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
 
         let overlap = findOverlap(pdfText, copyText);
         if (overlap.overlap === "No overlap found") {
-          overlap = findOverlap(copyText, item.str.toLowerCase());
+          overlap = findOverlap(copyText, pdfText);
           if (overlap.overlap === "No overlap found") {
             return;
           }
@@ -209,7 +230,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth
+            viewWidth,
+            scaleFactorHeight,
+            scaleFactorWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -221,7 +244,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth
+            viewWidth,
+            scaleFactorHeight,
+            scaleFactorWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -234,7 +259,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth
+            viewWidth,
+            scaleFactorHeight,
+            scaleFactorWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -247,7 +274,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           const highlightCoord = constructCoordinates(
             item,
             viewHeight,
-            viewWidth
+            viewWidth,
+            scaleFactorHeight,
+            scaleFactorWidth
           );
           highlightCoordinates.push(highlightCoord);
           copyText = copyText.replace(overlap.overlap, "").trim();
@@ -329,12 +358,14 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
               id={`page_${pageNumber}`}
               key={`page_${pageNumber}`}
               className={styles.pageContainer}
+              style={{ width: "600px", margin: "0 auto" }}
             >
               {visiblePages.includes(pageNumber) && (
                 <Page
                   pageNumber={pageNumber}
                   loading={<div className={styles.hidden}></div>}
                   className={styles.pdfPage}
+                  width={viewerRef.current?.offsetWidth}
                 />
               )}
             </div>
