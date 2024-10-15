@@ -182,17 +182,15 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     let viewHeight = pageCanvas?.height;
     let viewWidth = pageCanvas?.width;
 
-    // Calculate the scaling factor for width and height
+    if (viewWidth === 0 || viewHeight === 0) {
+      console.error(
+        "viewWidth or viewHeight is zero, cannot calculate scaling factors."
+      );
+      return;
+    }
+
     let scaleFactorWidth = viewPort.width / viewWidth;
     let scaleFactorHeight = viewPort.height / viewHeight;
-
-    // Scale factor will never be zero sanity check to make sure it never crash application
-    if (scaleFactorWidth == 0) {
-      scaleFactorWidth = 1;
-    }
-    if (scaleFactorHeight == 0) {
-      scaleFactorHeight = 1;
-    }
 
     if (!viewWidth || !viewHeight || !numPages) {
       console.log("No view width or height found");
