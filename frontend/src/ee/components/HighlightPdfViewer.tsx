@@ -28,6 +28,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   const [onScrolled, setOnScrolled] = useState<boolean>(false);
   const [visiblePages, setVisiblePages] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [viewerWidth, setViewerWidth] = useState<number | null>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
 
   const activePage =
@@ -39,6 +40,18 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     if (typeof window !== "undefined") {
       pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.mjs`;
     }
+  }, []);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (viewerRef.current) {
+        setViewerWidth(viewerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -162,6 +175,32 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     };
   };
 
+  function isStringApproximatelyAtStart(stringA: string, stringB: string) {
+    const wordsInA = stringA.split(" ");
+    if (wordsInA.length <= 3) {
+      return false;
+    }
+
+    const lengthOfB = stringB.length;
+    const quarterOfB = Math.floor(lengthOfB * 0.25);
+
+    const indexOfAInB = stringB.indexOf(stringA);
+
+    if (indexOfAInB !== -1 && indexOfAInB <= quarterOfB) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function replaceStringAtStart(
+    originalStr: string,
+    matchingStr: string,
+    replaceWith: string
+  ) {
+    return originalStr.replace(matchingStr, replaceWith).trim();
+  }
+
   // Function to search for text and highlight it
   const highlightTextInPdf = async (pageNumber: number, text: string) => {
     console.log(`Searching for text on page ${pageNumber}:`, text); // Add this line
@@ -197,10 +236,13 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
       return;
     }
 
-    let copyText = removePunctuation(text.toLowerCase());
+    const cleanText = removePunctuation(text.toLowerCase());
+
+    let copyText = cleanText;
 
     let highlightCoordinates: HighlightCoordinate[] = [];
     let found = false;
+    let matchedCoords: HighlightCoordinate[] = [];
 
     textContent.items.forEach((item) => {
       if ("str" in item && typeof item.str === "string") {
@@ -209,6 +251,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
         if (pdfText.length == 0 || copyText.length == 0) return;
 
         let overlap = findOverlap(pdfText, copyText);
+
         if (overlap.overlap === "No overlap found") {
           overlap = findOverlap(copyText, pdfText);
           if (overlap.overlap === "No overlap found") {
@@ -220,7 +263,9 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
           return;
         }
 
-        const isOverlapAtStart = copyText.startsWith(overlap.overlap);
+        const isOverlapAtStart =
+          copyText.startsWith(overlap.overlap) ||
+          isStringApproximatelyAtStart(overlap.overlap, copyText);
         const isOverlapEqualToPdf = overlap.overlap.length === pdfText.length;
         const isOverlapEqualToCopy = overlap.overlap.length === copyText.length;
 
@@ -232,8 +277,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
             scaleFactorHeight,
             scaleFactorWidth
           );
-          highlightCoordinates.push(highlightCoord);
-          copyText = copyText.replace(overlap.overlap, "").trim();
+          matchedCoords.push(highlightCoord);
+          copyText = replaceStringAtStart(copyText, overlap.overlap, "");
         } else if (
           !isOverlapEqualToPdf &&
           isOverlapEqualToCopy &&
@@ -246,8 +291,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
             scaleFactorHeight,
             scaleFactorWidth
           );
-          highlightCoordinates.push(highlightCoord);
-          copyText = copyText.replace(overlap.overlap, "").trim();
+          matchedCoords.push(highlightCoord);
+          copyText = replaceStringAtStart(copyText, overlap.overlap, "");
         } else if (
           isOverlapEqualToPdf &&
           !isOverlapEqualToCopy &&
@@ -261,8 +306,8 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
             scaleFactorHeight,
             scaleFactorWidth
           );
-          highlightCoordinates.push(highlightCoord);
-          copyText = copyText.replace(overlap.overlap, "").trim();
+          matchedCoords.push(highlightCoord);
+          copyText = replaceStringAtStart(copyText, overlap.overlap, "");
         } else if (
           !isOverlapEqualToPdf &&
           !isOverlapEqualToCopy &&
@@ -276,15 +321,20 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
             scaleFactorHeight,
             scaleFactorWidth
           );
-          highlightCoordinates.push(highlightCoord);
-          copyText = copyText.replace(overlap.overlap, "").trim();
+          matchedCoords.push(highlightCoord);
+          copyText = replaceStringAtStart(copyText, overlap.overlap, "");
         } else if (found && copyText.length > 1 && !isOverlapEqualToCopy) {
-          highlightCoordinates = [];
-          copyText = removePunctuation(text.toLowerCase());
+          if ((1 - copyText.length / cleanText.length) * 100 >= 75) {
+            highlightCoordinates = [...highlightCoordinates, ...matchedCoords];
+          }
+          matchedCoords = [];
+          copyText = cleanText;
           found = false;
         }
       }
     });
+
+    highlightCoordinates = [...highlightCoordinates, ...matchedCoords];
 
     highlightText(pageNumber, highlightCoordinates);
   };
@@ -303,10 +353,11 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
   useEffect(() => {
     const highlightAllSources = async () => {
       for (const highlightSource of highlightSources) {
-        await highlightTextInPdf(
-          highlightSource.page_number,
-          highlightSource.source
-        );
+        const sources_split = highlightSource.source.split("\n");
+
+        for (const source of sources_split) {
+          await highlightTextInPdf(highlightSource.page_number, source);
+        }
       }
     };
     highlightAllSources();
@@ -363,7 +414,7 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
                   pageNumber={pageNumber}
                   loading={<div className={styles.hidden}></div>}
                   className={styles.pdfPage}
-                  width={viewerRef.current?.offsetWidth}
+                  width={viewerWidth || undefined}
                 />
               )}
             </div>
