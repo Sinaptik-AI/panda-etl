@@ -18,7 +18,13 @@ class Settings(BaseSettings):
     log_file_path: str = os.path.join(os.path.dirname(__file__), "..", "pandaetl.log")
     max_retries: int = 3
     max_relevant_docs: int = 10
-    MAX_FILE_SIZE: int = 20 * 1024 * 1024
+    max_file_size: int = 20 * 1024 * 1024
+    chroma_batch_size: int = 5
+
+    # OpenAI embeddings config
+    use_openai_embeddings: bool = False
+    openai_api_key: str = ""
+    openai_embedding_model: str = "text-embedding-ada-002"
 
     class Config:
         env_file = ".env"

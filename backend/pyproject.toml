@@ -16,6 +16,7 @@ starlette = "^0.37.2"
 dateparser = "^1.2.0"
 requests = "^2.32.3"
 chromadb = "^0.5.5"
+openai = "^1.51.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
