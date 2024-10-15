@@ -167,7 +167,7 @@ async def upload_files(
                 )
 
             # Check if the file size is greater than 20MB
-            if file.size > settings.MAX_FILE_SIZE:
+            if file.size > settings.max_file_size:
                 raise HTTPException(
                     status_code=400,
                     detail=f"The file '{file.filename}' exceeds the maximum allowed size of 20MB. Please upload a smaller file.",

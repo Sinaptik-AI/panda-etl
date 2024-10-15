@@ -1,14 +1,18 @@
 import uuid
 from typing import Callable, Iterable, List, Optional, Tuple
+from pydantic_settings import BaseSettings
 
 import chromadb
-from app.config import settings
+from app.config import settings as default_settings
 from app.vectorstore import VectorStore
+from app.logger import Logger
 from chromadb import config
 from chromadb.utils import embedding_functions
+from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+
+logger = Logger(verbose=True)
 
 DEFAULT_EMBEDDING_FUNCTION = embedding_functions.DefaultEmbeddingFunction()
-
 
 class ChromaDB(VectorStore):
     """
@@ -23,36 +27,43 @@ class ChromaDB(VectorStore):
         client_settings: Optional[config.Settings] = None,
         max_samples: int = 3,
         similary_threshold: int = 1.5,
+        batch_size: Optional[int] = None,
+        settings: Optional[BaseSettings] = None,
     ) -> None:
+        self.settings = settings or default_settings
         self._max_samples = max_samples
         self._similarity_threshold = similary_threshold
+        self._batch_size = batch_size or self.settings.chroma_batch_size
 
         # Initialize Chromadb Client
-        # initialize from client settings if exists
         if client_settings:
             client_settings.persist_directory = (
                 persist_path or client_settings.persist_directory
             )
             _client_settings = client_settings
-
-        # use persist path if exists
         elif persist_path:
             _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
             )
             _client_settings.persist_directory = persist_path
-        # else use root as default path
         else:
             _client_settings = config.Settings(
                 is_persistent=True, anonymized_telemetry=False
             )
-            _client_settings.persist_directory = settings.chromadb_url
+            _client_settings.persist_directory = self.settings.chromadb_url
 
         self._client_settings = _client_settings
         self._client = chromadb.Client(_client_settings)
         self._persist_directory = _client_settings.persist_directory
 
-        self._embedding_function = embedding_function or DEFAULT_EMBEDDING_FUNCTION
+        # Use the embedding function from config
+        if self.settings.use_openai_embeddings and self.settings.openai_api_key:
+            self._embedding_function = OpenAIEmbeddingFunction(
+                api_key=self.settings.openai_api_key,
+                model_name=self.settings.openai_embedding_model
+            )
+        else:
+            self._embedding_function = embedding_function or DEFAULT_EMBEDDING_FUNCTION
 
         self._docs_collection = self._client.get_or_create_collection(
             name=collection_name, embedding_function=self._embedding_function
@@ -63,7 +74,7 @@ class ChromaDB(VectorStore):
         docs: Iterable[str],
         ids: Optional[Iterable[str]] = None,
         metadatas: Optional[List[dict]] = None,
-        batch_size=5,
+        batch_size: Optional[int] = None,
     ) -> List[str]:
         """
         Add docs to the training set
@@ -71,7 +82,7 @@ class ChromaDB(VectorStore):
             docs: Iterable of strings to add to the vectorstore.
             ids: Optional Iterable of ids associated with the texts.
             metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
+            batch_size: Optional batch size for adding documents. If not provided, uses the instance's batch size.
 
         Returns:
             List of ids from adding the texts into the vectorstore.
@@ -79,17 +90,38 @@ class ChromaDB(VectorStore):
         if ids is None:
             ids = [f"{str(uuid.uuid4())}-docs" for _ in docs]
 
+        if metadatas is None:
+            metadatas = [{}] * len(docs)
+
         # Add previous_id and next_id to metadatas
         for idx, metadata in enumerate(metadatas):
             metadata["previous_sentence_id"] = ids[idx - 1] if idx > 0 else -1
             metadata["next_sentence_id"] = ids[idx + 1] if idx < len(ids) - 1 else -1
 
-        for i in range(0, len(docs), batch_size):
+        filename = metadatas[0].get('filename', 'unknown')
+        logger.info(f"Adding {len(docs)} sentences to the vector store for file {filename}")
+
+        # If using OpenAI embeddings, add all documents at once
+        if self.settings.use_openai_embeddings and self.settings.openai_api_key:
+            logger.info("Using OpenAI embeddings")
             self._docs_collection.add(
-                documents=docs[i : i + batch_size],
-                metadatas=metadatas[i : i + batch_size],
-                ids=ids[i : i + batch_size],
+                documents=list(docs),
+                metadatas=metadatas,
+                ids=ids,
             )
+        else:
+            logger.info("Using default embedding function")
+            batch_size = batch_size or self._batch_size
+
+            for i in range(0, len(docs), batch_size):
+                logger.info(f"Processing batch {i} to {i + batch_size}")
+                self._docs_collection.add(
+                    documents=docs[i : i + batch_size],
+                    metadatas=metadatas[i : i + batch_size],
+                    ids=ids[i : i + batch_size],
+                )
+
+        return list(ids)
 
     def delete_docs(
         self, ids: Optional[List[str]] = None, where: Optional[dict] = None

@@ -69,6 +69,28 @@ class Logger:
             }
         )
 
+    def info(self, message: str):
+        self._logger.info(message)
+        self._logs.append(
+            {
+                "msg": message,
+                "level": logging.getLevelName(logging.INFO),
+                "time": self._calculate_time_diff(),
+                "source": self._invoked_from(),
+            }
+        )
+
+    def debug(self, message: str):
+        self._logger.debug(message)
+        self._logs.append(
+            {
+                "msg": message,
+                "level": logging.getLevelName(logging.DEBUG),
+                "time": self._calculate_time_diff(),
+                "source": self._invoked_from(),
+            }
+        )
+
     def error(self, message: str):
         self._logger.error(message)
         self._logs.append(
