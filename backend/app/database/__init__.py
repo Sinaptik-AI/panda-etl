@@ -4,10 +4,9 @@ from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from sqlalchemy.sql import Select
 from app.database.query import SoftDeleteQuery
 from app.config import settings
+from app.logger import Logger
 
-import logging
-
-logger = logging.getLogger(__name__)
+logger = Logger(verbose=True)
 
 engine = create_engine(
     settings.sqlalchemy_database_url,
