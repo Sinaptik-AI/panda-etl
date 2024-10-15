@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "backend"
-version = "0.2.0"
+version = "0.2.1"
 description = "No-code ETL and data pipelines with AI and NLP"
 authors = ["Gabriele Venturi <gabriele@sinaptik.ai>", "ArslanSaleem <arslan@sinaptik.ai>"]
 readme = "README.md"
