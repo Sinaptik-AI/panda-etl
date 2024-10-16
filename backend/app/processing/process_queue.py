@@ -3,6 +3,8 @@ import os
 from typing import List
 from app.database import SessionLocal
 from app.exceptions import CreditLimitExceededException
+from app.models.asset_content import AssetProcessingStatus
+from app.processing.process_scheduler import ProcessScheduler
 from app.repositories import process_repository
 from app.repositories import project_repository
 from concurrent.futures import ThreadPoolExecutor
@@ -24,15 +26,16 @@ import traceback
 from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
 
-
 executor = ThreadPoolExecutor(max_workers=5)
 
 logger = Logger()
 
 
-def submit_process(process_id: int):
+def submit_process(process_id: int) -> None:
     executor.submit(process_task, process_id)
 
+
+process_execution_scheduler = ProcessScheduler(60, submit_process, logger)
 
 # Background task processing function
 def process_step_task(
@@ -52,7 +55,7 @@ def process_step_task(
                 return False  # Stop processing if the process is stopped
 
             logger.log(f"Processing file: {process_step.asset.path}")
-            if process_step.status == ProcessStepStatus.COMPLETED:
+            if process_step.status == ProcessStepStatus.COMPLETED and process.type!="extract":
                 summaries.append(process_step.output.get("summary", ""))
                 return True
 
@@ -133,7 +136,7 @@ def process_task(process_id: int):
             process.started_at = datetime.utcnow()
             db.commit()
 
-            process_steps = process_repository.get_process_steps(db, process.id)
+            process_steps = process_repository.get_process_steps_with_asset_content(db, process.id, ["PENDING", "IN_PROGRESS"])
             if not process_steps:
                 raise Exception("No process found!")
 
@@ -144,6 +147,11 @@ def process_task(process_id: int):
         # Step 2: Process each step in parallel outside the database connection
         failed_docs = []
         summaries = []
+
+        ready_process_steps = [process_step for process_step in process_steps if process_step.asset.content.processing == AssetProcessingStatus.COMPLETED]
+
+        all_process_step_ready = len(ready_process_steps) == len(process_steps) # Asset preprocessing is pending
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = [
                 executor.submit(
@@ -154,7 +162,7 @@ def process_task(process_id: int):
                     failed_docs,
                     api_key,
                 )
-                for process_step in process_steps
+                for process_step in ready_process_steps
             ]
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
@@ -185,6 +193,10 @@ def process_task(process_id: int):
                 # If summary extraction was performed, add it to the process output
                 if summary_of_summaries:
                     process.output = {"summary": summary_of_summaries}
+
+                if not all_process_step_ready:
+                    logger.info(f"Process id: [{process.id}] some steps preprocessing is missing moving to waiting queue")
+                    process_execution_scheduler.add_process_to_queue(process.id)
 
                 process.status = (
                     ProcessStatus.COMPLETED if not failed_docs else ProcessStatus.FAILED

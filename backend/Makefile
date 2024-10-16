@@ -12,3 +12,9 @@ generate-migration:
 
 test:
 	poetry run pytest
+
+lint:
+	poetry run ruff check .
+
+lint-fix:
+	poetry run ruff check . --fix
