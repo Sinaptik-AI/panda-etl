@@ -136,7 +136,7 @@ def process_task(process_id: int):
             process.started_at = datetime.utcnow()
             db.commit()
 
-            process_steps = process_repository.get_process_steps_with_asset_content(db, process.id, ["PENDING", "IN_PROGRESS"])
+            process_steps = process_repository.get_process_steps_with_asset_content(db, process.id, [ProcessStepStatus.PENDING.name, ProcessStepStatus.IN_PROGRESS.name])
             if not process_steps:
                 raise Exception("No process found!")
 
@@ -150,7 +150,7 @@ def process_task(process_id: int):
 
         ready_process_steps = [process_step for process_step in process_steps if process_step.asset.content.processing == AssetProcessingStatus.COMPLETED]
 
-        all_process_step_ready = len(ready_process_steps) == len(process_steps) # Asset preprocessing is pending
+        all_process_steps_ready = len(ready_process_steps) == len(process_steps) # Check if all process steps are ready
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = [
@@ -194,9 +194,11 @@ def process_task(process_id: int):
                 if summary_of_summaries:
                     process.output = {"summary": summary_of_summaries}
 
-                if not all_process_step_ready:
+                if not all_process_steps_ready:
                     logger.info(f"Process id: [{process.id}] some steps preprocessing is missing moving to waiting queue")
                     process_execution_scheduler.add_process_to_queue(process.id)
+                    # Skip status update since not all steps are ready
+                    return
 
                 process.status = (
                     ProcessStatus.COMPLETED if not failed_docs else ProcessStatus.FAILED

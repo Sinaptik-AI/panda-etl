@@ -13,8 +13,11 @@ generate-migration:
 test:
 	poetry run pytest
 
+
+# Check code for linting issues
 lint:
 	poetry run ruff check .
 
+# Automatically fix linting issues where possible
 lint-fix:
-	poetry run ruff check . --fix
+	poetry run ruff check . --fix --show-fixes
