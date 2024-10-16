@@ -1,3 +1,4 @@
+from typing import List
 from app.models.process import ProcessStatus
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload, defer, aliased
@@ -90,6 +91,18 @@ def get_process_steps(db: Session, process_id: int):
         .all()
     )
 
+
+def get_process_steps_with_asset_content(db: Session, process_id: int, status: List[ProcessStatus]):
+    return (
+        db.query(models.ProcessStep)
+        .filter(models.ProcessStep.process_id == process_id)
+        .filter(models.ProcessStep.status.in_(status))
+        .options(
+            joinedload(models.ProcessStep.process).joinedload(models.Process.project),
+            joinedload(models.ProcessStep.asset).joinedload(models.Asset.content),
+        )
+        .all()
+    )
 
 def get_process_step(db: Session, step_id: int):
     return (
