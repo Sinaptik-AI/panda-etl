@@ -20,12 +20,15 @@ const ChatReferenceDrawer = ({
   filename,
   onCancel,
 }: IProps) => {
-  const file_url =
-    project_id && filename
-      ? `${BASE_STORAGE_URL}/${project_id}/${filename}`
-      : null;
-  if (!filename) {
-    console.error("Filename is required to display the reference");
+  let file_url = null;
+  if (isOpen) {
+    file_url =
+      project_id && filename
+        ? `${BASE_STORAGE_URL}/${project_id}/${filename}`
+        : null;
+    if (!filename) {
+      console.error("Filename is required to display the reference");
+    }
   }
 
   return (

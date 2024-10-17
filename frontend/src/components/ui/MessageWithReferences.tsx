@@ -1,6 +1,5 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import TooltipWrapper from "./Tooltip";
@@ -27,7 +26,6 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
       parts.push(
         <React.Fragment key={`text-${index}`}>
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSanitize]}
             components={{
               p: ({ children }) => <span>{children}</span>,
@@ -62,7 +60,6 @@ const MessageWithReferences: React.FC<MessageWithReferencesProps> = ({
       parts.push(
         <React.Fragment key="text-final">
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSanitize]}
             components={{
               p: ({ children }) => <span>{children}</span>,
