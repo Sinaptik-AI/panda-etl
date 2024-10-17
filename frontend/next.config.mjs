@@ -1,4 +1,5 @@
 const nextConfig = {
+  swcMinify: false, // TODO - track and remove this later: https://github.com/wojtekmaj/react-pdf/issues/1822
   async rewrites() {
     return [
       {
@@ -10,13 +11,6 @@ const nextConfig = {
         destination: "http://127.0.0.1:5328/assets/:path*",
       },
     ];
-  },
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.worker\.js$/,
-      use: { loader: "worker-loader" },
-    });
-    return config;
   },
 };
 
