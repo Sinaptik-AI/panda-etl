@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { markify_text } from "@/lib/utils";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
@@ -132,10 +131,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
             onReferenceClick={handleReferenceClick}
           />
         ) : (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSanitize]}
-          >
+          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
             {markify_text(message)}
           </ReactMarkdown>
         )}

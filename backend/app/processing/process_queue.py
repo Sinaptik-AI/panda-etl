@@ -136,7 +136,7 @@ def process_task(process_id: int):
             process.started_at = datetime.utcnow()
             db.commit()
 
-            process_steps = process_repository.get_process_steps_with_asset_content(db, process.id, [ProcessStepStatus.PENDING.name, ProcessStepStatus.IN_PROGRESS.name])
+            process_steps = process_repository.get_process_steps_with_asset_content(db, process.id, [ProcessStepStatus.PENDING.name, ProcessStepStatus.FAILED.name, ProcessStepStatus.IN_PROGRESS.name])
             if not process_steps:
                 raise Exception("No process found!")
 
