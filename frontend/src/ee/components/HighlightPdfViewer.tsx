@@ -100,15 +100,17 @@ const HighlightPdfViewer: React.FC<PdfViewerProps> = ({
     highlightLayer.className = styles.highlightLayer;
     pageContainer.appendChild(highlightLayer);
 
+    const pixelRatio = window.devicePixelRatio || 1;
+
     sources.forEach((source) => {
       const highlightDiv = document.createElement("div");
 
       // Set the position and size of the highlight
       highlightDiv.style.position = "absolute";
-      highlightDiv.style.left = `${source.x / 2}px`;
-      highlightDiv.style.top = `${source.y / 2}px`;
-      highlightDiv.style.width = `${source.width / 2}px`;
-      highlightDiv.style.height = `${source.height / 2}px`;
+      highlightDiv.style.left = `${source.x / pixelRatio}px`;
+      highlightDiv.style.top = `${source.y / pixelRatio}px`;
+      highlightDiv.style.width = `${source.width / pixelRatio}px`;
+      highlightDiv.style.height = `${source.height / pixelRatio}px`;
       highlightDiv.style.backgroundColor = "rgba(255, 255, 0, 0.3)"; // Yellow highlight
       highlightDiv.style.pointerEvents = "none"; // Allow interactions with underlying text
       highlightDiv.classList.add(styles.highlightDiv);
