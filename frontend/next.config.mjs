@@ -11,16 +11,6 @@ const nextConfig = {
       },
     ];
   },
-
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.mjs$/,
-      exclude: /pdf\.worker\.min\.mjs$/, // Exclude pdf.worker.min.mjs from processing
-      type: "javascript/auto",
-    });
-
-    return config;
-  },
 };
 
 export default nextConfig;
