@@ -25,6 +25,7 @@ import traceback
 
 from app.utils import clean_text
 from app.vectorstore.chroma import ChromaDB
+import re
 
 executor = ThreadPoolExecutor(max_workers=5)
 
@@ -289,10 +290,7 @@ def extract_process(api_key, process, process_step, asset_content):
     pdf_content = ""
     vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
     if (
-        (
-            "multiple_fields" not in process.details
-            or not process.details["multiple_fields"]
-        )
+        ("multiple_fields" not in process.details or not process.details["multiple_fields"])
         and asset_content.content
         and asset_content.content.get("word_count", 0) > 500
     ):
@@ -310,13 +308,13 @@ def extract_process(api_key, process, process_step, asset_content):
 
             for index, metadata in enumerate(relevant_docs["metadatas"][0]):
                 segment_data = [relevant_docs["documents"][0][index]]
-                if metadata["previous_sentence_id"] != -1:
+                if metadata.get("previous_sentence_id", -1) != -1:
                     prev_sentence = vectorstore.get_relevant_docs_by_id(
                         ids=[metadata["previous_sentence_id"]]
                     )
                     segment_data = [prev_sentence["documents"][0]] + segment_data
 
-                if metadata["next_sentence_id"] != -1:
+                if metadata.get("next_sentence_id", -1) != -1:
                     next_sentence = vectorstore.get_relevant_docs_by_id(
                         ids=[metadata["next_sentence_id"]]
                     )
@@ -338,47 +336,83 @@ def extract_process(api_key, process, process_step, asset_content):
         pdf_content=pdf_content if pdf_content else None,
     )
 
+    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
+    all_relevant_docs = []
+
     for context in data["context"]:
         for sources in context:
             page_numbers = []
             for source_index, source in enumerate(sources["sources"]):
-
-                relevant_docs = vectorstore.get_relevant_docs(
-                    source,
-                    where={
-                        "$and": [
-                            {"asset_id": process_step.asset.id},
-                            {"project_id": process.project_id},
-                        ]
-                    },
-                    k=5,
-                )
-
-                most_relevant_index = 0
-                match = False
-                clean_source = clean_text(source)
-                # search for exact match Index
-                for index, relevant_doc in enumerate(relevant_docs["documents"][0]):
-                    if clean_source in clean_text(relevant_doc):
-                        most_relevant_index = index
-                        match = True
-
-                if not match and len(relevant_docs["documents"][0]) > 0:
-                    sources["sources"][source_index] = relevant_docs["documents"][0][0]
-
-                if len(relevant_docs["metadatas"][0]) > 0:
-                    page_numbers.append(
-                        relevant_docs["metadatas"][0][most_relevant_index][
-                            "page_number"
-                        ]
+                if len(source) < 30:
+                    best_match = find_best_match_for_short_reference(
+                        source,
+                        all_relevant_docs,
+                        process_step.asset.id,
+                        process.project_id
                     )
+                    if best_match:
+                        sources["sources"][source_index] = best_match["text"]
+                        page_numbers.append(best_match["page_number"])
+                else:
+                    relevant_docs = vectorstore.get_relevant_docs(
+                        source,
+                        where={
+                            "$and": [
+                                {"asset_id": process_step.asset.id},
+                                {"project_id": process.project_id},
+                            ]
+                        },
+                        k=5,
+                    )
+                    all_relevant_docs.append(relevant_docs)
 
-            sources["page_numbers"] = page_numbers
+                    most_relevant_index = 0
+                    match = False
+                    clean_source = clean_text(source)
+                    # search for exact match Index
+                    for index, relevant_doc in enumerate(relevant_docs["documents"][0]):
+                        if clean_source in clean_text(relevant_doc):
+                            most_relevant_index = index
+                            match = True
+                            break
+
+                    if not match and len(relevant_docs["documents"][0]) > 0:
+                        sources["sources"][source_index] = relevant_docs["documents"][0][0]
+
+                    if len(relevant_docs["metadatas"][0]) > 0:
+                        page_numbers.append(
+                            relevant_docs["metadatas"][0][most_relevant_index]["page_number"]
+                        )
+
+            if page_numbers:
+                sources["page_numbers"] = page_numbers
 
     return {
         "fields": data["fields"],
         "context": data["context"],
     }
+
+def find_best_match_for_short_reference(source, all_relevant_docs, asset_id, project_id):
+    source_words = set(re.findall(r'\w+', source.lower()))
+    if not source_words:
+        return None  # Return None if the source is empty
+
+    best_match = None
+    best_match_score = 0
+    threshold = 0.8
+
+    for relevant_docs in all_relevant_docs:
+        for doc, metadata in zip(relevant_docs["documents"][0], relevant_docs["metadatas"][0]):
+            if metadata["asset_id"] == asset_id and metadata["project_id"] == project_id:
+                doc_words = set(re.findall(r'\w+', doc.lower()))
+                common_words = source_words.intersection(doc_words)
+                match_score = len(common_words) / len(source_words)
+
+                if match_score > best_match_score:
+                    best_match_score = match_score
+                    best_match = {"text": doc, "page_number": metadata["page_number"]}
+
+    return best_match if best_match_score >= threshold else None
 
 
 def update_process_step_status(
