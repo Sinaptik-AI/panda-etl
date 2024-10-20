@@ -5,6 +5,7 @@ from app.processing.process_queue import (
     extractive_summary_process,
     extract_process,
     update_process_step_status,
+    find_best_match_for_short_reference,
 )
 from app.exceptions import CreditLimitExceededException
 from app.models import ProcessStepStatus
@@ -66,13 +67,13 @@ def test_extract_process(mock_chroma, mock_extract_data):
         "metadatas": [[{
             "page_number": 1,
             "previous_sentence_id": -1,
-            "next_sentence_id": -1  # Add this line
+            "next_sentence_id": -1
         }]],
         "documents": [["Test document"]]
     }
     mock_extract_data.return_value = {
         "fields": {"field1": "value1"},
-        "context": [[{"sources": ["source1"]}]]
+        "context": [[{"sources": ["source1"], "page_numbers": [1]}]]
     }
 
     process = Mock(id=1, project_id=1, details={"fields": [{"key": "field1"}]})
@@ -105,3 +106,57 @@ def test_update_process_step_status():
         output=mock_output,
         output_references=mock_output_references
     )
+
+@patch('app.processing.process_queue.re.findall')
+def test_find_best_match_for_short_reference(mock_findall):
+    mock_findall.side_effect = [
+        ['ai', 'and', 'machine', 'learning'],
+        ['this', 'is', 'a', 'long', 'document', 'about', 'ai', 'and', 'machine', 'learning'],  # For the document text
+        ['quantum', 'computing'],
+        ['this', 'is', 'a', 'long', 'document', 'about', 'ai', 'and', 'machine', 'learning'],  # For the document text again
+        ['another', 'document', 'talking', 'about', 'natural', 'language', 'processing'],  # For the second document
+        [],
+        ['this', 'is', 'a', 'long', 'document', 'about', 'ai', 'and', 'machine', 'learning']  # For the document text one more time
+    ]
+    all_relevant_docs = [
+        {
+            "documents": [["This is a long document about AI and machine learning."]],
+            "metadatas": [[{"asset_id": 1, "project_id": 1, "page_number": 1}]]
+        },
+        {
+            "documents": [["Another document talking about natural language processing."]],
+            "metadatas": [[{"asset_id": 1, "project_id": 1, "page_number": 2}]]
+        }
+    ]
+
+    # Test with a good match
+    result = find_best_match_for_short_reference("AI and machine learning", all_relevant_docs, 1, 1)
+    assert result is not None
+    assert "text" in result
+    assert "page_number" in result
+    assert "AI" in result["text"] and "machine learning" in result["text"]
+
+    # Test with a poor match
+    result = find_best_match_for_short_reference("Quantum computing", all_relevant_docs, 1, 1)
+    assert result is None
+
+    assert mock_findall.call_count == 6
+
+@patch('app.processing.process_queue.ChromaDB')
+@patch('app.processing.process_queue.extract_data')
+def test_chroma_db_initialization(mock_extract_data, mock_chroma):
+    mock_chroma_instance = Mock()
+    mock_chroma.return_value = mock_chroma_instance
+    mock_extract_data.return_value = {
+        "fields": {"field1": "value1"},
+        "context": [[{"sources": ["source1"], "page_numbers": [1]}]]
+    }
+
+    process = Mock(id=1, project_id=1, details={"fields": [{"key": "field1"}]})
+    process_step = Mock(id=1, asset=Mock(id=1))
+    asset_content = Mock(content={"word_count": 100, "content": ["Short content"]})
+
+    extract_process("api_key", process, process_step, asset_content)
+
+    mock_chroma.assert_called_with(f"panda-etl-{process.project_id}", similary_threshold=3)
+    assert mock_chroma.call_count >= 1
