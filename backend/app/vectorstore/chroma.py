@@ -26,13 +26,13 @@ class ChromaDB(VectorStore):
         persist_path: Optional[str] = None,
         client_settings: Optional[config.Settings] = None,
         max_samples: int = 3,
-        similary_threshold: int = 1.5,
+        similarity_threshold: int = 1.5,
         batch_size: Optional[int] = None,
         settings: Optional[BaseSettings] = None,
     ) -> None:
         self.settings = settings or default_settings
         self._max_samples = max_samples
-        self._similarity_threshold = similary_threshold
+        self._similarity_threshold = similarity_threshold
         self._batch_size = batch_size or self.settings.chroma_batch_size
 
         # Initialize Chromadb Client
