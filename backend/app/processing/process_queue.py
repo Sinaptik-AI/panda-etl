@@ -288,7 +288,7 @@ def extractive_summary_process(api_key, process, process_step, asset_content):
 @handle_exceptions
 def extract_process(api_key, process, process_step, asset_content):
     pdf_content = ""
-    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
+    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similarity_threshold=3)
     if (
         ("multiple_fields" not in process.details or not process.details["multiple_fields"])
         and asset_content.content
@@ -312,13 +312,19 @@ def extract_process(api_key, process, process_step, asset_content):
                     prev_sentence = vectorstore.get_relevant_docs_by_id(
                         ids=[metadata["previous_sentence_id"]]
                     )
-                    segment_data = [prev_sentence["documents"][0]] + segment_data
+                    if prev_sentence["documents"] and len(prev_sentence["documents"][0]) > 0:
+                        segment_data = [prev_sentence["documents"][0]] + segment_data
+                    else:
+                        logger.warning("Previous sentence document is empty.")
 
                 if metadata.get("next_sentence_id", -1) != -1:
                     next_sentence = vectorstore.get_relevant_docs_by_id(
                         ids=[metadata["next_sentence_id"]]
                     )
-                    segment_data.append(next_sentence["documents"][0])
+                    if next_sentence["documents"] and len(next_sentence["documents"][0]) > 0:
+                        segment_data.append(next_sentence["documents"][0])
+                    else:
+                        logger.warning("Next sentence document is empty.")
 
                 pdf_content += "\n" + " ".join(segment_data)
 
@@ -336,7 +342,7 @@ def extract_process(api_key, process, process_step, asset_content):
         pdf_content=pdf_content if pdf_content else None,
     )
 
-    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similary_threshold=3)
+    vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similarity_threshold=3)
     all_relevant_docs = []
 
     for context in data["context"]:
@@ -371,6 +377,9 @@ def extract_process(api_key, process, process_step, asset_content):
                     clean_source = clean_text(source)
                     # search for exact match Index
                     for index, relevant_doc in enumerate(relevant_docs["documents"][0]):
+                        if not relevant_docs["documents"][0]:
+                            logger.warning("No relevant documents found.")
+                            continue
                         if clean_source in clean_text(relevant_doc):
                             most_relevant_index = index
                             match = True
@@ -378,6 +387,12 @@ def extract_process(api_key, process, process_step, asset_content):
 
                     if not match and len(relevant_docs["documents"][0]) > 0:
                         sources["sources"][source_index] = relevant_docs["documents"][0][0]
+                        if relevant_docs["documents"][0]:
+                            page_numbers.append(
+                                relevant_docs["metadatas"][0][most_relevant_index]["page_number"]
+                            )
+                        else:
+                            logger.warning("No documents available to assign to source.")
 
                     if len(relevant_docs["metadatas"][0]) > 0:
                         page_numbers.append(
@@ -392,14 +407,13 @@ def extract_process(api_key, process, process_step, asset_content):
         "context": data["context"],
     }
 
-def find_best_match_for_short_reference(source, all_relevant_docs, asset_id, project_id):
+def find_best_match_for_short_reference(source, all_relevant_docs, asset_id, project_id, threshold=0.8):
     source_words = set(re.findall(r'\w+', source.lower()))
     if not source_words:
         return None  # Return None if the source is empty
 
     best_match = None
     best_match_score = 0
-    threshold = 0.8
 
     for relevant_docs in all_relevant_docs:
         for doc, metadata in zip(relevant_docs["documents"][0], relevant_docs["metadatas"][0]):

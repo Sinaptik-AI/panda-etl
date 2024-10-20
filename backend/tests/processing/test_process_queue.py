@@ -142,6 +142,41 @@ def test_find_best_match_for_short_reference(mock_findall):
 
     assert mock_findall.call_count == 6
 
+@pytest.mark.parametrize("short_reference, expected_result", [
+    ("AI and machine learning", True),
+    ("Quantum computing", False),
+])
+@patch('app.processing.process_queue.re.findall')
+def test_find_best_match_for_short_reference_parametrized(mock_findall, short_reference, expected_result):
+    mock_findall.side_effect = [
+        short_reference.lower().split(),
+        ['this', 'is', 'a', 'long', 'document', 'about', 'ai', 'and', 'machine', 'learning'],  # For the first document
+        ['another', 'document', 'talking', 'about', 'natural', 'language', 'processing'],  # For the second document
+    ]
+
+    all_relevant_docs = [
+        {
+            "documents": [["This is a long document about AI and machine learning."]],
+            "metadatas": [[{"asset_id": 1, "project_id": 1, "page_number": 1}]]
+        },
+        {
+            "documents": [["Another document talking about natural language processing."]],
+            "metadatas": [[{"asset_id": 1, "project_id": 1, "page_number": 2}]]
+        }
+    ]
+
+    result = find_best_match_for_short_reference(short_reference, all_relevant_docs, 1, 1)
+
+    if expected_result:
+        assert result is not None
+        assert "text" in result
+        assert "page_number" in result
+        assert short_reference.lower() in result["text"].lower()
+    else:
+        assert result is None
+
+    assert mock_findall.call_count == 3
+
 @patch('app.processing.process_queue.ChromaDB')
 @patch('app.processing.process_queue.extract_data')
 def test_chroma_db_initialization(mock_extract_data, mock_chroma):
@@ -158,5 +193,5 @@ def test_chroma_db_initialization(mock_extract_data, mock_chroma):
 
     extract_process("api_key", process, process_step, asset_content)
 
-    mock_chroma.assert_called_with(f"panda-etl-{process.project_id}", similary_threshold=3)
+    mock_chroma.assert_called_with(f"panda-etl-{process.project_id}", similarity_threshold=3)
     assert mock_chroma.call_count >= 1
