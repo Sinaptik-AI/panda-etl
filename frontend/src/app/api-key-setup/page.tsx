@@ -36,7 +36,7 @@ const ApiKeySetup: React.FC = () => {
       router.push("/"); // Redirect to the main app
     } catch (error) {
       console.error("Error saving API key:", error);
-      toast.error("Failed to save API key. Please try again.");
+      toast.error("Invalid API Key. Please try again.");
     }
   };
 

@@ -30,10 +30,18 @@ def request_user_api_key(api_key_request: APIKeyRequest, db: Session = Depends(g
 def save_user_api_key(
     api_key_request: UpdateAPIKeyRequest, db: Session = Depends(get_db)
 ):
+
     users = user_repository.get_users(db, n=1)
 
     if not users:
         raise HTTPException(status_code=404, detail="No User Exists!")
+
+    try:
+        requests.get_user_usage_data(api_key_request.api_key)
+    except Exception:
+        raise HTTPException(
+            status_code=400, detail="Invalid API Key"
+        )
 
     user_repository.update_user_api_key(db, users[0].id, api_key_request.api_key)
 
