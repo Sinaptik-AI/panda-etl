@@ -4,7 +4,11 @@ import Head from "next/head";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { Download } from "lucide-react";
-import { ProcessDetailsResponse, ProcessStatus } from "@/interfaces/processes";
+import {
+  ProcessData,
+  ProcessDetailsResponse,
+  ProcessStatus,
+} from "@/interfaces/processes";
 import { Column, Table } from "@/components/ui/Table";
 import Label from "@/components/ui/Label";
 import DateLabel from "@/components/ui/Date";
@@ -18,6 +22,8 @@ import { truncateTextFromCenter } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import PageLoader from "@/components/ui/PageLoader";
 import { Card } from "@/components/ui/Card";
+import File from "@/components/FileIconCard";
+import { useRouter } from "next/navigation";
 
 const statusLabel = (process: ProcessDetailsResponse) => {
   switch (process.status) {
@@ -68,6 +74,7 @@ const columns: Column<ProcessDetailsResponse>[] = [
 
 export default function Process() {
   const params = useParams();
+  const router = useRouter();
   const processId = (params?.processId as string) || "";
   const projectId = (params?.projectId as string) || "";
   const {
@@ -96,6 +103,10 @@ export default function Process() {
 
   const project = processResponse?.data?.data?.[0]?.process?.project;
   const process = processResponse?.data?.data?.[0]?.process;
+
+  const handleFileClick = (process: ProcessData) => {
+    router.push(`/projects/${projectId}/processes/${process.id}/csv`);
+  };
 
   useEffect(() => {
     if (isError) {
@@ -133,6 +144,15 @@ export default function Process() {
           <Title margin={false}>{process?.name}</Title>
         </div>
       )}
+
+      <div className="pb-4">
+        <File
+          key={process?.id}
+          name={`${process?.name}.csv`}
+          type="spreadsheet"
+          onClick={() => handleFileClick(process)}
+        />
+      </div>
 
       {isLoading ? (
         <PageLoader />
