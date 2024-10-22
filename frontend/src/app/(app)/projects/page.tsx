@@ -64,11 +64,17 @@ export default function Projects() {
   const { data: response, isLoading } = useQuery({
     queryKey: ["projects", page, pageSize],
     queryFn: async () => {
-      const resp = await GetProjects(page, pageSize);
-      if (resp?.data?.data.length == 0) {
-        newProject();
+      try {
+        const resp = await GetProjects(page, pageSize);
+        if (resp?.data?.data.length === 0) {
+          newProject();
+        }
+        return resp;
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+        toast.error("Failed to fetch projects. Please try again.");
+        throw error;
       }
-      return resp;
     },
   });
 
