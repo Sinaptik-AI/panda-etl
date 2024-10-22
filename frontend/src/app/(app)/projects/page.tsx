@@ -63,7 +63,13 @@ export default function Projects() {
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["projects", page, pageSize],
-    queryFn: () => GetProjects(page, pageSize),
+    queryFn: async () => {
+      const resp = await GetProjects(page, pageSize);
+      if (resp?.data?.data.length == 0) {
+        newProject();
+      }
+      return resp;
+    },
   });
 
   const projects: ProjectData[] = response?.data?.data || [];
@@ -77,10 +83,6 @@ export default function Projects() {
   const newProject = () => {
     router.push("/projects/new");
   };
-
-  if (!isLoading && projects?.length === 0) {
-    newProject();
-  }
 
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 

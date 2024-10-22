@@ -105,6 +105,8 @@ export default function Project() {
     hasNextPage,
     isFetchingNextPage,
     isLoading: isAssetsLoading,
+    isFetching: isAssetsFetching,
+    refetch: refetchAssets,
   } = useInfiniteQuery({
     queryKey: ["projectAssets", id],
     queryFn: ({ pageParam = 1 }) => GetProjectAssets(id, pageParam, pageSize),
@@ -200,11 +202,11 @@ export default function Project() {
 
   const handleFileUpload = async (fileList: FileList | null) => {
     if (fileList) {
+      setUploadingFile(true);
       const files = Array.from(fileList);
       setUploadingFiles((prev) => [...prev, ...files]);
 
       try {
-        setUploadingFile(true);
         for (const file of files) {
           const response = await AddProjectAsset(id, file);
 
@@ -216,7 +218,7 @@ export default function Project() {
         setUploadingFile(false);
         setUploadingFiles([]);
         setUploadedFiles([]);
-        queryClient.invalidateQueries({ queryKey: ["projectAssets"] });
+        refetchAssets();
       } catch (error) {
         console.error("Error uploading files:", error);
         setUploadingFiles([]);
@@ -370,7 +372,10 @@ export default function Project() {
 
           {activeTab === "assets" && (
             <>
-              {!uploadingFile && assets && assets?.length === 0 ? (
+              {!uploadingFile &&
+              !isAssetsLoading &&
+              !isAssetsFetching &&
+              (!assets || assets.length === 0) ? (
                 <DragAndDrop
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
