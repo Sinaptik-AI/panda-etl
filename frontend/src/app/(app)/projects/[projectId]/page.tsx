@@ -223,6 +223,7 @@ export default function Project() {
         console.error("Error uploading files:", error);
         setUploadingFiles([]);
         setUploadedFiles([]);
+        setUploadingFile(false);
       }
     }
   };
