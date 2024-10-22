@@ -303,6 +303,12 @@ export default function Project() {
     }
   }, [inView, fetchNextPage, hasNextPage]);
 
+  const shouldShowDragAndDrop =
+    !uploadingFile &&
+    !isAssetsLoading &&
+    !isAssetsFetching &&
+    (!assets || assets.length === 0);
+
   return (
     <>
       <Head>
@@ -373,10 +379,7 @@ export default function Project() {
 
           {activeTab === "assets" && (
             <>
-              {!uploadingFile &&
-              !isAssetsLoading &&
-              !isAssetsFetching &&
-              (!assets || assets.length === 0) ? (
+              {shouldShowDragAndDrop ? (
                 <DragAndDrop
                   onFileSelect={handleFileUpload}
                   accept={[".pdf", "application/pdf"]}
