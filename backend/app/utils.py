@@ -51,13 +51,15 @@ def fetch_html_and_save(url, file_path):
         ),
         "Referer": url,
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
+        # "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
     }
 
     session = requests.Session()
     response = session.get(url, headers=headers)
     response.raise_for_status()
+
+    print(response.content)
 
     # Save the content to a file
     with open(file_path, "wb") as file:

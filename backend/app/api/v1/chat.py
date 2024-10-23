@@ -118,6 +118,8 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
                     if clean_text(original_sentence) in clean_text(sent):
                         best_match_index = index
 
+                print(best_match_index)
+                print(len(doc_metadata))
                 metadata = doc_metadata[best_match_index]
                 sent = doc_sent[best_match_index]
 

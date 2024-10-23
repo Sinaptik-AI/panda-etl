@@ -63,7 +63,19 @@ export default function Projects() {
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["projects", page, pageSize],
-    queryFn: () => GetProjects(page, pageSize),
+    queryFn: async () => {
+      try {
+        const resp = await GetProjects(page, pageSize);
+        if (resp?.data?.data.length === 0) {
+          newProject();
+        }
+        return resp;
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+        toast.error("Failed to fetch projects. Please try again.");
+        throw error;
+      }
+    },
   });
 
   const projects: ProjectData[] = response?.data?.data || [];
@@ -77,10 +89,6 @@ export default function Projects() {
   const newProject = () => {
     router.push("/projects/new");
   };
-
-  if (!isLoading && projects?.length === 0) {
-    newProject();
-  }
 
   const breadcrumbItems = [{ label: "Projects", href: "/" }];
 
