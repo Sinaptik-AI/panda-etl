@@ -58,8 +58,6 @@ def fetch_html_and_save(url, file_path):
     response = session.get(url, headers=headers)
     response.raise_for_status()
 
-    print(response.content)
-
     # Save the content to a file
     with open(file_path, "wb") as file:
         file.write(response.content)
