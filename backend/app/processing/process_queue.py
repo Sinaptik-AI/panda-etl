@@ -263,18 +263,15 @@ def extract_process(api_key, process, process_step, asset_content):
             for source_index, source in enumerate(reference.sources):
                 if len(source) < 30:
 
-                    print("Here...")
                     best_match = find_best_match_for_short_reference(
                         source,
                         all_relevant_docs,
                         process_step.asset.id,
                         process.project_id
                     )
-                    print("Done!~")
                     if best_match:
                         reference.sources[source_index] = best_match["text"]
                         page_numbers.append(best_match["page_number"])
-                        print("Done!~", best_match["page_number"])
 
                 else:
                     relevant_docs = vectorstore.get_relevant_docs(
