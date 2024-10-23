@@ -242,7 +242,7 @@ def extract_process(api_key, process, process_step, asset_content):
 
     if not pdf_content:
         pdf_content = (
-            "\n".join(item["text"] for item in asset_content.content["content"] if "text" in item)
+            "\n".join(item["text"] for item in asset_content.content.get("content", []) if "text" in item)
             if asset_content.content
             else None
         )

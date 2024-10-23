@@ -71,8 +71,8 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None) -> Extract
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f"The file at {file_path} does not exist.")
 
-        file = open(file_path, "rb")
-        files["file"] = (os.path.basename(file_path), file)
+        with open(file_path, "rb") as file:
+            files["file"] = (os.path.basename(file_path), file)
 
     elif pdf_content:
         data["pdf_content"] = pdf_content

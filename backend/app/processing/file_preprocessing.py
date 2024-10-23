@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from app.requests.schemas import TextExtractionResponse
 from sqlalchemy.orm.exc import ObjectDeletedError
 from app.models.asset_content import AssetProcessingStatus
 from app.database import SessionLocal
@@ -88,7 +89,7 @@ def preprocess_file(asset_id: int):
         while retries < settings.max_retries and not success:
             try:
                 # Perform the expensive operation here, without holding the DB connection
-                pdf_content = extract_text_from_file(api_key, asset.path)
+                pdf_content: TextExtractionResponse = extract_text_from_file(api_key, asset.path)
 
                 success = True
 
