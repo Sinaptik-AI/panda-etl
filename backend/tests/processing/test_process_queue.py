@@ -63,7 +63,6 @@ def test_extract_process(mock_chroma, mock_extract_data):
 
     result = extract_process("api_key", process, process_step, asset_content)
 
-    print(result["context"] )
     assert "fields" in result
     assert "context" in result
     assert result["fields"] == [{"field1": "value1"}]
