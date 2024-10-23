@@ -1,5 +1,4 @@
 from functools import wraps
-import os
 from typing import List
 from app.database import SessionLocal
 from app.exceptions import CreditLimitExceededException
@@ -11,11 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 from app.models import ProcessStatus
 from app.requests import (
     extract_data,
-    extract_summary_of_summaries,
-    highlight_sentences_in_pdf,
 )
 from datetime import datetime
-from app.requests import extract_summary
 from app.models.process_step import ProcessStepStatus
 from app.repositories import user_repository
 from app.config import settings
@@ -71,21 +67,7 @@ def process_step_task(
         # Move the expensive external operations out of the DB session
         while retries < settings.max_retries and not success:
             try:
-                if process.type == "extractive_summary":
-                    data = extractive_summary_process(
-                        api_key, process, process_step, asset_content
-                    )
-
-                    if data["summary"]:
-                        summaries.append(data["summary"])
-
-                    # Update process step output outside the expensive operations
-                    with SessionLocal() as db:
-                        update_process_step_status(
-                            db, process_step, ProcessStepStatus.COMPLETED, output=data
-                        )
-
-                elif process.type == "extract":
+                if process.type == "extract":
                     # Handle non-extractive summary process
                     data = extract_process(
                         api_key, process, process_step, asset_content
@@ -152,6 +134,7 @@ def process_task(process_id: int):
 
         all_process_steps_ready = len(ready_process_steps) == len(process_steps) # Check if all process steps are ready
 
+        # Step 3: Concurrently process all process steps
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = [
                 executor.submit(
@@ -167,33 +150,12 @@ def process_task(process_id: int):
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
 
-        # Step 3: Handle summary extraction (expensive operation) outside the DB session
-        summary_of_summaries = None
-        if (
-            "show_final_summary" in process.details
-            and process.details["show_final_summary"]
-        ):
-            logger.log("Extracting summary from summaries")
-
-            if process.output:
-                return
-
-            # Extract summary outside the DB session to avoid holding connection
-            data = extract_summary_of_summaries(
-                api_key, summaries, process.details["transformation_prompt"]
-            )
-            summary_of_summaries = data.get("summary", "")
-            logger.log("Extracting summary from summaries completed")
-
         # Step 4: After all steps are processed, update the process status and output in the DB
         with SessionLocal() as db:
             process = process_repository.get_process(db, process_id)
 
             if process.status != ProcessStatus.STOPPED:
                 # If summary extraction was performed, add it to the process output
-                if summary_of_summaries:
-                    process.output = {"summary": summary_of_summaries}
-
                 if not all_process_steps_ready:
                     logger.info(f"Process id: [{process.id}] some steps preprocessing is missing moving to waiting queue")
                     process_execution_scheduler.add_process_to_queue(process.id)
@@ -205,7 +167,7 @@ def process_task(process_id: int):
                 )
                 process.completed_at = datetime.utcnow()
 
-            db.commit()  # Commit the final status and output
+            db.commit()
 
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -231,57 +193,6 @@ def handle_exceptions(func):
             raise
 
     return wrapper
-
-
-@handle_exceptions
-def extractive_summary_process(api_key, process, process_step, asset_content):
-    try:
-        data = extract_summary(
-            api_token=api_key,
-            config=process.details,
-            file_path=(
-                process_step.asset.path
-                if not asset_content or not asset_content.content
-                else None
-            ),
-            pdf_content=(
-                asset_content.content
-                if asset_content and asset_content.content
-                else None
-            ),
-        )
-    except Exception as e:
-        logger.error(f"Error in extract_summary: {str(e)}")
-        return {
-            "highlighted_pdf": None,
-            "summary": "",
-        }
-
-    summary = data.get("summary", "")
-    summary_sentences = data.get("summary_sentences", "")
-
-    # Create directory for highlighted PDF
-    highlighted_file_dir = os.path.join(
-        settings.process_dir, str(process.id), str(process_step.id)
-    )
-    os.makedirs(highlighted_file_dir, exist_ok=True)
-
-    highlighted_file_path = os.path.join(
-        highlighted_file_dir,
-        f"highlighted_{process_step.asset.filename}",
-    )
-
-    highlight_sentences_in_pdf(
-        api_token=api_key,
-        sentences=summary_sentences,
-        file_path=process_step.asset.path,
-        output_path=highlighted_file_path,
-    )
-
-    return {
-        "highlighted_pdf": highlighted_file_path,
-        "summary": summary,
-    }
 
 
 @handle_exceptions
