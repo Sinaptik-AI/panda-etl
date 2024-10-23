@@ -18,7 +18,7 @@ class TextExtractionResponse(BaseModel):
 class ReferenceData(BaseModel):
     name: str
     sources: List[str]
-    page_numbers: Optional[List[int]] = []
+    page_numbers: Optional[List[int]] = None
 
 
 class ExtractFieldsResponse(BaseModel):

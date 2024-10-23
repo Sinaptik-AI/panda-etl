@@ -35,16 +35,17 @@ def extract_text_from_file(api_token: str, file_path: str, metadata: bool=True) 
     # Prepare the headers with the Bearer token
     headers = {"x-authorization": f"Bearer {api_token}"}
     files = {}
-    file = open(file_path, "rb")
-    files["file"] = (os.path.basename(file_path), file)
 
-    response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/parse",
-        files=files,
-        headers=headers,
-        timeout=360,
-        params={"metadata": metadata}
-    )
+    with open(file_path, "rb") as file:
+        files["file"] = (os.path.basename(file_path), file)
+
+        response = requests.post(
+            f"{settings.pandaetl_server_url}/v1/parse",
+            files=files,
+            headers=headers,
+            timeout=360,
+            params={"metadata": metadata}
+        )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
