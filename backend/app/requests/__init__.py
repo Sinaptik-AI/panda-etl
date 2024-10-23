@@ -1,7 +1,7 @@
 import json
 import os
-from typing import List
 from app.exceptions import CreditLimitExceededException
+from .schemas import ExtractFieldsResponse, TextExtractionResponse
 import requests
 from app.config import settings
 from app.logger import Logger
@@ -31,7 +31,7 @@ def request_api_key(email: str):
     return data.get("message", "No message in response")
 
 
-def extract_text_from_file(api_token: str, file_path: str, type: str):
+def extract_text_from_file(api_token: str, file_path: str, metadata: bool=True) -> TextExtractionResponse:
     # Prepare the headers with the Bearer token
     headers = {"x-authorization": f"Bearer {api_token}"}
     files = {}
@@ -39,15 +39,17 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
     files["file"] = (os.path.basename(file_path), file)
 
     response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/extract/file/content",
+        f"{settings.pandaetl_server_url}/v1/parse",
         files=files,
         headers=headers,
         timeout=360,
+        params={"metadata": metadata}
     )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
-        return response.json()
+        data = response.json()
+        return TextExtractionResponse(**data)
     else:
         logger.error(
             f"Unable to process file ${file_path} during text extraction. It returned {response.status_code} code: {response.text}"
@@ -55,7 +57,7 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
         raise Exception("Unable to process file!")
 
 
-def extract_data(api_token, fields, file_path=None, pdf_content=None):
+def extract_data(api_token, fields, file_path=None, pdf_content=None) -> ExtractFieldsResponse:
     fields_data = fields if isinstance(fields, str) else json.dumps(fields)
 
     # Prepare the headers with the Bearer token
@@ -82,11 +84,17 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         data=data,
         headers=headers,
         timeout=360,
+        params={"references": True}
     )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
-        return response.json()
+
+        data = response.json()
+
+        return ExtractFieldsResponse(
+            **data
+        )
 
     elif response.status_code == 402:
         raise CreditLimitExceededException(
@@ -125,72 +133,6 @@ def extract_field_descriptions(api_token, fields):
         raise Exception("Unable to process file!")
 
 
-def extract_summary(api_token, config, file_path=None, pdf_content=None):
-    config_data = config if isinstance(config, str) else json.dumps(config)
-    pdf_content_data = (
-        config if isinstance(pdf_content, str) else json.dumps(pdf_content)
-    )
-
-    # Prepare the headers with the Bearer token
-    headers = {"x-authorization": f"Bearer {api_token}"}
-
-    # Prepare the data and files dictionaries
-    data = {"config": config_data}
-    files = {}
-
-    if file_path:
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f"The file at {file_path} does not exist.")
-
-        file = open(file_path, "rb")
-        files["file"] = (os.path.basename(file_path), file)
-
-    elif pdf_content:
-        data["content"] = pdf_content_data
-
-    # Send the request
-    response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/extract/summary",
-        files=files if files else None,
-        data=data,
-        headers=headers,
-        timeout=360,
-    )
-    # Check the response status code
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(
-            f"Unable to process file ${file_path} during summary generation. It returned {response.status_code} code: {response.text}"
-        )
-        raise Exception("Unable to process file!")
-
-
-def extract_summary_of_summaries(api_token: str, summaries: List[str], prompt: str):
-
-    # Prepare the headers with the Bearer token
-    headers = {"x-authorization": f"Bearer {api_token}"}
-
-    # Prepare the data and files dictionaries
-    data = {"summaries": summaries, "prompt": prompt}
-
-    # Send the request
-    response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/extract/summary-of-summaries",
-        json=data,
-        headers=headers,
-        timeout=360,
-    )
-    # Check the response status code
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(
-            f"Unable to process files during summary of summaries generation. It returned {response.status_code} code: {response.text}"
-        )
-        raise Exception("Unable to process file!")
-
-
 def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
     # Prepare the headers with the Bearer token
     headers = {"x-authorization": f"Bearer {api_token}"}
@@ -224,43 +166,6 @@ def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
     else:
         logger.error(
             f"Unable to process file ${file_path} during highlight sentences in pdf. It returned {response.status_code} code: {response.text}"
-        )
-        raise Exception("Unable to process file!")
-
-
-def extract_file_segmentation(api_token, file_path=None, pdf_content=None):
-
-    # Prepare the headers with the Bearer token
-    headers = {"x-authorization": f"Bearer {api_token}"}
-
-    # Prepare the data and files dictionaries
-    data = {}
-    files = {}
-
-    if file_path:
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f"The file at {file_path} does not exist.")
-
-        file = open(file_path, "rb")
-        files["file"] = (os.path.basename(file_path), file)
-
-    elif pdf_content:
-        data["pdf_content"] = json.dumps(pdf_content)
-
-    # Send the request
-    response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/extract/file/segment",
-        files=files if files else None,
-        data=data,
-        headers=headers,
-        timeout=360,
-    )
-    # Check the response status code
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(
-            f"Unable to process file ${file_path} during file segmentation. It returned {response.status_code} code: {response.text}"
         )
         raise Exception("Unable to process file!")
 

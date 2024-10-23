@@ -11,11 +11,9 @@ from concurrent.futures import ThreadPoolExecutor
 from app.models import ProcessStatus
 from app.requests import (
     extract_data,
-    extract_summary_of_summaries,
     highlight_sentences_in_pdf,
 )
 from datetime import datetime
-from app.requests import extract_summary
 from app.models.process_step import ProcessStepStatus
 from app.repositories import user_repository
 from app.config import settings
@@ -198,6 +196,7 @@ def process_task(process_id: int):
                 if not all_process_steps_ready:
                     logger.info(f"Process id: [{process.id}] some steps preprocessing is missing moving to waiting queue")
                     process_execution_scheduler.add_process_to_queue(process.id)
+                    db.commit()
                     # Skip status update since not all steps are ready
                     return
 
@@ -345,10 +344,10 @@ def extract_process(api_key, process, process_step, asset_content):
     vectorstore = ChromaDB(f"panda-etl-{process.project_id}", similarity_threshold=3)
     all_relevant_docs = []
 
-    for context in data["context"]:
-        for sources in context:
+    for references in data.references:
+        for reference in references:
             page_numbers = []
-            for source_index, source in enumerate(sources["sources"]):
+            for source_index, source in enumerate(reference.sources):
                 if len(source) < 30:
                     best_match = find_best_match_for_short_reference(
                         source,
@@ -357,7 +356,7 @@ def extract_process(api_key, process, process_step, asset_content):
                         process.project_id
                     )
                     if best_match:
-                        sources["sources"][source_index] = best_match["text"]
+                        reference.sources[source_index] = best_match["text"]
                         page_numbers.append(best_match["page_number"])
                 else:
                     relevant_docs = vectorstore.get_relevant_docs(
@@ -386,7 +385,7 @@ def extract_process(api_key, process, process_step, asset_content):
                             break
 
                     if not match and len(relevant_docs["documents"][0]) > 0:
-                        sources["sources"][source_index] = relevant_docs["documents"][0][0]
+                        reference.sources[source_index] = relevant_docs["documents"][0][0]
                         if relevant_docs["documents"][0]:
                             page_numbers.append(
                                 relevant_docs["metadatas"][0][most_relevant_index]["page_number"]
@@ -400,11 +399,13 @@ def extract_process(api_key, process, process_step, asset_content):
                         )
 
             if page_numbers:
-                sources["page_numbers"] = page_numbers
+                reference.page_numbers = page_numbers
+
+    data_dict = data.model_dump()
 
     return {
-        "fields": data["fields"],
-        "context": data["context"],
+        "fields": data_dict["fields"],
+        "context": data_dict["references"],
     }
 
 def find_best_match_for_short_reference(source, all_relevant_docs, asset_id, project_id, threshold=0.8):
