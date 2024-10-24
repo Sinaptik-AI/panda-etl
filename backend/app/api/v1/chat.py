@@ -98,10 +98,6 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         text_references = []
         not_exact_matched_refs = []
 
-
-        print(response["references"])
-        print("Complete content", content)
-
         for reference in response["references"]:
             sentence = reference["sentence"]
 
