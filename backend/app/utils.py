@@ -1,9 +1,12 @@
 import hashlib
+from typing import List
 from urllib.parse import urlparse
 import uuid
 import requests
 import re
 import string
+
+from bisect import bisect_right
 
 
 def generate_unique_filename(url, extension=".html"):
@@ -63,7 +66,7 @@ def fetch_html_and_save(url, file_path):
         file.write(response.content)
 
 
-def find_sentence_endings(text):
+def find_sentence_endings(text: str) -> List[int]:
     # Regex to find periods, exclamation marks, and question marks followed by a space or the end of the text
     sentence_endings = [match.end() for match in re.finditer(r'[.!?](?:\s|$)', text)]
 
@@ -72,9 +75,16 @@ def find_sentence_endings(text):
 
     return sentence_endings
 
-def find_following_sentence_ending(sentence_endings, index):
-    # Finds the closest following sentence ending
-    for ending in sentence_endings:
-        if ending > index:
-            return ending
-    return index
+def find_following_sentence_ending(sentence_endings: List[int], index: int) -> int:
+    """
+    Find the closest sentence ending that follows the given index.
+
+    Args:
+        sentence_endings: Sorted list of sentence ending positions
+        index: Current position in text
+
+    Returns:
+        Next sentence ending position or original index if none found
+    """
+    pos = bisect_right(sentence_endings, index)
+    return sentence_endings[pos] if pos < len(sentence_endings) else index
