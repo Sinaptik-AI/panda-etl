@@ -4,6 +4,9 @@ import TextEditor from "@/components/editor/TextEditor";
 import "react-data-grid/lib/styles.css";
 import { FaInfoCircle } from "react-icons/fa";
 import ExtractReferenceDrawer from "./ExtractReferenceDrawer";
+import { GetProcessStepReferences } from "@/services/processSteps";
+import { Source } from "@/interfaces/processSteps";
+import toast from "react-hot-toast";
 
 function calculateColumnWidth(
   title: string,
@@ -50,6 +53,28 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     useState<SelectRowColumnType | null>(null);
   const [displayDrawer, setDisplayDrawer] = useState<boolean>(false);
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleRefClick = async (props: SelectRowColumnType) => {
+    setIsLoading(true);
+    try {
+      const data = await GetProcessStepReferences(props.id);
+      const filtered_output = data?.output_reference?.[props.index].filter(
+        (item: Source) => item.name == props.key && item.page_numbers
+      );
+      //  Verify valid reference exists
+      if (filtered_output.length == 0) {
+        toast.error("Couldn't find the reference for this");
+      } else {
+        setSelectRowColumn(props);
+        setDisplayDrawer(true);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch references");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -84,14 +109,14 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                 size={14}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectRowColumn({
+                  handleRefClick({
                     id: props.row.___process_step_id,
                     index: props.row.___extraction_index,
                     filename: props.row.Filename,
                     key: props.column.key,
                   });
-                  setDisplayDrawer(true);
                 }}
+                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
               />
             </div>
           )}

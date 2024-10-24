@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import HighlightPdfViewer from "../ee/components/HighlightPdfViewer";
 import { FlattenedSource, Source } from "@/interfaces/processSteps";
 import { BASE_STORAGE_URL } from "@/constants";
+import { useProcessStepReferences } from "@/hooks/useProcessStepReferences";
 
 interface IProps {
   process_step_id: string;
@@ -24,17 +25,20 @@ const ExtractReferenceDrawer = ({
   index,
   onCancel,
 }: IProps) => {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["processStepReferences", process_step_id],
-    queryFn: async () => {
-      return await GetProcessStepReferences(process_step_id);
-    },
-  });
+  const { data, error, isLoading } = useProcessStepReferences(process_step_id);
 
-  const output = data?.output_reference?.[index]?.[column_name] ?? null;
+  if (error) {
+    return (
+      <Drawer isOpen={isOpen} onClose={onCancel} title={column_name}>
+        <div className="text-black">
+          Failed to load references. Please try again.
+        </div>
+      </Drawer>
+    );
+  }
 
   const filtered_output = data?.output_reference?.[index].filter(
-    (item: Source) => item.name == column_name
+    (item: Source) => item.name == column_name && item.page_numbers
   );
 
   const filteredSourceDetails: FlattenedSource[] = [];
