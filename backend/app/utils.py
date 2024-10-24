@@ -51,7 +51,6 @@ def fetch_html_and_save(url, file_path):
         ),
         "Referer": url,
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
     }
 

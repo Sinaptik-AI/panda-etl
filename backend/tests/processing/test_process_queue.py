@@ -1,3 +1,4 @@
+from app.requests.schemas import ExtractFieldsResponse
 import pytest
 from unittest.mock import Mock, patch
 from app.processing.process_queue import (
@@ -47,10 +48,14 @@ def test_extract_process(mock_chroma, mock_extract_data):
         }]],
         "documents": [["Test document"]]
     }
-    mock_extract_data.return_value = {
-        "fields": {"field1": "value1"},
-        "context": [[{"sources": ["source1"], "page_numbers": [1]}]]
-    }
+    mock_extract_data.return_value = ExtractFieldsResponse(fields=[{"field1": "value1"}],
+        references=[[{
+        "name": "ESG_Reporting_Assurance",
+        "sources": [
+          "Assurance"
+        ]
+      }]]
+        )
 
     process = Mock(id=1, project_id=1, details={"fields": [{"key": "field1"}]})
     process_step = Mock(id=1, asset=Mock(id=1))
@@ -60,8 +65,8 @@ def test_extract_process(mock_chroma, mock_extract_data):
 
     assert "fields" in result
     assert "context" in result
-    assert result["fields"] == {"field1": "value1"}
-    assert result["context"][0][0]["page_numbers"] == [1]
+    assert result["fields"] == [{"field1": "value1"}]
+    assert result["context"] == [[{'name': 'ESG_Reporting_Assurance', 'sources': ['Assurance'], 'page_numbers': None}]]
     mock_extract_data.assert_called_once()
     mock_chroma_instance.get_relevant_docs.assert_called()
 
@@ -158,10 +163,14 @@ def test_find_best_match_for_short_reference_parametrized(mock_findall, short_re
 def test_chroma_db_initialization(mock_extract_data, mock_chroma):
     mock_chroma_instance = Mock()
     mock_chroma.return_value = mock_chroma_instance
-    mock_extract_data.return_value = {
-        "fields": {"field1": "value1"},
-        "context": [[{"sources": ["source1"], "page_numbers": [1]}]]
-    }
+    mock_extract_data.return_value = ExtractFieldsResponse(fields=[{"field1": "value1"}],
+        references=[[{
+        "name": "ESG_Reporting_Assurance",
+        "sources": [
+          "Assurance"
+        ]
+      }]]
+        )
 
     process = Mock(id=1, project_id=1, details={"fields": [{"key": "field1"}]})
     process_step = Mock(id=1, asset=Mock(id=1))

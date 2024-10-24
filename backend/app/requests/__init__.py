@@ -1,6 +1,7 @@
 import json
 import os
 from app.exceptions import CreditLimitExceededException
+from .schemas import ExtractFieldsResponse, TextExtractionResponse
 import requests
 from app.config import settings
 from app.logger import Logger
@@ -30,23 +31,26 @@ def request_api_key(email: str):
     return data.get("message", "No message in response")
 
 
-def extract_text_from_file(api_token: str, file_path: str, type: str):
+def extract_text_from_file(api_token: str, file_path: str, metadata: bool=True) -> TextExtractionResponse:
     # Prepare the headers with the Bearer token
     headers = {"x-authorization": f"Bearer {api_token}"}
     files = {}
-    file = open(file_path, "rb")
-    files["file"] = (os.path.basename(file_path), file)
 
-    response = requests.post(
-        f"{settings.pandaetl_server_url}/v1/extract/file/content",
-        files=files,
-        headers=headers,
-        timeout=360,
-    )
+    with open(file_path, "rb") as file:
+        files["file"] = (os.path.basename(file_path), file)
+
+        response = requests.post(
+            f"{settings.pandaetl_server_url}/v1/parse",
+            files=files,
+            headers=headers,
+            timeout=360,
+            params={"metadata": metadata}
+        )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
-        return response.json()
+        data = response.json()
+        return TextExtractionResponse(**data)
     else:
         logger.error(
             f"Unable to process file ${file_path} during text extraction. It returned {response.status_code} code: {response.text}"
@@ -54,7 +58,7 @@ def extract_text_from_file(api_token: str, file_path: str, type: str):
         raise Exception("Unable to process file!")
 
 
-def extract_data(api_token, fields, file_path=None, pdf_content=None):
+def extract_data(api_token, fields, file_path=None, pdf_content=None) -> ExtractFieldsResponse:
     fields_data = fields if isinstance(fields, str) else json.dumps(fields)
 
     # Prepare the headers with the Bearer token
@@ -68,8 +72,8 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f"The file at {file_path} does not exist.")
 
-        file = open(file_path, "rb")
-        files["file"] = (os.path.basename(file_path), file)
+        with open(file_path, "rb") as file:
+            files["file"] = (os.path.basename(file_path), file)
 
     elif pdf_content:
         data["pdf_content"] = pdf_content
@@ -81,11 +85,17 @@ def extract_data(api_token, fields, file_path=None, pdf_content=None):
         data=data,
         headers=headers,
         timeout=360,
+        params={"references": True}
     )
 
     # Check the response status code
     if response.status_code == 201 or response.status_code == 200:
-        return response.json()
+
+        data = response.json()
+
+        return ExtractFieldsResponse(
+            **data
+        )
 
     elif response.status_code == 402:
         raise CreditLimitExceededException(
