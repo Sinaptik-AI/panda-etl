@@ -65,8 +65,7 @@ const AddFieldsAIDrawer = ({
       <div className="flex flex-col h-full">
         <div className="flex-grow mb-6">
           <p className="text-sm">
-            Add the names of the fields you want to extract and let our magic AI
-            help you out. Separate fields with a comma and press enter.
+            Type a field name and press Enter to add it.
           </p>
         </div>
         <MultiSelectionTextArea

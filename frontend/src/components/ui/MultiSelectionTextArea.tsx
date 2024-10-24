@@ -26,47 +26,55 @@ const MultiSelectionTextArea: React.FC<TextInputProps> = ({
   });
 
   const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setState({ ...state, inputValue: event.target.value });
+    const newValue = event.target.value;
+    const isPaste =
+      event.nativeEvent instanceof InputEvent &&
+      event.nativeEvent.inputType === "insertFromPaste";
+
+    if (isPaste && (newValue.includes(",") || newValue.includes(";"))) {
+      const values = newValue
+        .split(/[,;]/)
+        .map((value) => value.trim())
+        .filter((value) => value !== "");
+      processValues(values);
+    } else {
+      setState({ ...state, inputValue: newValue });
+    }
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" || event.key === ",") {
-      event.preventDefault(); // Prevent default behavior
-
-      const { inputValue, items } = state;
-      const values = inputValue
-        .split(",")
-        .map((value) => value.trim())
-        .filter((value) => value !== "");
-
-      let newItems = [...items];
-      let error = "";
-
-      for (const value of values) {
-        // Validate the input value if validate_text function is provided
-        if (validate_text) {
-          const validationError = validate_text(value);
-          if (validationError) {
-            error = validationError;
-            break; // Stop processing if there's a validation error
-          }
-        }
-        newItems = [...newItems, value];
-      }
-
-      if (error) {
-        setState({ ...state, error });
-        return;
-      }
-
-      // Clear the error message and add the input values to items if they pass validation
-      setState({
-        inputValue: "",
-        items: newItems,
-        error: "",
-      });
-      onUpdate(newItems);
+    if (event.key === "Enter") {
+      event.preventDefault();
+      processValues([state.inputValue]);
     }
+  };
+
+  const processValues = (values: string[]) => {
+    let newItems = [...state.items];
+    let error = "";
+
+    for (const value of values) {
+      if (validate_text) {
+        const validationError = validate_text(value);
+        if (validationError) {
+          error = validationError;
+          break;
+        }
+      }
+      newItems = [...newItems, value];
+    }
+
+    if (error) {
+      setState({ ...state, error });
+      return;
+    }
+
+    setState({
+      inputValue: "",
+      items: newItems,
+      error: "",
+    });
+    onUpdate(newItems);
   };
 
   const handleDelete = (index: number) => {
