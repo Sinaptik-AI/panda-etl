@@ -27,6 +27,16 @@ const ExtractReferenceDrawer = ({
 }: IProps) => {
   const { data, error, isLoading } = useProcessStepReferences(process_step_id);
 
+  if (error) {
+    return (
+      <Drawer isOpen={isOpen} onClose={onCancel} title={column_name}>
+        <div className="text-black">
+          Failed to load references. Please try again.
+        </div>
+      </Drawer>
+    );
+  }
+
   const filtered_output = data?.output_reference?.[index].filter(
     (item: Source) => item.name == column_name && item.page_numbers
   );

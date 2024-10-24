@@ -53,19 +53,26 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     useState<SelectRowColumnType | null>(null);
   const [displayDrawer, setDisplayDrawer] = useState<boolean>(false);
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleRefClick = async (props: SelectRowColumnType) => {
-    const data = await GetProcessStepReferences(props.id);
-    const filtered_output = data?.output_reference?.[props.index].filter(
-      (item: Source) => item.name == props.key && item.page_numbers
-    );
-
-    //  Verify valid reference exists
-    if (filtered_output.length == 0) {
-      toast.error("Couldn't find the reference for this");
-    } else {
-      setSelectRowColumn(props);
-      setDisplayDrawer(true);
+    setIsLoading(true);
+    try {
+      const data = await GetProcessStepReferences(props.id);
+      const filtered_output = data?.output_reference?.[props.index].filter(
+        (item: Source) => item.name == props.key && item.page_numbers
+      );
+      //  Verify valid reference exists
+      if (filtered_output.length == 0) {
+        toast.error("Couldn't find the reference for this");
+      } else {
+        setSelectRowColumn(props);
+        setDisplayDrawer(true);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch references");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,6 +116,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                     key: props.column.key,
                   });
                 }}
+                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
               />
             </div>
           )}
