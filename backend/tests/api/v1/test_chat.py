@@ -15,7 +15,7 @@ def mock_db():
 
 @pytest.fixture
 def mock_vectorstore():
-    with patch("app.vectorstore.chroma.ChromaDB") as mock:
+    with patch("app.api.v1.chat.ChromaDB") as mock:
         yield mock
 
 
@@ -24,15 +24,32 @@ def mock_chat_query():
     with patch("app.api.v1.chat.chat_query") as mock:
         yield mock
 
+
+@pytest.fixture
+def mock_user_repository():
+    with patch("app.repositories.user_repository.get_user_api_key") as mock:
+        yield mock
+
+@pytest.fixture
+def mock_conversation_repository():
+    with patch("app.api.v1.chat.conversation_repository") as mock:
+        yield mock
+
+@pytest.fixture
+def mock_get_assets_filename():
+    with patch("app.repositories.project_repository.get_assets_filename") as mock:
+        yield mock
+
+
 def test_chat_status_endpoint(mock_db):
     # Arrange
     project_id = 1
-    
+
     with patch("app.repositories.project_repository.get_assets_without_content", return_value=[]):
         with patch("app.repositories.project_repository.get_assets_content_pending", return_value=[]):
             # Act
             response = client.get(f"/v1/chat/project/{project_id}/status")
-    
+
     # Assert
     assert response.status_code == 200
     assert response.json()["status"] == "success"
@@ -281,3 +298,119 @@ def test_group_by_start_end_large_values():
     assert len(result) == 1
     assert result[0]["start"] == 1000000 and result[0]["end"] == 1000010
     assert len(result[0]["references"]) == 2
+
+
+def test_chat_endpoint_success(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+    # Arrange
+    project_id = 1
+    chat_request = {
+        "query": "Tell me about sustainability.",
+        "conversation_id": None
+    }
+
+    # Mocking dependencies
+    mock_vectorstore.return_value.get_relevant_segments.return_value = (["Quote 1", "Quote 2"], [1, 2], {})
+    mock_user_repository.return_value.key = "test_api_key"
+    mock_chat_query.return_value = {"response": "Here's a response", "references": []}
+    mock_conversation_repository.create_new_conversation.return_value = MagicMock(id=123)
+    mock_get_assets_filename.return_value = ["file1.pdf", "file2.pdf"]
+
+    # Act
+    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+
+    # Assert
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert response.json()["data"]["conversation_id"] == "123"
+    assert response.json()["data"]["response"] == "Here's a response"
+
+def test_chat_endpoint_creates_conversation(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+    # Arrange
+    project_id = 1
+    chat_request = {
+        "query": "What's the latest on climate change?",
+        "conversation_id": None
+    }
+
+    # Set up mock responses
+    mock_vectorstore.return_value.get_relevant_segments.return_value = (["Quote 1"], [1], {})
+    mock_user_repository.return_value.key = "test_api_key"
+    mock_chat_query.return_value = {"response": "Latest news on climate change", "references": []}
+
+    # Explicitly set the mock to return 456 as the conversation ID
+    mock_conversation_repository.create_new_conversation.return_value = MagicMock(id=456)
+    mock_get_assets_filename.return_value = ["file1.pdf"]
+
+    # Act
+    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+
+    # Assert
+    assert response.status_code == 200
+    assert response.json()["data"]["conversation_id"] == "456"
+    assert mock_conversation_repository.create_new_conversation.called
+
+def test_chat_endpoint_error_handling(mock_db, mock_vectorstore, mock_chat_query):
+    # Arrange
+    project_id = 1
+    chat_request = {
+        "query": "An error should occur.",
+        "conversation_id": None
+    }
+
+    mock_vectorstore.return_value.get_relevant_segments.side_effect = Exception("Database error")
+
+    # Act
+    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+
+    # Assert
+    assert response.status_code == 400
+    assert "Unable to process the chat query" in response.json()["detail"]
+
+def test_chat_endpoint_reference_processing(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+    # Arrange
+    project_id = 1
+    chat_request = {
+        "query": "Reference query.",
+        "conversation_id": None
+    }
+
+    mock_vectorstore.return_value.get_relevant_segments.return_value = (["Reference Quote"], [1], [{"asset_id":1, "project_id": project_id,"filename": "test.pdf","page_number": 1}])
+    mock_user_repository.return_value.key = "test_api_key"
+    mock_chat_query.return_value = {
+        "response": "Response with references",
+        "references": [
+            {
+                "sentence": "Reference Quote",
+                "references": [{"file": "file1.pdf", "sentence": "Original sentence"}]
+            }
+        ]
+    }
+    mock_conversation_repository.create_new_conversation.return_value.id = 789
+    mock_get_assets_filename.return_value = ["file1.pdf"]
+
+    # Act
+    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+
+    # Assert
+    assert response.status_code == 200
+    assert len(response.json()["data"]["response_references"]) > 0
+
+def test_chat_endpoint_with_conversation_id(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+    # Arrange
+    project_id = 1
+    chat_request = {
+        "query": "Chat with conversation.",
+        "conversation_id": "existing_convo_id"
+    }
+
+    mock_vectorstore.return_value.get_relevant_segments.return_value = (["Quote"], [1], {})
+    mock_user_repository.return_value.key = "test_api_key"
+    mock_chat_query.return_value = {"response": "Response with existing conversation", "references": []}
+    mock_get_assets_filename.return_value = ["file1.pdf"]
+
+    # Act
+    response = client.post(f"/v1/chat/project/{project_id}", json=chat_request)
+
+    # Assert
+    assert response.status_code == 200
+    assert response.json()["data"]["conversation_id"] == "existing_convo_id"
