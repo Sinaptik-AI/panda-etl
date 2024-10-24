@@ -61,3 +61,20 @@ def fetch_html_and_save(url, file_path):
     # Save the content to a file
     with open(file_path, "wb") as file:
         file.write(response.content)
+
+
+def find_sentence_endings(text):
+    # Regex to find periods, exclamation marks, and question marks followed by a space or the end of the text
+    sentence_endings = [match.end() for match in re.finditer(r'[.!?](?:\s|$)', text)]
+
+    # Add the last index of the text as an additional sentence ending
+    sentence_endings.append(len(text))
+
+    return sentence_endings
+
+def find_following_sentence_ending(sentence_endings, index):
+    # Finds the closest following sentence ending
+    for ending in sentence_endings:
+        if ending > index:
+            return ending
+    return index
