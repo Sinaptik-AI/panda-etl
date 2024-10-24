@@ -11,7 +11,7 @@ from app.repositories import (
     user_repository,
 )
 from app.requests import chat_query
-from app.utils import clean_text
+from app.utils import clean_text, find_following_sentence_ending, find_sentence_endings
 from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -94,6 +94,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
         content = response["response"]
         content_length = len(content)
         clean_content = clean_text(content)
+        context_sentence_endings = find_sentence_endings(content)
         text_references = []
         not_exact_matched_refs = []
 
@@ -121,7 +122,11 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
                 metadata = doc_metadata[best_match_index]
                 sent = doc_sent[best_match_index]
 
+                # find sentence start index of reference in the context
                 index = clean_content.find(clean_text(sentence))
+
+                # Find the following sentence end from the end index
+                reference_ending_index = find_following_sentence_ending(context_sentence_endings, index + len(sentence))
 
                 if index != -1:
                     text_reference = {
@@ -131,7 +136,7 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
                         "filename": original_filename,
                         "source": [sent],
                         "start": index,
-                        "end": index + len(sentence),
+                        "end": reference_ending_index,
                     }
                     text_references.append(text_reference)
                 else:
