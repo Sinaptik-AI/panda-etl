@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from app.requests.schemas import TextExtractionResponse
 from sqlalchemy.orm.exc import ObjectDeletedError
 from app.models.asset_content import AssetProcessingStatus
 from app.database import SessionLocal
@@ -27,22 +28,22 @@ def process_segmentation(project_id: int, asset_id: int, asset_file_name: str):
         with SessionLocal() as db:
             asset_content = project_repository.get_asset_content(db, asset_id)
 
-        # segmentation = extract_file_segmentation(
-        #     api_token=api_key, pdf_content=asset_content.content
-        # )
-
         vectorstore = ChromaDB(f"panda-etl-{project_id}")
-        vectorstore.add_docs(
-            docs=asset_content.content["content"],
-            metadatas=[
-                {
+
+        docs = []
+        metadatas = []
+        for content in asset_content.content["content"]:
+            docs.append(content["text"])
+            metadatas.append({
                     "asset_id": asset_id,
                     "filename": asset_file_name,
                     "project_id": project_id,
-                    "page_number": asset_content.content["page_number_data"][index],
-                }
-                for index, _ in enumerate(asset_content.content["content"])
-            ],
+                    **(content["metadata"] if content.get("metadata") else {"page_number": 1}),  # Unpack all metadata or default to page_number: 1
+                })
+
+        vectorstore.add_docs(
+            docs=docs,
+            metadatas=metadatas
         )
 
         project_repository.update_asset_content_status(
@@ -88,7 +89,7 @@ def preprocess_file(asset_id: int):
         while retries < settings.max_retries and not success:
             try:
                 # Perform the expensive operation here, without holding the DB connection
-                pdf_content = extract_text_from_file(api_key, asset.path, asset.type)
+                pdf_content: TextExtractionResponse = extract_text_from_file(api_key, asset.path)
 
                 success = True
 
@@ -111,7 +112,7 @@ def preprocess_file(asset_id: int):
         if success and pdf_content:
             with SessionLocal() as db:
                 asset_content = project_repository.update_or_add_asset_content(
-                    db, asset_id, pdf_content
+                    db, asset_id, pdf_content.model_dump()
                 )
                 # Submit the segmentation task once the content is saved
                 file_segmentation_executor.submit(
