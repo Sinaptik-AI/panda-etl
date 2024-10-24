@@ -27,7 +27,7 @@ def mock_chat_query():
 
 @pytest.fixture
 def mock_user_repository():
-    with patch("app.repositories.user_repository.get_user_api_key") as mock:
+    with patch("app.api.v1.chat.user_repository.get_user_api_key") as mock:
         yield mock
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def mock_conversation_repository():
 
 @pytest.fixture
 def mock_get_assets_filename():
-    with patch("app.repositories.project_repository.get_assets_filename") as mock:
+    with patch("app.api.v1.chat.project_repository.get_assets_filename") as mock:
         yield mock
 
 
