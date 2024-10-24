@@ -30,6 +30,12 @@ def mock_user_repository():
     with patch("app.api.v1.chat.user_repository.get_user_api_key") as mock:
         yield mock
 
+
+@pytest.fixture
+def mock_get_users_repository():
+    with patch("app.api.v1.chat.user_repository.get_users") as mock:
+        yield mock
+
 @pytest.fixture
 def mock_conversation_repository():
     with patch("app.api.v1.chat.conversation_repository") as mock:
@@ -300,7 +306,7 @@ def test_group_by_start_end_large_values():
     assert len(result[0]["references"]) == 2
 
 
-def test_chat_endpoint_success(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+def test_chat_endpoint_success(mock_db, mock_get_users_repository, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
     # Arrange
     project_id = 1
     chat_request = {
@@ -313,6 +319,7 @@ def test_chat_endpoint_success(mock_db, mock_vectorstore, mock_chat_query, mock_
     mock_user_repository.return_value.key = "test_api_key"
     mock_chat_query.return_value = {"response": "Here's a response", "references": []}
     mock_conversation_repository.create_new_conversation.return_value = MagicMock(id=123)
+    mock_get_users_repository.return_value = MagicMock(id=1)
     mock_get_assets_filename.return_value = ["file1.pdf", "file2.pdf"]
 
     # Act
@@ -324,7 +331,7 @@ def test_chat_endpoint_success(mock_db, mock_vectorstore, mock_chat_query, mock_
     assert response.json()["data"]["conversation_id"] == "123"
     assert response.json()["data"]["response"] == "Here's a response"
 
-def test_chat_endpoint_creates_conversation(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+def test_chat_endpoint_creates_conversation(mock_db, mock_get_users_repository, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
     # Arrange
     project_id = 1
     chat_request = {
@@ -339,6 +346,7 @@ def test_chat_endpoint_creates_conversation(mock_db, mock_vectorstore, mock_chat
 
     # Explicitly set the mock to return 456 as the conversation ID
     mock_conversation_repository.create_new_conversation.return_value = MagicMock(id=456)
+    mock_get_users_repository.return_value = MagicMock(id=1)
     mock_get_assets_filename.return_value = ["file1.pdf"]
 
     # Act
@@ -366,7 +374,7 @@ def test_chat_endpoint_error_handling(mock_db, mock_vectorstore, mock_chat_query
     assert response.status_code == 400
     assert "Unable to process the chat query" in response.json()["detail"]
 
-def test_chat_endpoint_reference_processing(mock_db, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
+def test_chat_endpoint_reference_processing(mock_db, mock_get_users_repository, mock_vectorstore, mock_chat_query, mock_user_repository, mock_conversation_repository, mock_get_assets_filename):
     # Arrange
     project_id = 1
     chat_request = {
@@ -386,6 +394,7 @@ def test_chat_endpoint_reference_processing(mock_db, mock_vectorstore, mock_chat
         ]
     }
     mock_conversation_repository.create_new_conversation.return_value.id = 789
+    mock_get_users_repository.return_value = MagicMock(id=1)
     mock_get_assets_filename.return_value = ["file1.pdf"]
 
     # Act
