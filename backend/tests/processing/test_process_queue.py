@@ -66,7 +66,6 @@ def test_extract_process(mock_chroma, mock_extract_data):
     assert "fields" in result
     assert "context" in result
     assert result["fields"] == [{"field1": "value1"}]
-    print(result["context"])
     assert result["context"] == [[{'name': 'ESG_Reporting_Assurance', 'sources': ['Assurance'], 'page_numbers': None}]]
     mock_extract_data.assert_called_once()
     mock_chroma_instance.get_relevant_docs.assert_called()
