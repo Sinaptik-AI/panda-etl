@@ -1,4 +1,5 @@
 from typing import List
+from app.exceptions import CreditLimitExceededException
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -98,6 +99,11 @@ async def get_field_descriptions(
                     "message": "Field descriptions generated successfully.",
                     "data": data,
                 }
+
+            except CreditLimitExceededException:
+                raise HTTPException(
+                    status_code=400, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
+                )
 
             except Exception as e:
                 logger.error(e)
