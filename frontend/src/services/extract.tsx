@@ -39,10 +39,18 @@ export const GetAIFieldDescriptions = async (
     );
     return response;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.data?.error) {
-      throw new Error(error.response.data.error);
+    if (axios.isAxiosError(error)) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.detail);
+      } else {
+        throw new Error(
+          "Failed to generate AI field descriptions. Please try again."
+        );
+      }
     } else {
-      throw new Error("Failed to extract data. Please try again.");
+      throw new Error(
+        "Failed to generate AI field descriptions. Please try again."
+      );
     }
   }
 };
