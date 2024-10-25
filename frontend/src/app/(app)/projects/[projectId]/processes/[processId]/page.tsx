@@ -130,6 +130,8 @@ export default function Process() {
     },
   ];
 
+  console.log("CSV:: ", process);
+
   return (
     <>
       <Head>
@@ -145,14 +147,16 @@ export default function Process() {
         </div>
       )}
 
-      <div className="pb-4">
-        <File
-          key={process?.id}
-          name={`${process?.name}.csv`}
-          type="spreadsheet"
-          onClick={() => handleFileClick(process)}
-        />
-      </div>
+      {process && process.status == ProcessStatus.COMPLETED && (
+        <div className="pb-4">
+          <File
+            key={process?.id}
+            name={`${process.name}.csv`}
+            type="spreadsheet"
+            onClick={() => handleFileClick(process)}
+          />
+        </div>
+      )}
 
       {isLoading ? (
         <PageLoader />
