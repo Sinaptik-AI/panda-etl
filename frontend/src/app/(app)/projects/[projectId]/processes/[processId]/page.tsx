@@ -130,8 +130,6 @@ export default function Process() {
     },
   ];
 
-  console.log("CSV:: ", process);
-
   return (
     <>
       <Head>
