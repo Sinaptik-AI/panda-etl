@@ -31,9 +31,9 @@ const MultiSelectionTextArea: React.FC<TextInputProps> = ({
       event.nativeEvent instanceof InputEvent &&
       event.nativeEvent.inputType === "insertFromPaste";
 
-    if (isPaste && (newValue.includes(",") || newValue.includes(";"))) {
+    if (isPaste && /[,;\n]/.test(newValue)) {
       const values = newValue
-        .split(/[,;]/)
+        .split(/[,;\n]/)
         .map((value) => value.trim())
         .filter((value) => value !== "");
       processValues(values);
