@@ -1,6 +1,7 @@
 import json
 import os
 from app.exceptions import CreditLimitExceededException
+from fastapi import HTTPException
 from .schemas import ExtractFieldsResponse, TextExtractionResponse
 import requests
 from app.config import settings
@@ -124,14 +125,19 @@ def extract_field_descriptions(api_token, fields):
         headers=headers,
         timeout=360,
     )
-    # Check the response status code
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
-    else:
+    if response.status_code not in [200, 201]:
         logger.error(
-            f"Unable to process file during field description generation. It returned {response.status_code} code: {response.text}"
+            f"Failed to field description. It returned {response.status_code} code: {response.text}"
         )
-        raise Exception("Unable to process file!")
+        if response.status_code == 402:
+            raise CreditLimitExceededException(
+                response.json().get("detail", "Credit limit exceeded!")
+            )
+
+        raise HTTPException(response.json().get("detail", "Failed to fetch field description"))
+
+    # Check the response status code
+    return response.json()
 
 
 def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
@@ -203,13 +209,13 @@ def get_user_usage_data(api_token: str):
 
     response = requests.post(url, headers=headers)
 
-    if response.status_code not in [200, 201]:
-        logger.error(
-            f"Failed to fetch usage data. It returned {response.status_code} code: {response.text}"
-        )
-        raise Exception("Failed to fetch usage data")
-
     try:
+        if response.status_code not in [200, 201]:
+            logger.error(
+                f"Failed to fetch usage data. It returned {response.status_code} code: {response.text}"
+            )
+            raise Exception(response.text)
+
         return response.json()
     except requests.exceptions.JSONDecodeError:
         logger.error(f"Invalid JSON response from API server: {response.text}")
