@@ -2,6 +2,7 @@ import { GetRequest, PostRequest, PutRequest } from "@/lib/requests";
 import { APIKeyData } from "@/interfaces/user";
 import { UserData } from "@/interfaces/user";
 import localStorage from "@/lib/localStorage";
+import { trackEvent } from "@/lib/mixpanelLib";
 
 const userApiUrl = "/user";
 
@@ -11,6 +12,7 @@ export const APIKeyRequest = async (data: { email: string }) => {
       `${userApiUrl}/request-api-key`,
       data
     );
+    trackEvent("API Key Request", data);
     return response;
   } catch (error) {
     throw error;
@@ -24,6 +26,7 @@ export const SaveAPIKey = async (data: { api_key: string }) => {
       data
     );
     localStorage.setItem("api_key", data.api_key);
+    trackEvent("API Key Activation", data);
     return response;
   } catch (error) {
     throw error;

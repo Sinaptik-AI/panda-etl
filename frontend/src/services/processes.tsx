@@ -6,6 +6,7 @@ import {
   ProcessResumeData,
   ProcessSuggestionRequest,
 } from "@/interfaces/processes";
+import { trackEvent } from "@/lib/mixpanelLib";
 
 export const processApiUrl = "/processes";
 
@@ -35,6 +36,7 @@ export const StartProcess = async (data: ProcessRequest) => {
       `${processApiUrl}/start`,
       data
     );
+    trackEvent("Start Process", data);
     return response;
   } catch (error) {
     throw error;
