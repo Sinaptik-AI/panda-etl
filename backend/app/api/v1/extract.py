@@ -102,7 +102,7 @@ async def get_field_descriptions(
 
             except CreditLimitExceededException:
                 raise HTTPException(
-                    status_code=400, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
+                    status_code=402, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
                 )
 
             except Exception as e:

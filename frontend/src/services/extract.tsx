@@ -43,10 +43,14 @@ export const GetAIFieldDescriptions = async (
       if (error.response?.data) {
         throw new Error(error.response.data.detail);
       } else {
-        throw new Error("Failed to extract data. Please try again.");
+        throw new Error(
+          "Failed to generate AI field descriptions. Please try again."
+        );
       }
     } else {
-      throw new Error("Failed to extract data. Please try again.");
+      throw new Error(
+        "Failed to generate AI field descriptions. Please try again."
+      );
     }
   }
 };

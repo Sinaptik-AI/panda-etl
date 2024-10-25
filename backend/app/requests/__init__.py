@@ -137,13 +137,7 @@ def extract_field_descriptions(api_token, fields):
         raise HTTPException(response.json().get("detail", "Failed to fetch field description"))
 
     # Check the response status code
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(
-            f"Unable to process file during field description generation. It returned {response.status_code} code: {response.text}"
-        )
-        raise Exception("Unable to process file!")
+    return response.json()
 
 
 def highlight_sentences_in_pdf(api_token, sentences, file_path, output_path):
