@@ -28,7 +28,7 @@ export const SaveAPIKey = async (data: { api_key: string }) => {
     localStorage.setItem("api_key", data.api_key);
     trackEvent("API Key Activation", {
       timestamp: new Date().toISOString(),
-      success: true
+      success: true,
     });
     return response;
   } catch (error) {
