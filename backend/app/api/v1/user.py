@@ -70,13 +70,13 @@ def get_user_api_key(db: Session = Depends(get_db)):
 
 @user_router.get("/getme", status_code=200)
 def get_me(db: Session = Depends(get_db)):
-    user_email = "john.doe@example.com"
-    user = user_repository.get_user(db, user_email)
+    users = user_repository.get_users(db, n=1)
+
 
     return {
         "status": "success",
         "message": "User details returned successfully!",
-        "data": user,
+        "data": users[0] if len(users) > 0 else None,
     }
 
 

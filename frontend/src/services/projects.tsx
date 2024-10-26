@@ -9,6 +9,7 @@ import { AssetData } from "@/interfaces/assets";
 import { ProcessData } from "@/interfaces/processes";
 import { BASE_API_URL } from "@/constants";
 import { AxiosResponse } from "axios";
+import { trackEvent } from "@/lib/mixpanelLib";
 
 const projectsApiUrl = "/projects";
 
@@ -49,6 +50,8 @@ export const CreateProject = async (data: {
       projectsApiUrl,
       data
     );
+
+    trackEvent("Project created", { data });
     return response;
   } catch (error) {
     throw error;
@@ -158,7 +161,6 @@ export const DeleteAssets = async (projectId: string, assetId: string) => {
   }
 };
 
-// Add this new function to update a project
 export const UpdateProject = async (
   projectId: string,
   data: { name: string; description: string }
