@@ -9,6 +9,7 @@ import DataTable from "@/components/DataTable";
 import Papa from "papaparse";
 import { BASE_API_URL } from "@/constants";
 import { toast } from "react-hot-toast";
+import { trackEvent } from "@/lib/mixpanelLib";
 
 const ProcessPage = () => {
   const router = useRouter();
@@ -55,6 +56,8 @@ const ProcessPage = () => {
         },
         header: true,
       });
+
+      trackEvent("Table opened", { url: `process_${processId}.csv` });
     } catch (error) {
       console.error("Error loading CSV data:", error);
       setIsLoading(false);
@@ -77,6 +80,7 @@ const ProcessPage = () => {
       document.body.removeChild(a);
 
       // Show success toast
+      trackEvent("Download CSV", { url: `process_${processId}.csv` });
       toast.success("CSV downloaded successfully");
     } catch (error) {
       console.error("Error downloading CSV:", error);
