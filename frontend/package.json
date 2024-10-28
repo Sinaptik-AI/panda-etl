@@ -16,6 +16,7 @@
     "@radix-ui/react-context-menu": "^2.2.1",
     "@radix-ui/react-radio-group": "^1.2.0",
     "@react-pdf/renderer": "^4.0.0",
+    "@rollbar/react": "^0.12.0-beta",
     "@tanstack/react-query": "^5.51.1",
     "@tippyjs/react": "^4.2.6",
     "@types/mixpanel-browser": "^2.50.1",
@@ -39,6 +40,7 @@
     "react-quill": "^2.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.0",
+    "rollbar": "^2.26.4",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
