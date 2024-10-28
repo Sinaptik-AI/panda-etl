@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_embedding_model: str = "text-embedding-ada-002"
 
+    # Extraction References for chat
+    chat_extraction_doc_threshold: float = 0.5
+    chat_extraction_max_docs: int = 50
+
     class Config:
         env_file = ".env"
 

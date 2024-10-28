@@ -92,7 +92,7 @@ def process_step_task(
                                                         filename=filename,
                                                         references=data["context"])
                     except Exception :
-                        logger.error(f"Failed to vectorize extraction results for chat {traceback.print_exc()}")
+                        logger.error(f"Failed to vectorize extraction results for chat {traceback.format_exc()}")
 
                 success = True
 
