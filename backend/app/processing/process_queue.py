@@ -46,8 +46,9 @@ def process_step_task(
         # Initial DB operations (open and fetch relevant data)
         with SessionLocal() as db:
             process = process_repository.get_process(db, process_id)
+            project_id = process.project_id
             process_step = process_repository.get_process_step(db, process_step_id)
-
+            filename =  process_step.asset.filename
             if process.status == ProcessStatus.STOPPED:
                 return False  # Stop processing if the process is stopped
 
@@ -83,6 +84,15 @@ def process_step_task(
                             output=data["fields"],
                             output_references=data["context"],
                         )
+
+                    # vectorize extraction result
+                    try:
+                        vectorize_extraction_process_step(project_id=project_id,
+                                                        process_step_id=process_step_id,
+                                                        filename=filename,
+                                                        references=data["context"])
+                    except Exception :
+                        logger.error(f"Failed to vectorize extraction results for chat {traceback.print_exc()}")
 
                 success = True
 
@@ -361,3 +371,39 @@ def update_process_step_status(
     process_repository.update_process_step_status(
         db, process_step, status, output=output, output_references=output_references
     )
+
+def vectorize_extraction_process_step(project_id: int, process_step_id: int, filename: str, references: dict) -> None:
+    # Vectorize extraction result and dump in database
+    field_references = {}
+
+    # Loop to concatenate sources for each reference
+    for extraction_references in references:
+        for extraction_reference in extraction_references:
+            sources = extraction_reference.get("sources", [])
+            if sources:
+                sources_catenated = "\n".join(sources)
+                field_references.setdefault(extraction_reference["name"], "")
+                field_references[extraction_reference["name"]] += (
+                    "\n" + sources_catenated if field_references[extraction_reference["name"]] else sources_catenated
+                )
+
+    # Only proceed if there are references to add
+    if not field_references:
+        return
+
+    # Initialize Vectorstore
+    vectorstore = ChromaDB(f"panda-etl-extraction-{project_id}")
+
+    docs = [f"{filename} {key}" for key in field_references]
+    metadatas = [
+        {
+            "project_id": project_id,
+            "process_step_id": process_step_id,
+            "filename": filename,
+            "reference": reference
+        }
+        for reference in field_references.values()
+    ]
+
+    # Add documents to vectorstore
+    vectorstore.add_docs(docs=docs, metadatas=metadatas)
