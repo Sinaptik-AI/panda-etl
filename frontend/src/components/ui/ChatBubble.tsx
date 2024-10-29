@@ -4,15 +4,23 @@ import rehypeSanitize from "rehype-sanitize";
 import { markify_text } from "@/lib/utils";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import ChatReferenceDrawer from "../ChatReferenceDrawer";
-import { FileIcon, BookOpen, ChevronDown, ExternalLink } from "lucide-react";
+import {
+  FileIcon,
+  BookOpen,
+  ChevronDown,
+  ExternalLink,
+  FilePenLine,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MessageWithReferences from "./MessageWithReferences";
+import TooltipWrapper from "./Tooltip";
 
 interface ChatBubbleProps {
   message: string;
   timestamp: Date;
   sender: "user" | "bot";
   references?: ChatReferences[];
+  onAddToDraft?: () => void;
 }
 
 export const ChatBubbleWrapper: React.FC<{
@@ -35,6 +43,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   timestamp,
   references,
   sender,
+  onAddToDraft,
 }) => {
   const [selectedReference, setSelectedReference] = useState<
     ChatReference | undefined
@@ -123,6 +132,19 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   return (
     <div className="flex flex-col max-w-2xl">
       <ChatBubbleWrapper sender={sender}>
+        {/* Add to draft button for chat */}
+        {sender == "bot" && onAddToDraft && (
+          <div className="w-full flex justify-end">
+            <TooltipWrapper content={"Add to draft"}>
+              <FilePenLine
+                width={18}
+                className="hover:cursor-pointer"
+                onClick={onAddToDraft}
+              />
+            </TooltipWrapper>
+          </div>
+        )}
+
         {references && references.length > 0 ? (
           <MessageWithReferences
             message={message}

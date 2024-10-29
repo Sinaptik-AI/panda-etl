@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import ChatBubble from "@/components/ui/ChatBubble";
 import { ChatReferences } from "@/interfaces/chat";
+import ChatDraftDrawer from "./ChatDraftDrawer";
+import { FilePenLine } from "lucide-react";
 
 export const NoChatPlaceholder = ({ isLoading }: { isLoading: boolean }) => {
   return (
@@ -36,10 +38,17 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface ChatDraft {
+  draft: string;
+  draftedMessageIndexes: Array<number>;
+}
+
 interface ChatProps {
   project_id?: string;
   messages: Array<ChatMessage>;
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  chatDraft: ChatDraft;
+  setChatDraft: React.Dispatch<React.SetStateAction<ChatDraft>>;
   chatEnabled: boolean;
   setChatEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -48,6 +57,8 @@ const ChatBox = ({
   project_id,
   messages,
   setMessages,
+  chatDraft,
+  setChatDraft,
   chatEnabled,
   setChatEnabled,
 }: ChatProps) => {
@@ -55,6 +66,8 @@ const ChatBox = ({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLInputElement | null>(null);
+  const [openChatDraftDrawer, setOpenChatDraftDrawer] =
+    useState<boolean>(false);
 
   const { data: statusData, isLoading } = useQuery({
     queryKey: ["chatStatus", project_id],
@@ -92,6 +105,34 @@ const ChatBox = ({
     setConversationId(response.conversation_id);
   };
 
+  const handleAddToDraft = (index: number) => {
+    setOpenChatDraftDrawer(true);
+
+    const new_draft =
+      chatDraft.draft +
+      `<br/><p><strong>${messages[index - 1].text}</strong></p><p>${messages[index].text}</p>`;
+
+    setChatDraft({
+      draft: new_draft,
+      draftedMessageIndexes: [...chatDraft.draftedMessageIndexes, index],
+    });
+  };
+
+  const onCloseChatDraft = () => {
+    setOpenChatDraftDrawer(false);
+  };
+
+  const onOpenChatDraft = () => {
+    setOpenChatDraftDrawer(true);
+  };
+
+  const handleDraftEdit = (draft: string) => {
+    setChatDraft({
+      draft: draft,
+      draftedMessageIndexes: [...chatDraft.draftedMessageIndexes],
+    });
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -126,6 +167,7 @@ const ChatBox = ({
                   timestamp={message.timestamp}
                   references={message.references}
                   sender={message.sender as "user" | "bot"}
+                  onAddToDraft={() => handleAddToDraft(index)}
                 />
               </motion.div>
             ))}
@@ -165,14 +207,24 @@ const ChatBox = ({
                 containerStyle="w-full"
               />
             </div>
-            <div>
+            <div className="flex justify-center gap-2">
               <Button onClick={handleSend} variant="secondary">
                 Send
+              </Button>
+              <Button onClick={onOpenChatDraft} variant="secondary">
+                <FilePenLine width={18} />
               </Button>
             </div>
           </div>
         </>
       )}
+
+      <ChatDraftDrawer
+        isOpen={openChatDraftDrawer}
+        draft={chatDraft?.draft}
+        onCancel={onCloseChatDraft}
+        onSubmit={handleDraftEdit}
+      />
     </div>
   );
 };
