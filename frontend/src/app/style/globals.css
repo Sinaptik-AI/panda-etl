@@ -268,3 +268,8 @@ tr:hover .action-icons {
   margin: 0; /* Remove default margins */
   padding: 0; /* Remove default padding */
 }
+
+.ql-editor {
+  max-height: 80vh; /* Set fixed max height */
+  overflow-y: auto; /* Enable scrolling */
+}

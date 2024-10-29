@@ -74,6 +74,12 @@ export default function Project() {
   const [messages, setMessages] = useState<
     Array<{ sender: string; text: string; timestamp: Date }>
   >([]);
+
+  const [chatDraft, setChatDraft] = useState<{
+    draft: string;
+    draftedMessageIndexes: Array<number>;
+  }>({ draft: "", draftedMessageIndexes: [] });
+
   const [chatEnabled, setChatEnabled] = useState<boolean>(false);
   const [processType, setProcessType] = useState<string | null>(null);
   const { ref, inView } = useInView();
@@ -446,6 +452,8 @@ export default function Project() {
               project_id={project?.id}
               messages={messages}
               setMessages={setMessages}
+              chatDraft={chatDraft}
+              setChatDraft={setChatDraft}
               chatEnabled={chatEnabled}
               setChatEnabled={setChatEnabled}
             />

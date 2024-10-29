@@ -4,15 +4,23 @@ import rehypeSanitize from "rehype-sanitize";
 import { markify_text } from "@/lib/utils";
 import { ChatReference, ChatReferences } from "@/interfaces/chat";
 import ChatReferenceDrawer from "../ChatReferenceDrawer";
-import { FileIcon, BookOpen, ChevronDown, ExternalLink } from "lucide-react";
+import {
+  FileIcon,
+  BookOpen,
+  ChevronDown,
+  ExternalLink,
+  FilePenLine,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MessageWithReferences from "./MessageWithReferences";
+import TooltipWrapper from "./Tooltip";
 
 interface ChatBubbleProps {
   message: string;
   timestamp: Date;
   sender: "user" | "bot";
   references?: ChatReferences[];
+  onAddToDraft?: () => void;
 }
 
 export const ChatBubbleWrapper: React.FC<{
@@ -35,6 +43,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   timestamp,
   references,
   sender,
+  onAddToDraft,
 }) => {
   const [selectedReference, setSelectedReference] = useState<
     ChatReference | undefined
@@ -135,9 +144,25 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
             {markify_text(message)}
           </ReactMarkdown>
         )}
-        <div className="text-xs text-gray-500 mt-2 text-right">
-          {timestamp.toLocaleTimeString()}
-        </div>
+        {/* Add to draft button for chat */}
+        {sender == "bot" && onAddToDraft ? (
+          <div className="w-full flex justify-between">
+            <div className="text-xs text-gray-500 mt-2 text-right">
+              {timestamp.toLocaleTimeString()}
+            </div>
+            <TooltipWrapper content={"Add to draft"}>
+              <FilePenLine
+                width={18}
+                className="hover:cursor-pointer"
+                onClick={onAddToDraft}
+              />
+            </TooltipWrapper>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500 mt-2 text-left">
+            {timestamp.toLocaleTimeString()}
+          </div>
+        )}
       </ChatBubbleWrapper>
 
       {references && references.length > 0 && (
