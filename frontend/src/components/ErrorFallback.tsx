@@ -1,43 +1,33 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/Button";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
-// Define the props that the ErrorFallback will receive
 interface ErrorFallbackProps {
   error: Error | null;
   resetError: () => void;
 }
 
-// Fallback UI component displayed on error
 interface ErrorFallbackBaseProps extends ErrorFallbackProps {
   textColor: string;
 }
 
+// Fallback UI component displayed on error
 const ErrorFallbackBase = ({
   error,
   resetError,
   textColor,
 }: ErrorFallbackBaseProps) => {
-  const router = useRouter();
+  const pathname = usePathname();
+  const [initialPathname, setInitialPathname] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleRouteChange = () => {
-      resetError(); // Reset error state on route change
-    };
-
-    // Handle route change by overriding the router push method
-    const originalPush = router.push;
-    router.push = (...args) => {
-      handleRouteChange(); // Call the reset function
-      return originalPush(...args);
-    };
-
-    // Cleanup function to restore original router push method
-    return () => {
-      router.push = originalPush;
-    };
-  }, [resetError, router]);
+    if (initialPathname === null) {
+      setInitialPathname(pathname);
+    } else if (pathname !== initialPathname && error) {
+      resetError();
+    }
+  }, [pathname, initialPathname, error, resetError]);
 
   return (
     <div className={`p-8 text-center ${textColor}`}>
