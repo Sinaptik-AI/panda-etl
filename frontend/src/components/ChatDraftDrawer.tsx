@@ -10,7 +10,6 @@ interface IProps {
   isOpen?: boolean;
   onCancel: () => void;
   onSubmit: (data: string) => void;
-  scrollToEnd?: boolean;
 }
 
 const modules = {
@@ -47,17 +46,11 @@ const ChatDraftDrawer = ({
   draft,
   onSubmit,
   onCancel,
-  scrollToEnd = false,
 }: IProps) => {
   const quillRef = useRef<ReactQuill | null>(null);
 
-  const setEditedSummary = (data: string) => {
-    onSubmit(data);
-  };
-
   useEffect(() => {
     if (quillRef.current) {
-      console.log("Exists!");
       const editor = quillRef.current.getEditor();
       const editorContainer = editor.root;
       if (editorContainer) {
@@ -73,7 +66,7 @@ const ChatDraftDrawer = ({
           ref={quillRef}
           theme="snow"
           value={draft}
-          onChange={setEditedSummary}
+          onChange={onSubmit}
           modules={modules}
           formats={formats}
         />
