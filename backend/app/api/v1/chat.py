@@ -65,6 +65,24 @@ def chat(project_id: int, chat_request: ChatRequest, db: Session = Depends(get_d
 
         ordered_file_names = [doc_id_to_filename[doc_id] for doc_id in doc_ids]
 
+        extract_vectorstore = ChromaDB(f"panda-etl-extraction-{project_id}",
+                                       similarity_threshold=settings.chat_extraction_doc_threshold)
+
+        # Extract reference documents from the extraction results from db
+        extraction_docs = extract_vectorstore.get_relevant_docs(
+                chat_request.query,
+                k=settings.chat_extraction_max_docs
+        )
+
+        # Append text from single documents together
+        for extraction_doc in extraction_docs["metadatas"][0]:
+            index = next((i for i, item in enumerate(ordered_file_names) if item == extraction_doc["filename"]), None)
+            if index is None:
+                ordered_file_names.append(extraction_doc["filename"])
+                docs.append(extraction_doc["reference"])
+            else:
+                docs[index] = f'{extraction_doc["reference"]}\n\n{docs[index]}'
+
         docs_formatted = [
             {"filename": filename, "quote": quote}
             for filename, quote in zip(ordered_file_names, docs)
