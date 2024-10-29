@@ -1,15 +1,16 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Drawer from "./ui/Drawer";
 import { Button } from "./ui/Button";
 import ReactQuill from "react-quill";
-import { Save, BookTextIcon } from "lucide-react";
+import { BookTextIcon } from "lucide-react";
 
 interface IProps {
   draft: string;
   isOpen?: boolean;
   onCancel: () => void;
   onSubmit: (data: string) => void;
+  scrollToEnd?: boolean;
 }
 
 const modules = {
@@ -46,23 +47,32 @@ const ChatDraftDrawer = ({
   draft,
   onSubmit,
   onCancel,
+  scrollToEnd = false,
 }: IProps) => {
-  const [draftEdit, setDraftEdit] = useState<string>(draft);
-
-  useEffect(() => {
-    setDraftEdit(draft);
-  }, [draft, isOpen]);
+  const quillRef = useRef<ReactQuill | null>(null);
 
   const setEditedSummary = (data: string) => {
-    setDraftEdit(data);
+    onSubmit(data);
   };
+
+  useEffect(() => {
+    if (quillRef.current) {
+      console.log("Exists!");
+      const editor = quillRef.current.getEditor();
+      const editorContainer = editor.root;
+      if (editorContainer) {
+        editorContainer.scrollTop = editorContainer.scrollHeight;
+      }
+    }
+  }, [draft]);
 
   return (
     <Drawer isOpen={isOpen} onClose={onCancel} title="Draft Chat">
       <div className="flex flex-col h-full">
         <ReactQuill
+          ref={quillRef}
           theme="snow"
-          value={draftEdit}
+          value={draft}
           onChange={setEditedSummary}
           modules={modules}
           formats={formats}
@@ -74,16 +84,7 @@ const ChatDraftDrawer = ({
               className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
             >
               <BookTextIcon className="inline-block mr-2" size={16} />
-              Format
-            </Button>
-            <Button
-              onClick={() => {
-                onSubmit(draftEdit);
-              }}
-              className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
-            >
-              <Save className="inline-block mr-2" size={16} />
-              Save
+              Rewrite with AI
             </Button>
           </div>
         </div>

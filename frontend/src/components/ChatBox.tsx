@@ -69,6 +69,9 @@ const ChatBox = ({
   const [openChatDraftDrawer, setOpenChatDraftDrawer] =
     useState<boolean>(false);
 
+  const [scrollToEditorBottom, setScrollToEditorBottom] =
+    useState<boolean>(false);
+
   const { data: statusData, isLoading } = useQuery({
     queryKey: ["chatStatus", project_id],
     queryFn: async () => {
@@ -106,8 +109,6 @@ const ChatBox = ({
   };
 
   const handleAddToDraft = (index: number) => {
-    setOpenChatDraftDrawer(true);
-
     const new_draft =
       chatDraft.draft +
       `<br/><p><strong>${messages[index - 1].text}</strong></p><p>${messages[index].text}</p>`;
@@ -116,6 +117,8 @@ const ChatBox = ({
       draft: new_draft,
       draftedMessageIndexes: [...chatDraft.draftedMessageIndexes, index],
     });
+    setOpenChatDraftDrawer(true);
+    setScrollToEditorBottom(true);
   };
 
   const onCloseChatDraft = () => {
@@ -124,6 +127,7 @@ const ChatBox = ({
 
   const onOpenChatDraft = () => {
     setOpenChatDraftDrawer(true);
+    setScrollToEditorBottom(false);
   };
 
   const handleDraftEdit = (draft: string) => {
@@ -224,6 +228,7 @@ const ChatBox = ({
         draft={chatDraft?.draft}
         onCancel={onCloseChatDraft}
         onSubmit={handleDraftEdit}
+        scrollToEnd={scrollToEditorBottom}
       />
     </div>
   );
