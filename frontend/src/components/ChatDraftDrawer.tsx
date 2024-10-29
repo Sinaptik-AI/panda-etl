@@ -12,7 +12,7 @@ interface IProps {
   onSubmit: (data: string) => void;
 }
 
-const modules = {
+const quill_modules = {
   toolbar: [
     [{ header: [1, 2, false] }],
     ["bold", "italic", "underline", "strike", "blockquote"],
@@ -27,7 +27,7 @@ const modules = {
   ],
 };
 
-const formats = [
+const quill_formats = [
   "header",
   "bold",
   "italic",
@@ -67,8 +67,8 @@ const ChatDraftDrawer = ({
           theme="snow"
           value={draft}
           onChange={onSubmit}
-          modules={modules}
-          formats={formats}
+          modules={quill_modules}
+          formats={quill_formats}
         />
         <div className="sticky bottom-0 bg-white pb-4">
           <div className="flex gap-2">
