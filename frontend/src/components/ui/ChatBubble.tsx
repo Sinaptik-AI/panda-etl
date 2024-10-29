@@ -132,19 +132,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   return (
     <div className="flex flex-col max-w-2xl">
       <ChatBubbleWrapper sender={sender}>
-        {/* Add to draft button for chat */}
-        {sender == "bot" && onAddToDraft && (
-          <div className="w-full flex justify-end">
-            <TooltipWrapper content={"Add to draft"}>
-              <FilePenLine
-                width={18}
-                className="hover:cursor-pointer"
-                onClick={onAddToDraft}
-              />
-            </TooltipWrapper>
-          </div>
-        )}
-
         {references && references.length > 0 ? (
           <MessageWithReferences
             message={message}
@@ -157,9 +144,25 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
             {markify_text(message)}
           </ReactMarkdown>
         )}
-        <div className="text-xs text-gray-500 mt-2 text-right">
-          {timestamp.toLocaleTimeString()}
-        </div>
+        {/* Add to draft button for chat */}
+        {sender == "bot" && onAddToDraft ? (
+          <div className="w-full flex justify-between">
+            <div className="text-xs text-gray-500 mt-2 text-right">
+              {timestamp.toLocaleTimeString()}
+            </div>
+            <TooltipWrapper content={"Add to draft"}>
+              <FilePenLine
+                width={18}
+                className="hover:cursor-pointer"
+                onClick={onAddToDraft}
+              />
+            </TooltipWrapper>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500 mt-2 text-left">
+            {timestamp.toLocaleTimeString()}
+          </div>
+        )}
       </ChatBubbleWrapper>
 
       {references && references.length > 0 && (
