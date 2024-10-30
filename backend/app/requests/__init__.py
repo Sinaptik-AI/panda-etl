@@ -235,6 +235,12 @@ def request_draft_with_ai(api_token: str, draft_request: dict) -> dict:
 
     try:
         if response.status_code not in [200, 201]:
+
+            if response.status_code == 402:
+                raise CreditLimitExceededException(
+                    response.json().get("detail", "Credit limit exceeded!")
+                )
+
             logger.error(
                 f"Failed to draft with AI. It returned {response.status_code} code: {response.text}"
             )

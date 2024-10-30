@@ -63,6 +63,14 @@ export const draft_with_ai = async (data: ChatDraftRequest) => {
     );
     return response.data.data;
   } catch (error) {
-    throw error;
+    if (axios.isAxiosError(error)) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.detail);
+      } else {
+        throw new Error("Failed to generate draft with AI. Please try again.");
+      }
+    } else {
+      throw new Error("Failed to generate draft with AI. Please try again.");
+    }
   }
 };

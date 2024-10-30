@@ -3,6 +3,7 @@ from typing import Optional
 
 from app.config import settings
 from app.database import get_db
+from app.exceptions import CreditLimitExceededException
 from app.logger import Logger
 from app.models.asset_content import AssetProcessingStatus
 from app.repositories import (
@@ -256,11 +257,17 @@ def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
         if not api_key:
             raise HTTPException(status_code=404, detail="API Key not found!")
 
-        response = request_draft_with_ai(api_key.key, draft_request.model_dump_json())
+        try:
+            response = request_draft_with_ai(api_key.key, draft_request.model_dump_json())
+
+        except CreditLimitExceededException:
+                raise HTTPException(
+                    status_code=402, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
+                )
 
         return {
             "status": "success",
-            "message": "Draft sucessfully generated!",
+            "message": "Draft successfully generated!",
             "data": {"response": response["response"]},
         }
 
