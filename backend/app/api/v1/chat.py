@@ -260,7 +260,7 @@ def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
 
         return {
             "status": "success",
-            "message": "Chat message successfully generated.",
+            "message": "Draft sucessfully generated!",
             "data": {"response": response["response"]},
         }
 
@@ -271,5 +271,5 @@ def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
         logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=400,
-            detail="Unable to process the chat query. Please try again.",
+            detail="Unable to generate draft. Please try again.",
         )
