@@ -1,11 +1,12 @@
 from app.requests.schemas import ExtractFieldsResponse
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from app.processing.process_queue import (
     handle_exceptions,
     extract_process,
     update_process_step_status,
     find_best_match_for_short_reference,
+    vectorize_extraction_process_step,
 )
 from app.exceptions import CreditLimitExceededException
 from app.models import ProcessStepStatus
@@ -180,3 +181,107 @@ def test_chroma_db_initialization(mock_extract_data, mock_chroma):
 
     mock_chroma.assert_called_with(f"panda-etl-{process.project_id}", similarity_threshold=3)
     assert mock_chroma.call_count >= 1
+
+@patch('app.processing.process_queue.ChromaDB')
+def test_vectorize_extraction_process_step_single_reference(mock_chroma_db):
+    # Mock ChromaDB instance
+    mock_vectorstore = MagicMock()
+    mock_chroma_db.return_value = mock_vectorstore
+
+    # Inputs
+    project_id = 123
+    process_step_id = 1
+    filename = "sample_file"
+    references = [
+        [
+            {"name": "field1", "sources": ["source1", "source2"]}
+        ]
+    ]
+
+    # Call function
+    vectorize_extraction_process_step(project_id, process_step_id, filename, references)
+
+    # Expected docs and metadata to add to ChromaDB
+    expected_docs = ["sample_file field1"]
+    expected_metadatas = [
+        {
+            "project_id": project_id,
+            "process_step_id": process_step_id,
+            "filename": filename,
+            "reference": "source1\nsource2"
+        }
+    ]
+
+    # Assertions
+    mock_vectorstore.add_docs.assert_called_once_with(
+        docs=expected_docs,
+        metadatas=expected_metadatas
+    )
+
+@patch('app.processing.process_queue.ChromaDB')
+def test_vectorize_extraction_process_step_multiple_references_concatenation(mock_chroma_db):
+    # Mock ChromaDB instance
+    mock_vectorstore = MagicMock()
+    mock_chroma_db.return_value = mock_vectorstore
+
+    # Inputs
+    project_id = 456
+    process_step_id = 2
+    filename = "test_file"
+    references = [
+        [
+            {"name": "field1", "sources": ["source1", "source2"]},
+            {"name": "field1", "sources": ["source3"]}
+        ],
+        [
+            {"name": "field2", "sources": ["source4"]}
+        ]
+    ]
+
+    # Call function
+    vectorize_extraction_process_step(project_id, process_step_id, filename, references)
+
+    # Expected docs and metadata to add to ChromaDB
+    expected_docs = ["test_file field1", "test_file field2"]
+    expected_metadatas = [
+        {
+            "project_id": project_id,
+            "process_step_id": process_step_id,
+            "filename": filename,
+            "reference": "source1\nsource2\nsource3"
+        },
+        {
+            "project_id": project_id,
+            "process_step_id": process_step_id,
+            "filename": filename,
+            "reference": "source4"
+        }
+    ]
+
+    # Assertions
+    mock_vectorstore.add_docs.assert_called_once_with(
+        docs=expected_docs,
+        metadatas=expected_metadatas
+    )
+
+@patch('app.processing.process_queue.ChromaDB')  # Replace with the correct module path
+def test_vectorize_extraction_process_step_empty_sources(mock_chroma_db):
+    # Mock ChromaDB instance
+    mock_vectorstore = MagicMock()
+    mock_chroma_db.return_value = mock_vectorstore
+
+    # Inputs
+    project_id = 789
+    process_step_id = 3
+    filename = "empty_sources_file"
+    references = [
+        [
+            {"name": "field1", "sources": []}
+        ]
+    ]
+
+    # Call function
+    vectorize_extraction_process_step(project_id, process_step_id, filename, references)
+
+    # Expected no calls to add_docs due to empty sources
+    mock_vectorstore.add_docs.assert_not_called()
