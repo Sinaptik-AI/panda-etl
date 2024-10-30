@@ -90,7 +90,7 @@ const ChatDraftDrawer = ({
         setLoadingAIDraft(false);
       } catch (error) {
         console.error(error);
-        toast.error("Failed to draft with AI. Try again!");
+        toast.error(error instanceof Error ? error.message : String(error));
         setLoadingAIDraft(false);
       }
     }
