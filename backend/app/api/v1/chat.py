@@ -257,13 +257,7 @@ def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
         if not api_key:
             raise HTTPException(status_code=404, detail="API Key not found!")
 
-        try:
-            response = request_draft_with_ai(api_key.key, draft_request.model_dump_json())
-
-        except CreditLimitExceededException:
-                raise HTTPException(
-                    status_code=402, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
-                )
+        response = request_draft_with_ai(api_key.key, draft_request.model_dump_json())
 
         return {
             "status": "success",
@@ -273,6 +267,11 @@ def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
 
     except HTTPException:
         raise
+
+    except CreditLimitExceededException:
+        raise HTTPException(
+            status_code=402, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
+        )
 
     except Exception:
         logger.error(traceback.format_exc())
