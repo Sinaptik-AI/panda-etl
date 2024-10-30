@@ -1,6 +1,7 @@
 import axios from "axios";
 import { GetRequest, PostRequest } from "@/lib/requests";
 import {
+  ChatDraftRequest,
   ChatRequest,
   ChatResponse,
   ChatStatusResponse,
@@ -48,6 +49,28 @@ export const chatStatus = async (projectId: string) => {
       return {
         status: false,
       };
+    }
+  }
+};
+
+export const draft_with_ai = async (data: ChatDraftRequest) => {
+  try {
+    const response = await PostRequest<ChatResponse>(
+      `${chatApiUrl}/draft`,
+      { ...data },
+      {},
+      300000
+    );
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.detail);
+      } else {
+        throw new Error("Failed to generate draft with AI. Please try again.");
+      }
+    } else {
+      throw new Error("Failed to generate draft with AI. Please try again.");
     }
   }
 };

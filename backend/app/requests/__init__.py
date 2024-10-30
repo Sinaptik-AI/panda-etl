@@ -220,3 +220,33 @@ def get_user_usage_data(api_token: str):
     except requests.exceptions.JSONDecodeError:
         logger.error(f"Invalid JSON response from API server: {response.text}")
         raise Exception("Invalid JSON response")
+
+
+def request_draft_with_ai(api_token: str, draft_request: dict) -> dict:
+    # Prepare the headers with the Bearer token
+    headers = {"x-authorization": f"Bearer {api_token}"}
+    # Send the request
+    response = requests.post(
+        f"{settings.pandaetl_server_url}/v1/draft",
+        data=draft_request,
+        headers=headers,
+        timeout=360,
+    )
+
+    try:
+        if response.status_code not in [200, 201]:
+
+            if response.status_code == 402:
+                raise CreditLimitExceededException(
+                    response.json().get("detail", "Credit limit exceeded!")
+                )
+
+            logger.error(
+                f"Failed to draft with AI. It returned {response.status_code} code: {response.text}"
+            )
+            raise Exception(response.text)
+
+        return response.json()
+    except requests.exceptions.JSONDecodeError:
+        logger.error(f"Invalid JSON response from API server: {response.text}")
+        raise Exception("Invalid JSON response")

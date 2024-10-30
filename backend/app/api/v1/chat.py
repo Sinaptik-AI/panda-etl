@@ -3,6 +3,7 @@ from typing import Optional
 
 from app.config import settings
 from app.database import get_db
+from app.exceptions import CreditLimitExceededException
 from app.logger import Logger
 from app.models.asset_content import AssetProcessingStatus
 from app.repositories import (
@@ -10,11 +11,11 @@ from app.repositories import (
     project_repository,
     user_repository,
 )
-from app.requests import chat_query
+from app.requests import chat_query, request_draft_with_ai
 from app.utils import clean_text, find_following_sentence_ending, find_sentence_endings
 from app.vectorstore.chroma import ChromaDB
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 chat_router = APIRouter()
@@ -23,6 +24,10 @@ chat_router = APIRouter()
 class ChatRequest(BaseModel):
     conversation_id: Optional[str] = None
     query: str
+
+class DraftRequest(BaseModel):
+    content: str = Field(..., min_length=1, description="Content cannot be empty")
+    prompt: str = Field(..., min_length=1, description="Prompt cannot be empty")
 
 
 logger = Logger()
@@ -236,4 +241,41 @@ def chat_status(project_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400,
             detail="Unable to process the chat query. Please try again.",
+        )
+
+@chat_router.post("/draft", status_code=200)
+def draft_with_ai(draft_request: DraftRequest, db: Session = Depends(get_db)):
+    try:
+
+        users = user_repository.get_users(db, n=1)
+
+        if not users:
+            raise HTTPException(status_code=404, detail="No User Exists!")
+
+        api_key = user_repository.get_user_api_key(db, users[0].id)
+
+        if not api_key:
+            raise HTTPException(status_code=404, detail="API Key not found!")
+
+        response = request_draft_with_ai(api_key.key, draft_request.model_dump_json())
+
+        return {
+            "status": "success",
+            "message": "Draft successfully generated!",
+            "data": {"response": response["response"]},
+        }
+
+    except HTTPException:
+        raise
+
+    except CreditLimitExceededException:
+        raise HTTPException(
+            status_code=402, detail="Credit limit Reached, Wait next month or upgrade your Plan!"
+        )
+
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to generate draft. Please try again.",
         )

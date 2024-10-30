@@ -27,3 +27,8 @@ export interface ChatReferences {
   start: number;
   end: number;
 }
+
+export interface ChatDraftRequest {
+  content: string;
+  prompt: string;
+}
