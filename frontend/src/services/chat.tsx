@@ -1,6 +1,7 @@
 import axios from "axios";
 import { GetRequest, PostRequest } from "@/lib/requests";
 import {
+  ChatDraftRequest,
   ChatRequest,
   ChatResponse,
   ChatStatusResponse,
@@ -49,5 +50,19 @@ export const chatStatus = async (projectId: string) => {
         status: false,
       };
     }
+  }
+};
+
+export const draft_with_ai = async (data: ChatDraftRequest) => {
+  try {
+    const response = await PostRequest<ChatResponse>(
+      `${chatApiUrl}/draft`,
+      { ...data },
+      {},
+      300000
+    );
+    return response.data.data;
+  } catch (error) {
+    throw error;
   }
 };
